@@ -158,9 +158,11 @@ String getContentType(String filename) {
   else if (filename.endsWith(".gz")) return "application/x-gzip";
   return "text/plain";
 }
+/*
 void handleControl(String path){
 	 DBG_OUTPUT_PORT.println("handleControl: " + path);
 }
+*/
 bool handleFileRead(String path) {
   DBG_OUTPUT_PORT.println("handleFileRead: " + path);
   if (path.endsWith("/")) path += "index.htm";
