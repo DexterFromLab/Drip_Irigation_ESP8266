@@ -40,7 +40,7 @@
 #include <TimeLib.h>
 #include <TimeAlarms.h>
 #include <WiFiUdp.h>
-
+#include "./struct-filler.h"
 
 #define DBG_OUTPUT_PORT Serial
 
@@ -55,7 +55,7 @@ DallasTemperature DS18B20(&oneWire);
 
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "nokia";
+const char* ssid = "Ether Eden";
 const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
@@ -159,10 +159,26 @@ String getContentType(String filename) {
   return "text/plain";
 }
 /*
-void handleControl(String path){
-	 DBG_OUTPUT_PORT.println("handleControl: " + path);
-}
+	int server.args() - liczba argumentów od ajaxa
+	String arg(String name);        // get request argument value by name
+	String arg(int i);              // get request argument value by number
+	String argName(int i);          // get request argument name by number
+
+Przykładowe zapytanie ajaxa z danymi
+		$.ajax({
+		  method: "POST",
+		  url: "cont",
+		  data: { name: "John", location: "Boston" }
+		})
+		  .done(function( msg ) {
+			alert( "Data Saved: " + msg );
+		  });
 */
+void handleControl(){
+	DBG_OUTPUT_PORT.println("handleControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+
 bool handleFileRead(String path) {
   DBG_OUTPUT_PORT.println("handleFileRead: " + path);
   if (path.endsWith("/")) path += "index.htm";
@@ -310,7 +326,7 @@ void setup(void) {
 
   //SERVER INIT
   //Ustawienia sterowania
-  server.on("/cont", HTTP_GET, handleFileList);
+  server.on("/cont", HTTP_POST, handleControl);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
