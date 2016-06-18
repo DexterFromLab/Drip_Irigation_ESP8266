@@ -41,6 +41,7 @@
 #include <TimeAlarms.h>
 #include <WiFiUdp.h>
 #include "./struct-filler.h"
+#include "./ajax-requests.h"
 
 #define DBG_OUTPUT_PORT Serial
 
@@ -174,8 +175,29 @@ Przykładowe zapytanie ajaxa z danymi
 			alert( "Data Saved: " + msg );
 		  });
 */
-void handleControl(){
-	DBG_OUTPUT_PORT.println("handleControl: " + String(server.args()));
+
+void wilgSterControl(){
+	DBG_OUTPUT_PORT.println("wilgSterControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+void temperatureControl(){
+	DBG_OUTPUT_PORT.println("temperatureControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+void airHumControl(){
+	DBG_OUTPUT_PORT.println("airHumControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+void HumControl(){
+	DBG_OUTPUT_PORT.println("HumControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+void ethernetControl(){
+	DBG_OUTPUT_PORT.println("ethernetControl: " + String(server.args()));
+	server.send(200, "text/json", "data send correctly!");
+}
+void systemControl(){
+	DBG_OUTPUT_PORT.println("systemControl: " + String(server.args()));
 	server.send(200, "text/json", "data send correctly!");
 }
 
@@ -326,7 +348,12 @@ void setup(void) {
 
   //SERVER INIT
   //Ustawienia sterowania
-  server.on("/cont", HTTP_POST, handleControl);
+  server.on("/wilgSter", HTTP_POST, wilgSterControl);
+  server.on("/temperature", HTTP_POST, temperatureControl);
+  server.on("/airHum", HTTP_POST, airHumControl);
+  server.on("/Hum", HTTP_POST, HumControl);
+  server.on("/ethernet", HTTP_POST, ethernetControl);
+  server.on("/system", HTTP_POST, systemControl);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
