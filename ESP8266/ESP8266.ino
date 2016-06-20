@@ -49,14 +49,17 @@
 
 #define wielokosc_bufora_pomiarow 100   //Ilość pomiarów do wykresu
 #define POMIARY_USREDNIANE	5
+//Control structures
+wilg_ster_struct wilg_ster;
+temperature_struct temperature;
+
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 //Measures
-
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "Ether Eden";
+const char* ssid = "nokia";
 const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
@@ -176,12 +179,47 @@ Przykładowe zapytanie ajaxa z danymi
 		  });
 */
 
+void timSterControl(){
+	DBG_OUTPUT_PORT.println("timSterControl: " + String(server.args()));
+	
+	wilg_ster.tim1Max = String(server.arg("Tim1Max")).toInt();
+	wilg_ster.tim1Min = String(server.arg("Tim1Min")).toInt();
+	wilg_ster.tim1 = String(server.arg("Tim1Stat")).toInt();
+	wilg_ster.tim2Max = String(server.arg("Tim2Min")).toInt();
+	wilg_ster.tim2Min = String(server.arg("Tim2Max")).toInt();
+	wilg_ster.tim2 = String(server.arg("Tim2Stat")).toInt();
+	wilg_ster.tim3Max = String(server.arg("Tim3Min")).toInt();
+	wilg_ster.tim3Min = String(server.arg("Tim3Max")).toInt();
+	wilg_ster.tim3 = String(server.arg("Tim3Stat")).toInt();
+	DBG_OUTPUT_PORT.println("Tim1Max: " + String(wilg_ster.tim1Max) + ",tim1Min: " + String(wilg_ster.tim1Min) + ",tim1: " + String((int)wilg_ster.tim1) + ",tim2Max: " + String(wilg_ster.tim2Max) + ",tim2Min: " + String(wilg_ster.tim2Min) + ",tim2: " + String((int)wilg_ster.tim2) + ",tim3Max: " + String(wilg_ster.tim3Max) + ",tim3Min: " + String(wilg_ster.tim3Min) + ",tim3: " + String((int)wilg_ster.tim3) );
+	server.send(200, "text/json", "data send correctly!");
+}
 void wilgSterControl(){
 	DBG_OUTPUT_PORT.println("wilgSterControl: " + String(server.args()));
+	
+	//tim1Max;
+	wilg_ster.tim1Min = String(server.arg("Tim1Min")).toInt();
+	DBG_OUTPUT_PORT.println("wilgTempMin: " + String(wilg_ster.tim1Min));
+	/*char tim1;
+	int tim2Max;
+	int tim2Min;
+	char tim2;
+	int tim3Max;
+	int tim3Min;
+	char tim3;
+	*/
 	server.send(200, "text/json", "data send correctly!");
 }
 void temperatureControl(){
-	DBG_OUTPUT_PORT.println("temperatureControl: " + String(server.args()));
+	temperature.tempMax = String(server.arg("tempMax")).toInt();
+	temperature.tempMaxOn = String(server.arg("tempMaxOn")).toInt();
+	temperature.tempMin = String(server.arg("tempMin")).toInt();
+	temperature.tempMinOn = String(server.arg("tempMinOn")).toInt();
+	temperature.DeltaT = String(server.arg("DeltaT")).toInt();
+	temperature.DeltaTim = String(server.arg("DeltaTim")).toInt();
+	temperature.DeltaRelayTime = String(server.arg("DeltaRelayTime")).toInt();
+	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
+	DBG_OUTPUT_PORT.println("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
 	server.send(200, "text/json", "data send correctly!");
 }
 void airHumControl(){
@@ -348,6 +386,7 @@ void setup(void) {
 
   //SERVER INIT
   //Ustawienia sterowania
+  server.on("/timSter", HTTP_POST, timSterControl);
   server.on("/wilgSter", HTTP_POST, wilgSterControl);
   server.on("/temperature", HTTP_POST, temperatureControl);
   server.on("/airHum", HTTP_POST, airHumControl);
