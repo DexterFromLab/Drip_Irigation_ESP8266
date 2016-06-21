@@ -61,14 +61,14 @@ typedef struct ethernet{
 	char mac3;
 	char mac4;
 	char mac5;
+	char gat0;
+	char gat1;
+	char gat2;
+	char gat3;
 	char dns0;
 	char dns1;
 	char dns2;
 	char dns3;
-	char dhcp0;
-	char dhcp1;
-	char dhcp2;
-	char dhcp3;
 	char dhcpOn;
 }ethernet_struct;
 

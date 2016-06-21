@@ -89,8 +89,8 @@ function sendTemp(){
 function sendWilgPow(){
 	$.ajax({
 	  method: "POST",
-	  url: "wilgSter",
-	  data: { Tim1Min: $("#slider-range1").slider('values',0), Tim1Max: $("#slider-range1").slider('values',1),Tim1Stat: Number($("#time1State").val()), Tim2Min: $("#slider-range2").slider('values',0), Tim2Max: $("#slider-range2").slider('values',1),Tim2Stat: Number($("#time2State").val()), Tim3Min: $("#slider-range3").slider('values',0), Tim3Max: $("#slider-range3").slider('values',1),Tim3Stat: Number($("#time3State").val()) }
+	  url: "airHum",
+	  data: { wilgPowMax: $("#wilgPowMax").val(), wilgPowMaxOn: $("#wilgPowMaxOn").val(), wilgPowMin: $("#wilgPowMin").val(), wilgPowMinOn: $("#wilgPowMinOn").val(), DeltaWilgPow: $("#DeltaWilgPow").val(), DeltaWilgPowTim: $("#DeltaWilgPowTim").val(), DeltaWilgPowRelayTim: $("#DeltaWilgPowRelayTim").val(), DeltaWilgPowOn: $("#DeltaWilgPowOn").val() }
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -99,8 +99,8 @@ function sendWilgPow(){
 function sendWilgGl(){
 	$.ajax({
 	  method: "POST",
-	  url: "wilgSter",
-	  data: { Tim1Min: $("#slider-range1").slider('values',0), Tim1Max: $("#slider-range1").slider('values',1),Tim1Stat: Number($("#time1State").val()), Tim2Min: $("#slider-range2").slider('values',0), Tim2Max: $("#slider-range2").slider('values',1),Tim2Stat: Number($("#time2State").val()), Tim3Min: $("#slider-range3").slider('values',0), Tim3Max: $("#slider-range3").slider('values',1),Tim3Stat: Number($("#time3State").val()) }
+	  url: "Hum",
+	  data: { wilgMax: $("#wilgMax").val(), wilgMaxOn: $("#wilgMaxOn").val(), wilgMin: $("#wilgMin").val(), wilgMinOn: $("#wilgMinOn").val(), DeltaWilg: $("#DeltaWilg").val(), DeltaWilgTim: $("#DeltaWilgTim").val(), DeltaWilgRelayTim: $("#DeltaWilgRelayTim").val(), DeltaWilgOn: $("#DeltaWilgOn").val() }
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -109,8 +109,8 @@ function sendWilgGl(){
 function sendInter(){
 	$.ajax({
 	  method: "POST",
-	  url: "wilgSter",
-	  data: { Tim1Min: $("#slider-range1").slider('values',0), Tim1Max: $("#slider-range1").slider('values',1),Tim1Stat: Number($("#time1State").val()), Tim2Min: $("#slider-range2").slider('values',0), Tim2Max: $("#slider-range2").slider('values',1),Tim2Stat: Number($("#time2State").val()), Tim3Min: $("#slider-range3").slider('values',0), Tim3Max: $("#slider-range3").slider('values',1),Tim3Stat: Number($("#time3State").val()) }
+	  url: "ethernet",
+	  data: { ip0: $("#ip").val().substr(0,3), ip1: $("#ip").val().substr(4,3), ip2: $("#ip").val().substr(8,3), ip3: $("#ip").val().substr(12,3), m0: $("#m").val().substr(0,3), m1: $("#m").val().substr(4,3), m2: $("#m").val().substr(8,3), m3: $("#m").val().substr(12,3),gat0: $("#gat").val().substr(0,3), gat1: $("#gat").val().substr(4,3), gat2: $("#gat").val().substr(8,3), gat3: $("#gat").val().substr(12,3), dns0: $("#dns").val().substr(0,3), dns1: $("#dns").val().substr(4,3), dns2: $("#dns").val().substr(8,3), dns3: $("#dns").val().substr(12,3), dhcpOn: $("#dhcpOn").val() }
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -119,7 +119,7 @@ function sendInter(){
 function sendSys(){
 	$.ajax({
 	  method: "POST",
-	  url: "wilgSter",
+	  url: "system",
 	  data: { Tim1Min: $("#slider-range1").slider('values',0), Tim1Max: $("#slider-range1").slider('values',1),Tim1Stat: Number($("#time1State").val()), Tim2Min: $("#slider-range2").slider('values',0), Tim2Max: $("#slider-range2").slider('values',1),Tim2Stat: Number($("#time2State").val()), Tim3Min: $("#slider-range3").slider('values',0), Tim3Max: $("#slider-range3").slider('values',1),Tim3Stat: Number($("#time3State").val()) }
 	})
 	.done(function( msg ) {

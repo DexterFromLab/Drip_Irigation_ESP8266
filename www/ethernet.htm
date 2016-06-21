@@ -22,25 +22,23 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Adres IP xxx.xxx.xxx.xxx</label>
-					<input class="form-control">
+					<input id="ip" class="form-control">
 					<label>Maska podsieci xxx.xxx.xxx.xxx</label>
-					<input class="form-control">
+					<input id="m" class="form-control">
 					<label>Adres MAC</label>
-					<input class="form-control" disabled>
+					<input id="mac" class="form-control" disabled>
 					<label>Adres Bramy xxx.xxx.xxx.xxx</label>
-					<input class="form-control">
+					<input id="gat" class="form-control">
 					<label>DNS xxx.xxx.xxx.xxx</label>
-					<input class="form-control">
-					<label>DHCP</label>
-					<input class="form-control" disabled>
-					<label>DHCP</label>			
-					<select class="form-control">
+					<input id="dns" class="form-control">
+					<label id="dhcp">DHCP</label>			
+					<select id="dhcpOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
-					<div class="buttblock">
-						<input class="form-control" type="button" value="Zapisz">
-					</div>
 				</select>
+				<div class="buttblock">
+					<input onclick="sendInter()" class="form-control" type="button" value="Zapisz">
+				</div>
 			</div>
 
 	</div>

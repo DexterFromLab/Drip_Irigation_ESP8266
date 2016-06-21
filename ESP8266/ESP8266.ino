@@ -11,15 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Lesser General Public License for more details.
-  Yo
-  
-  
-  
-  
-  
-  
-  
-  u should have received a copy of the GNU Lesser General Public
+  You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
@@ -54,6 +46,7 @@ wilg_ster_struct wilg_ster;
 temperature_struct temperature;
 airHum_struct airHum;
 hum_struct hum;
+ethernet_struct ethernet;
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -233,7 +226,43 @@ void HumControl(){
 	server.send(200, "text/json", "data send correctly!");
 }
 void ethernetControl(){
-	DBG_OUTPUT_PORT.println("ethernetControl: " + String(server.args()));
+	ethernet.ip0 = String(server.arg("ip0")).toInt();
+	ethernet.ip1 = String(server.arg("ip1")).toInt();
+	ethernet.ip2 = String(server.arg("ip2")).toInt();
+	ethernet.ip3 = String(server.arg("ip3")).toInt();
+	ethernet.ip3 = String(server.arg("ip3")).toInt();
+	ethernet.m0 = String(server.arg("m0")).toInt();
+	ethernet.m1 = String(server.arg("m1")).toInt();
+	ethernet.m2 = String(server.arg("m2")).toInt();
+	ethernet.m3 = String(server.arg("m3")).toInt();
+	ethernet.gat0 = String(server.arg("gat0")).toInt();
+	ethernet.gat1 = String(server.arg("gat1")).toInt();
+	ethernet.gat2 = String(server.arg("gat2")).toInt();
+	ethernet.gat3 = String(server.arg("gat3")).toInt();
+	ethernet.dns0 = String(server.arg("dns0")).toInt();
+	ethernet.dns1 = String(server.arg("dns1")).toInt();
+	ethernet.dns2 = String(server.arg("dns2")).toInt();
+	ethernet.dns3 = String(server.arg("dns3")).toInt();
+	ethernet.dhcpOn = String(server.arg("dhcpOn")).toInt();
+	DBG_OUTPUT_PORT.println(
+	"ip0: " + String((int)ethernet.ip0) + 
+	" ip1: " + String((int)ethernet.ip1) +
+	" ip2: " + String((int)ethernet.ip2) +
+	" ip3: " + String((int)ethernet.ip3) +
+	" m0: " + String((int)ethernet.m0) +
+	" m1: " + String((int)ethernet.m1) +
+	" m2: " + String((int)ethernet.m2) +
+	" m3: " + String((int)ethernet.m3) +
+	" gat0: " + String((int)ethernet.gat0) +
+	" gat1: " + String((int)ethernet.gat1) +
+	" gat2: " + String((int)ethernet.gat2) +
+	" gat3: " + String((int)ethernet.gat3) +
+	" dns0: " + String((int)ethernet.dns0) +
+	" dns1: " + String((int)ethernet.dns1) +
+	" dns2: " + String((int)ethernet.dns2) +
+	" dns3: " + String((int)ethernet.dns3) +
+	" dhcpOn: " + String((int)ethernet.dhcpOn) 
+	);
 	server.send(200, "text/json", "data send correctly!");
 }
 void systemControl(){

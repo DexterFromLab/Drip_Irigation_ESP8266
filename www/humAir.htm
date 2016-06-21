@@ -23,10 +23,10 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Wilg max (%) [CHAmax]</label>
-					<input class="form-control">
+					<input id="wilgPowMax" class="form-control">
 					<p class="help-block">Maksymalna wilgotność powietrza po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
-				<select class="form-control">
+				<select id="wilgPowMaxOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -34,11 +34,11 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Wilg min (%) [CHAmin]</label>
-					<input class="form-control">
+					<input id="wilgPowMin" class="form-control">
 					<p class="help-block">Minimalna wilgotność powietrza po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
 				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="wilgPowMinOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -63,23 +63,22 @@
 					<label>
 						Wzrost wilgotności powietrza(°C)
 					</label>
-					<input class="form-control">
+					<input id="DeltaWilgPow" class="form-control">
 					<label>	
 						W czasie (s)
 					</label>
-					<input class="form-control">
+					<input id="DeltaWilgPowTim" class="form-control">
 					<p class="help-block">Zmiana wilgotności powietrza o określoną wartość w określonym czasie po którym nastąpi uruchomienie warunku</p>
 					<label>Wyłączenie warunku po czasie (Czas w sekundach, 0-ręczne wyłączenie warunku)</label>
-					<input class="form-control">
+					<input id="DeltaWilgPowRelayTim" class="form-control">
 				</div>
-				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="DeltaWilgPowOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
 			</div>
 			<div class="buttblock">
-				<input class="form-control" type="button" value="Zapisz">
+				<input onclick="sendWilgPow()" class="form-control" type="button" value="Zapisz">
 			</div>
 			 
 		</div>
