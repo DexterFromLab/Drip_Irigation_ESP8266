@@ -52,7 +52,8 @@
 //Control structures
 wilg_ster_struct wilg_ster;
 temperature_struct temperature;
-
+airHum_struct airHum;
+hum_struct hum;
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
@@ -194,22 +195,7 @@ void timSterControl(){
 	DBG_OUTPUT_PORT.println("Tim1Max: " + String(wilg_ster.tim1Max) + ",tim1Min: " + String(wilg_ster.tim1Min) + ",tim1: " + String((int)wilg_ster.tim1) + ",tim2Max: " + String(wilg_ster.tim2Max) + ",tim2Min: " + String(wilg_ster.tim2Min) + ",tim2: " + String((int)wilg_ster.tim2) + ",tim3Max: " + String(wilg_ster.tim3Max) + ",tim3Min: " + String(wilg_ster.tim3Min) + ",tim3: " + String((int)wilg_ster.tim3) );
 	server.send(200, "text/json", "data send correctly!");
 }
-void wilgSterControl(){
-	DBG_OUTPUT_PORT.println("wilgSterControl: " + String(server.args()));
-	
-	//tim1Max;
-	wilg_ster.tim1Min = String(server.arg("Tim1Min")).toInt();
-	DBG_OUTPUT_PORT.println("wilgTempMin: " + String(wilg_ster.tim1Min));
-	/*char tim1;
-	int tim2Max;
-	int tim2Min;
-	char tim2;
-	int tim3Max;
-	int tim3Min;
-	char tim3;
-	*/
-	server.send(200, "text/json", "data send correctly!");
-}
+
 void temperatureControl(){
 	temperature.tempMax = String(server.arg("tempMax")).toInt();
 	temperature.tempMaxOn = String(server.arg("tempMaxOn")).toInt();
@@ -223,11 +209,27 @@ void temperatureControl(){
 	server.send(200, "text/json", "data send correctly!");
 }
 void airHumControl(){
-	DBG_OUTPUT_PORT.println("airHumControl: " + String(server.args()));
+	airHum.wilgPowMax = String(server.arg("wilgPowMax")).toInt();
+	airHum.wilgPowMaxOn = String(server.arg("wilgPowMaxOn")).toInt();
+	airHum.wilgPowMin = String(server.arg("wilgPowMin")).toInt();
+	airHum.wilgPowMinOn = String(server.arg("wilgPowMinOn")).toInt();
+	airHum.DeltaWilgPow = String(server.arg("DeltaWilgPow")).toInt();
+	airHum.DeltaWilgPowTim = String(server.arg("DeltaWilgPowTim")).toInt();
+	airHum.DeltaWilgPowRelayTim = String(server.arg("DeltaWilgPowRelayTim")).toInt();
+	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
+	DBG_OUTPUT_PORT.println("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
 	server.send(200, "text/json", "data send correctly!");
 }
 void HumControl(){
-	DBG_OUTPUT_PORT.println("HumControl: " + String(server.args()));
+	hum.wilgMax = String(server.arg("WilgMax")).toInt();
+	hum.wilgMaxOn = String(server.arg("WilgMaxOn")).toInt();
+	hum.wilgMin = String(server.arg("WilgMin")).toInt();
+	hum.wilgMinOn = String(server.arg("WilgMinOn")).toInt();
+	hum.DeltaWilg = String(server.arg("DeltaWilg")).toInt();
+	hum.DeltaWilgTim = String(server.arg("DeltaWilgTim")).toInt();
+	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
+	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
+	DBG_OUTPUT_PORT.println("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
 	server.send(200, "text/json", "data send correctly!");
 }
 void ethernetControl(){
@@ -387,7 +389,6 @@ void setup(void) {
   //SERVER INIT
   //Ustawienia sterowania
   server.on("/timSter", HTTP_POST, timSterControl);
-  server.on("/wilgSter", HTTP_POST, wilgSterControl);
   server.on("/temperature", HTTP_POST, temperatureControl);
   server.on("/airHum", HTTP_POST, airHumControl);
   server.on("/Hum", HTTP_POST, HumControl);
