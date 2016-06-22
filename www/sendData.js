@@ -120,9 +120,69 @@ function sendSys(){
 	$.ajax({
 	  method: "POST",
 	  url: "system",
-	  data: { Tim1Min: $("#slider-range1").slider('values',0), Tim1Max: $("#slider-range1").slider('values',1),Tim1Stat: Number($("#time1State").val()), Tim2Min: $("#slider-range2").slider('values',0), Tim2Max: $("#slider-range2").slider('values',1),Tim2Stat: Number($("#time2State").val()), Tim3Min: $("#slider-range3").slider('values',0), Tim3Max: $("#slider-range3").slider('values',1),Tim3Stat: Number($("#time3State").val()) }
+	  data: {  }
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
+	});
+}
+function getTemperatureSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/temperature",
+		success: function(response) {
+
+		}
+	});
+}
+function getTimSterSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/timSter",
+		success: function(response) {
+
+		}
+	});
+}
+function getAirhumSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/airhum",
+		success: function(response) {
+
+		}
+	});
+}
+function getHumSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/hum",
+		success: function(response) {
+
+		}
+	});
+}
+function getEthernetSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/ethernet",
+		success: function(response) {
+
+		}
+	});
+}
+function getSystemSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/system",
+		success: function(response) {
+
+		}
 	});
 }
