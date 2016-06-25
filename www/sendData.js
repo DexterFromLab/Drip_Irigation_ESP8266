@@ -120,7 +120,7 @@ function sendSys(){
 	$.ajax({
 	  method: "POST",
 	  url: "system",
-	  data: {  }
+	  data: { workMod: $("#workMod").val(),  chandModeOff: $("#chandModeOff").val(), chandModeHumTimeEnd: $("#chandModeHumTimeEnd").val(), timeMod: $("#timeMod").val(), NTP_addr: $("#NTP_addr").val(), POSIX_time: getTimeField()}
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -185,4 +185,31 @@ function getSystemSettings() {
 
 		}
 	});
+}
+function getTimeField() {
+	var date = new Date(
+	Number($('#date').val().substr(0,4)),
+	Number($('#date').val().substr(5,2)),
+	Number($('#date').val().substr(8,2)),
+	Number($('#time').val().substr(0,2)),
+	Number($('#time').val().substr(3,2)),
+	Number($('#time').val().substr(6,2))
+	);
+	return date.getTime();
+}
+function fillTimeField(posix_time){
+	var date = new Date(posix_time);
+	$('#date').val(
+		date.getFullYear().toString() + "-" +
+		padLeft((date.getMonth()+1),2) + "-" + 
+		padLeft(date.getDate(),2)
+	);
+	$('#time').val(
+		padLeft(date.getHours().toString(),2) + ":" +
+		padLeft(date.getMinutes().toString(),2) + ":" +
+		padLeft(date.getSeconds().toString(),2)
+	)
+}
+function padLeft(nr, n, str){
+    return Array(n-String(nr).length+1).join(str||'0')+nr;
 }

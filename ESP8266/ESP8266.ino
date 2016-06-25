@@ -54,7 +54,7 @@ DallasTemperature DS18B20(&oneWire);
 //Measures
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "nokia";
+const char* ssid = "Ether Eden";
 const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
@@ -267,7 +267,22 @@ void ethernetControl(){
 	server.send(200, "text/json", "data send correctly!");
 }
 void systemControl(){
-	DBG_OUTPUT_PORT.println("systemControl: " + String());
+	//const char* POSIX_wsk = server.arg("POSIX_time").c_str();
+	char * pKoniec;
+	System_s.workMod = String(server.arg("workMod")).toInt();
+	System_s.chandModeOff = String(server.arg("chandModeOff")).toInt();
+	System_s.chandModeHumTimeEnd = String(server.arg("chandModeHumTimeEnd")).toInt();
+	System_s.timeMod = String(server.arg("timeMod")).toInt();
+	System_s.NTP_addr = String(server.arg("NTP_addr"));
+	System_s.POSIX_time = strtoul( server.arg("POSIX_time").c_str(), & pKoniec, 10 );//atol(server.arg("POSIX_time").c_str());
+	DBG_OUTPUT_PORT.println(
+		"workMod: " + String((int)System_s.workMod) + 
+		" chandModeOff: " + String((int)System_s.chandModeOff) +
+		" chandModeHumTimeEnd: " + String((int)System_s.chandModeHumTimeEnd) +
+		" timeMod: " + String((int)System_s.timeMod) +
+		" NTP_addr: " + System_s.NTP_addr 
+		+ " POSIX_time: " + String(System_s.POSIX_time)
+		);
 	server.send(200, "text/json", "data send correctly!");
 }
 
@@ -570,9 +585,13 @@ void setup(void) {
 		String json = "{";
 		json += "\"workMod\":" + String((int)System_s.workMod);
 		json += ",\"chandModeOff\":" + String((int)System_s.chandModeOff);
-		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeOff);
-		json += ",\"POSIX_time\":" + String((int)System_s.chandModeOff);
-		json += ",\"NTP_addr\":" + System_s.NTP_addr;
+		json += ",\"timeMod\":" + String((int)System_s.timeMod);
+		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeHumTimeEnd);
+		//json += ",\"POSIX_time\":" + String(System_s.POSIX_time);
+		sprintf(System_s.POSIX_time_string,"%lu",System_s.POSIX_time);
+		json += ",\"POSIX_time\":" + String(System_s.POSIX_time_string);
+
+		json += ",\"NTP_addr\":\"" + System_s.NTP_addr + "\"";
 		json += "}";
 		server.send(200, "text/json", json);
 		json = String();
