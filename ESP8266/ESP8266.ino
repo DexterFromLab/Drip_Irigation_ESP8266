@@ -54,7 +54,7 @@ DallasTemperature DS18B20(&oneWire);
 //Measures
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "Ether Eden";
+const char* ssid = "nokia";
 const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
@@ -188,6 +188,7 @@ void timSterControl(){
 	times.tim3 = String(server.arg("Tim3Stat")).toInt();
 	DBG_OUTPUT_PORT.println("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
 	server.send(200, "text/json", "data send correctly!");
+	saveTimesConfig();
 }
 
 void temperatureControl(){
@@ -399,6 +400,10 @@ void setup(void) {
   DBG_OUTPUT_PORT.print("\n");
   DBG_OUTPUT_PORT.setDebugOutput(true);
   SPIFFS.begin();
+  
+  //wczytanie ustawień z plikow
+  readTimesConfig();
+  
   {
     Dir dir = SPIFFS.openDir("/");
     while (dir.next()) {
@@ -717,4 +722,66 @@ void printDigits(int digits)
   Serial.print(digits);
 }
 
-
+void saveTimesConfig(void){
+	File f = SPIFFS.open("/timesConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String(times.tim1Max) + ";");
+		f.print(String(times.tim1Min) + ";");
+		f.print(String((int)times.tim1) + ";");
+		f.print(String(times.tim2Max) + ";");
+		f.print(String(times.tim2Min) + ";");
+		f.print(String((int)times.tim2) + ";");
+		f.print(String(times.tim3Max) + ";");
+		f.print(String(times.tim3Min) + ";");
+		f.print(String((int)times.tim3) + ";");
+		f.println();
+	}
+	f.close();
+}
+void readTimesConfig(void){
+	File f = SPIFFS.open("/timesConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		times.tim1Max = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		times.tim1Min = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim1 = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim2Max = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim2Min = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim2 = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim3Max = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim3Min = atoi(schowek);
+		Serial.println(schowek);
+		schowek = strtok( NULL , korektor );
+		times.tim3 = atoi(schowek);
+		Serial.println(schowek);
+	}
+	f.close();
+}
