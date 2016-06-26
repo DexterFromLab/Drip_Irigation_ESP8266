@@ -71,20 +71,19 @@ typedef struct ethernet{
 	char dns3;
 	char dhcpOn;
 }ethernet_struct;
-/*
-union data{
-	unsigned long long POSIX_time;
-	unsigned long POSIX_time_podzielony[2];
-};
-*/
+
 typedef struct system{
 	char workMod; //0-automatyczny, 1-zdefiniowany, 2-reczny
 	char chandModeOff; //0-wylaczony, 1-po czasie, 2- wilg-max
 	char chandModeHumTimeEnd; // jesli chandModeOff 1 to max 3600 [%] a jesli 2 to 100 [%]
 	char timeMod; //0-czas z serwera 1- ręczny
 	String NTP_addr;
-	//union data POSIX_time_u;//Czas w formacie posix sekundy ktore minely od 1 stycznia 1970 roku
-	unsigned long POSIX_time;
-	char POSIX_time_string[30];
+	unsigned int year;
+	char month;
+	char day;
+	char hour;
+	char minute;
+	char second;
 }system_struct;
+
 #endif

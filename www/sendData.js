@@ -117,10 +117,23 @@ function sendInter(){
 	});
 }
 function sendSys(){
+	var date = getTimeField();
 	$.ajax({
 	  method: "POST",
 	  url: "system",
-	  data: { workMod: $("#workMod").val(),  chandModeOff: $("#chandModeOff").val(), chandModeHumTimeEnd: $("#chandModeHumTimeEnd").val(), timeMod: $("#timeMod").val(), NTP_addr: $("#NTP_addr").val(), POSIX_time: getTimeField()}
+	  data: { 
+			workMod: $("#workMod").val(),
+			chandModeOff: $("#chandModeOff").val(), 
+			chandModeHumTimeEnd: $("#chandModeHumTimeEnd").val(), 
+			timeMod: $("#timeMod").val(), 
+			NTP_addr: $("#NTP_addr").val(),
+			year: date[0],
+			month: date[1],
+			day: date[2],
+			hour: date[3],
+			minute: date[4],
+			second: date[5]
+			}
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -132,7 +145,14 @@ function getTemperatureSettings() {
 		datatype: "html",
 		url: "/temperature",
 		success: function(response) {
-
+			$("#tempMax").val(response.tempMax);
+			$("#tempMaxOn").val(response.tempMaxOn);
+			$("#tempMin").val(response.tempMin);
+			$("#tempMinOn").val(response.tempMinOn);
+			$("#DeltaT").val(response.DeltaT);
+			$("#DeltaTim").val(response.DeltaTim);
+			$("#DeltaRelayTime").val(response.DeltaRelayTime);
+			$("#DeltaTOn").val(response.DeltaTOn);
 		}
 	});
 }
@@ -142,7 +162,15 @@ function getTimSterSettings() {
 		datatype: "html",
 		url: "/timSter",
 		success: function(response) {
-
+			$("#slider-range1").slider('values',0,response.tim1Min)
+			$("#slider-range1").slider('values',1,response.tim1Max)
+			$("#time1State").val(response.tim1);
+			$("#slider-range2").slider('values',1,response.tim2Min)
+			$("#slider-range2").slider('values',0,response.tim2Max)
+			$("#time2State").val(response.tim2);
+			$("#slider-range3").slider('values',1,response.tim3Min)
+			$("#slider-range3").slider('values',0,response.tim3Max)
+			$("#time3State").val(response.tim3);
 		}
 	});
 }
@@ -152,7 +180,14 @@ function getAirhumSettings() {
 		datatype: "html",
 		url: "/airhum",
 		success: function(response) {
-
+			$("#wilgPowMax").val(response.wilgPowMax);
+			$("#wilgPowMaxOn").val(response.wilgPowMaxOn);
+			$("#wilgPowMin").val(response.wilgPowMin);
+			$("#wilgPowMinOn").val(response.wilgPowMinOn);
+			$("#DeltaWilgPow").val(response.DeltaWilgPow);
+			$("#DeltaWilgPowTim").val(response.DeltaWilgPowTim);
+			$("#DeltaWilgPowRelayTim").val(response.DeltaWilgPowRelayTim);
+			$("#DeltaWilgPowOn").val(response.DeltaWilgPowOn);
 		}
 	});
 }
@@ -162,7 +197,14 @@ function getHumSettings() {
 		datatype: "html",
 		url: "/hum",
 		success: function(response) {
-
+			$("#wilgMax").val(response.wilgMax);
+			$("#wilgMaxOn").val(response.wilgMaxOn);
+			$("#wilgMin").val(response.wilgMin);
+			$("#wilgMinOn").val(response.wilgMinOn);
+			$("#DeltaWilg").val(response.DeltaWilg);
+			$("#DeltaWilgTim").val(response.DeltaWilgTim);
+			$("#DeltaWilgRelayTim").val(response.DeltaWilgRelayTim);
+			$("#DeltaWilgOn").val(response.DeltaWilgOn);
 		}
 	});
 }
@@ -172,7 +214,39 @@ function getEthernetSettings() {
 		datatype: "html",
 		url: "/ethernet",
 		success: function(response) {
-
+			$("#ip").val(
+				response.ip0.toString() + "."+
+				response.ip1.toString() + "."+
+				response.ip2.toString() + "."+
+				response.ip3.toString()
+				);
+			$("#m").val(
+				response.m0.toString() + "."+
+				response.m1.toString() + "."+
+				response.m2.toString() + "."+
+				response.m3.toString()
+			);
+			$("#mac").val(
+				response.mac0.toString() + ":"+
+				response.mac1.toString() + ":"+
+				response.mac2.toString() + ":"+
+				response.mac3.toString() + ":"+
+				response.mac4.toString() + ":"+
+				response.mac5.toString()
+			);
+			$("#gat").val(
+				response.gat0.toString() + "."+
+				response.gat1.toString() + "."+
+				response.gat2.toString() + "."+
+				response.gat3.toString()
+			);
+			$("#dns").val(
+				response.dns0.toString() + "."+
+				response.dns1.toString() + "."+
+				response.dns2.toString() + "."+
+				response.dns3.toString()
+			);
+			$("#dhcpOn").val(response.dhcpOn);
 		}
 	});
 }
@@ -182,32 +256,38 @@ function getSystemSettings() {
 		datatype: "html",
 		url: "/system",
 		success: function(response) {
-
+			$("#workMod").val(response.workMod);
+			$("#chandModeOff").val(response.chandModeOff);
+			$("#chandModeHumTimeEnd").val(response.chandModeHumTimeEnd);
+			$("#timeMod").val(response.timeMod);
+			$("#NTP_addr").val(response.NTP_addr);
+			var date = new Array (response.year,response.month,response.day,response.hour,response.minute,response.second)
+			fillTimeField(date);
 		}
 	});
 }
 function getTimeField() {
-	var date = new Date(
-	Number($('#date').val().substr(0,4)),
-	Number($('#date').val().substr(5,2)),
-	Number($('#date').val().substr(8,2)),
-	Number($('#time').val().substr(0,2)),
-	Number($('#time').val().substr(3,2)),
-	Number($('#time').val().substr(6,2))
-	);
-	return date.getTime();
+	var date = new Array(
+		Number($('#date').val().substr(0,4)),
+		Number($('#date').val().substr(5,2)),
+		Number($('#date').val().substr(8,2)),
+		Number($('#time').val().substr(0,2)),
+		Number($('#time').val().substr(3,2)),
+		Number($('#time').val().substr(6,2))
+	)
+	return date
 }
-function fillTimeField(posix_time){
-	var date = new Date(posix_time);
+function fillTimeField(date){
+
 	$('#date').val(
-		date.getFullYear().toString() + "-" +
-		padLeft((date.getMonth()+1),2) + "-" + 
-		padLeft(date.getDate(),2)
+		date[0].toString() + "-" +
+		padLeft((date[1]),2) + "-" + 
+		padLeft(date[2],2)
 	);
 	$('#time').val(
-		padLeft(date.getHours().toString(),2) + ":" +
-		padLeft(date.getMinutes().toString(),2) + ":" +
-		padLeft(date.getSeconds().toString(),2)
+		padLeft(date[3],2) + ":" +
+		padLeft(date[4],2) + ":" +
+		padLeft(date[5],2)
 	)
 }
 function padLeft(nr, n, str){

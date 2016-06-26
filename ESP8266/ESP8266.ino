@@ -215,10 +215,10 @@ void airHumControl(){
 	server.send(200, "text/json", "data send correctly!");
 }
 void HumControl(){
-	hum.wilgMax = String(server.arg("WilgMax")).toInt();
-	hum.wilgMaxOn = String(server.arg("WilgMaxOn")).toInt();
-	hum.wilgMin = String(server.arg("WilgMin")).toInt();
-	hum.wilgMinOn = String(server.arg("WilgMinOn")).toInt();
+	hum.wilgMax = String(server.arg("wilgMax")).toInt();
+	hum.wilgMaxOn = String(server.arg("wilgMaxOn")).toInt();
+	hum.wilgMin = String(server.arg("wilgMin")).toInt();
+	hum.wilgMinOn = String(server.arg("wilgMinOn")).toInt();
 	hum.DeltaWilg = String(server.arg("DeltaWilg")).toInt();
 	hum.DeltaWilgTim = String(server.arg("DeltaWilgTim")).toInt();
 	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
@@ -274,14 +274,24 @@ void systemControl(){
 	System_s.chandModeHumTimeEnd = String(server.arg("chandModeHumTimeEnd")).toInt();
 	System_s.timeMod = String(server.arg("timeMod")).toInt();
 	System_s.NTP_addr = String(server.arg("NTP_addr"));
-	System_s.POSIX_time = strtoul( server.arg("POSIX_time").c_str(), & pKoniec, 10 );//atol(server.arg("POSIX_time").c_str());
+	System_s.year = String(server.arg("year")).toInt();
+	System_s.month = String(server.arg("month")).toInt();
+	System_s.day = String(server.arg("day")).toInt();
+	System_s.hour = String(server.arg("hour")).toInt();
+	System_s.minute = String(server.arg("minute")).toInt();
+	System_s.second = String(server.arg("second")).toInt();
 	DBG_OUTPUT_PORT.println(
 		"workMod: " + String((int)System_s.workMod) + 
 		" chandModeOff: " + String((int)System_s.chandModeOff) +
 		" chandModeHumTimeEnd: " + String((int)System_s.chandModeHumTimeEnd) +
 		" timeMod: " + String((int)System_s.timeMod) +
-		" NTP_addr: " + System_s.NTP_addr 
-		+ " POSIX_time: " + String(System_s.POSIX_time)
+		" NTP_addr: " + System_s.NTP_addr +
+		" year: " + String((int)System_s.year) +
+		" month: " + String((int)System_s.month) +
+		" day: " + String((int)System_s.day) +
+		" hour: " + String((int)System_s.hour) +
+		" minute: " + String((int)System_s.minute) +
+		" second: " + String((int)System_s.second)
 		);
 	server.send(200, "text/json", "data send correctly!");
 }
@@ -575,7 +585,7 @@ void setup(void) {
 		json += ",\"dns1\":" + String((int)ethernet.dns1);
 		json += ",\"dns2\":" + String((int)ethernet.dns2);
 		json += ",\"dns3\":" + String((int)ethernet.dns3);
-		json += ",\"dhcpOn\":" + String(ethernet.dhcpOn);
+		json += ",\"dhcpOn\":" + String((int)ethernet.dhcpOn);
 		json += "}";
 		server.send(200, "text/json", json);
 		json = String();
@@ -587,9 +597,13 @@ void setup(void) {
 		json += ",\"chandModeOff\":" + String((int)System_s.chandModeOff);
 		json += ",\"timeMod\":" + String((int)System_s.timeMod);
 		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeHumTimeEnd);
-		//json += ",\"POSIX_time\":" + String(System_s.POSIX_time);
-		sprintf(System_s.POSIX_time_string,"%lu",System_s.POSIX_time);
-		json += ",\"POSIX_time\":" + String(System_s.POSIX_time_string);
+
+		json += ",\"year\":" + String((int)System_s.year);
+		json += ",\"month\":" + String((int)System_s.month);
+		json += ",\"day\":" + String((int)System_s.day);
+		json += ",\"hour\":" + String((int)System_s.hour);
+		json += ",\"minute\":" + String((int)System_s.minute);
+		json += ",\"second\":" + String((int)System_s.second);
 
 		json += ",\"NTP_addr\":\"" + System_s.NTP_addr + "\"";
 		json += "}";
