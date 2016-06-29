@@ -40,7 +40,7 @@
 #define ONE_WIRE_BUS 2  // DS18B20 pin
 
 #define wielokosc_bufora_pomiarow 100   //Ilość pomiarów do wykresu
-#define POMIARY_USREDNIANE	5
+#define POMIARY_USREDNIANE	2
 //Control structures
 times_struct times;
 temperature_struct temperature;
@@ -66,7 +66,7 @@ unsigned char tmp_cnt;
 unsigned char buff_full_cnt;
 unsigned int temps_cnt;
 
-unsigned int measure_intervall = 173;
+unsigned int measure_intervall = 10;//173
 
 // NTP Servers:
 static const char ntpServerName[] = "us.pool.ntp.org";
@@ -202,6 +202,7 @@ void temperatureControl(){
 	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
 	DBG_OUTPUT_PORT.println("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
 	server.send(200, "text/json", "data send correctly!");
+	saveTemperatureConfig();
 }
 void airHumControl(){
 	airHum.wilgPowMax = String(server.arg("wilgPowMax")).toInt();
@@ -214,6 +215,7 @@ void airHumControl(){
 	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
 	DBG_OUTPUT_PORT.println("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
 	server.send(200, "text/json", "data send correctly!");
+	saveAirhumConfig();
 }
 void HumControl(){
 	hum.wilgMax = String(server.arg("wilgMax")).toInt();
@@ -226,6 +228,7 @@ void HumControl(){
 	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
 	DBG_OUTPUT_PORT.println("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
 	server.send(200, "text/json", "data send correctly!");
+	saveHumConfig();
 }
 void ethernetControl(){
 	ethernet.ip0 = String(server.arg("ip0")).toInt();
@@ -266,6 +269,7 @@ void ethernetControl(){
 	" dhcpOn: " + String((int)ethernet.dhcpOn) 
 	);
 	server.send(200, "text/json", "data send correctly!");
+	saveEthernetConfig();
 }
 void systemControl(){
 	//const char* POSIX_wsk = server.arg("POSIX_time").c_str();
@@ -295,6 +299,7 @@ void systemControl(){
 		" second: " + String((int)System_s.second)
 		);
 	server.send(200, "text/json", "data send correctly!");
+	saveSystemConfig();
 }
 
 bool handleFileRead(String path) {
@@ -403,6 +408,12 @@ void setup(void) {
   
   //wczytanie ustawień z plikow
   readTimesConfig();
+  readTemperaturesConfig();
+  readAirhumConfig();
+  readHumConfig();
+  readEthernetConfig();
+  readSystemConfig();
+  
   
   {
     Dir dir = SPIFFS.openDir("/");
@@ -741,6 +752,7 @@ void saveTimesConfig(void){
 	}
 	f.close();
 }
+
 void readTimesConfig(void){
 	File f = SPIFFS.open("/timesConf.txt", "r+");
 	char charBuf[500];
@@ -782,6 +794,360 @@ void readTimesConfig(void){
 		schowek = strtok( NULL , korektor );
 		times.tim3 = atoi(schowek);
 		Serial.println(schowek);
+	}
+	f.close();
+}
+void saveTemperatureConfig(void){
+	File f = SPIFFS.open("/tempConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String((int)temperature.tempMax) + ";");
+		f.print(String((int)temperature.tempMaxOn) + ";");
+		f.print(String((int)temperature.tempMin) + ";");
+		f.print(String((int)temperature.tempMinOn) + ";");
+		f.print(String((int)temperature.DeltaT) + ";");
+		f.print(String(temperature.DeltaTim) + ";");
+		f.print(String(temperature.DeltaRelayTime) + ";");
+		f.print(String((int)temperature.DeltaTOn) + ";");
+		f.println();
+	}
+	f.close();
+}
+void readTemperaturesConfig(void){
+	File f = SPIFFS.open("/tempConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		temperature.tempMax = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.tempMaxOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.tempMin = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.tempMinOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.DeltaT = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.DeltaTim = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.DeltaRelayTime = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		temperature.DeltaTOn = atoi(schowek);
+	}
+	f.close();
+}
+
+void saveAirhumConfig(void){
+	File f = SPIFFS.open("/airhumConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String((int)airHum.wilgPowMax) + ";");
+		f.print(String((int)airHum.wilgPowMaxOn) + ";");
+		f.print(String((int)airHum.wilgPowMin) + ";");
+		f.print(String((int)airHum.wilgPowMinOn) + ";");
+		f.print(String((int)airHum.DeltaWilgPow) + ";");
+		f.print(String(airHum.DeltaWilgPowTim) + ";");
+		f.print(String(airHum.DeltaWilgPowRelayTim) + ";");
+		f.print(String((int)airHum.DeltaWilgPowOn) + ";");
+		f.println();
+	}
+	f.close();
+}
+
+void readAirhumConfig(void){
+	File f = SPIFFS.open("/airhumConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		airHum.wilgPowMax = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.wilgPowMaxOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.wilgPowMin = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.wilgPowMinOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.DeltaWilgPow = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.DeltaWilgPowTim = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.DeltaWilgPowRelayTim = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		airHum.DeltaWilgPowOn = atoi(schowek);
+	}
+	f.close();
+}
+
+void saveHumConfig(void){
+	File f = SPIFFS.open("/humConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String((int)hum.wilgMax) + ";");
+		f.print(String((int)hum.wilgMaxOn) + ";");
+		f.print(String((int)hum.wilgMin) + ";");
+		f.print(String((int)hum.wilgMinOn) + ";");
+		f.print(String((int)hum.DeltaWilg) + ";");
+		f.print(String(hum.DeltaWilgTim) + ";");
+		f.print(String(hum.DeltaWilgRelayTim) + ";");
+		f.print(String((int)hum.DeltaWilgOn) + ";");
+		f.println();
+	}
+	f.close();
+}
+
+void readHumConfig(void){
+	File f = SPIFFS.open("/humConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		hum.wilgMax = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.wilgMaxOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.wilgMin = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.wilgMinOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.DeltaWilg = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.DeltaWilgTim = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.DeltaWilgRelayTim = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		hum.DeltaWilgOn = atoi(schowek);
+	}
+	f.close();
+}
+
+void saveEthernetConfig(void){
+	File f = SPIFFS.open("/ethernetConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String((int)ethernet.ip0) + ";");
+		f.print(String((int)ethernet.ip1) + ";");
+		f.print(String((int)ethernet.ip2) + ";");
+		f.print(String((int)ethernet.ip3) + ";");
+		
+		f.print(String((int)ethernet.m0) + ";");
+		f.print(String((int)ethernet.m1) + ";");
+		f.print(String((int)ethernet.m2) + ";");
+		f.print(String((int)ethernet.m3) + ";");
+		
+		f.print(String((int)ethernet.gat0) + ";");
+		f.print(String((int)ethernet.gat1) + ";");
+		f.print(String((int)ethernet.gat2) + ";");
+		f.print(String((int)ethernet.gat3) + ";");
+		
+		f.print(String((int)ethernet.dns0) + ";");
+		f.print(String((int)ethernet.dns1) + ";");
+		f.print(String((int)ethernet.dns2) + ";");
+		f.print(String((int)ethernet.dns3) + ";");
+		
+		f.print(String((int)ethernet.dhcpOn) + ";");
+
+		f.println();
+	}
+	f.close();
+}
+
+void readEthernetConfig(void){
+	File f = SPIFFS.open("/ethernetConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		ethernet.ip0 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.ip1 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.ip2 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.ip3 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.m0 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.m1 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.m2 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.m3 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.gat0 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.gat1 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.gat2 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.gat3 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns0 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns1 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns2 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns3 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dhcpOn = atoi(schowek);
+
+	}
+	f.close();
+}
+
+void saveSystemConfig(void){
+	File f = SPIFFS.open("/systemConf.txt", "w+");
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		//ustawienia czasow
+		f.print(String((int)System_s.workMod) + ";");
+		f.print(String((int)System_s.chandModeOff) + ";");
+		f.print(String((int)System_s.chandModeHumTimeEnd) + ";");
+		f.print(String((int)System_s.timeMod) + ";");
+		f.print(String(System_s.NTP_addr) + ";");
+		f.print(String(System_s.year) + ";");
+		f.print(String((int)System_s.month) + ";");
+		f.print(String((int)System_s.day) + ";");
+		f.print(String((int)System_s.hour) + ";");
+		f.print(String((int)System_s.minute) + ";");
+		f.print(String((int)System_s.second) + ";");
+		
+		f.println();
+	}
+	f.close();
+}
+
+void readSystemConfig(void){
+	File f = SPIFFS.open("/systemConf.txt", "r+");
+	char charBuf[500];
+	char korektor[] = ";";
+	char * schowek;
+	String settings_str;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		settings_str = f.readStringUntil('\n');
+		Serial.println(settings_str);
+		settings_str.toCharArray(charBuf, 500);
+		Serial.println(charBuf);
+		schowek = strtok( charBuf , korektor );
+		Serial.println(schowek);
+		System_s.workMod = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.chandModeOff = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.chandModeHumTimeEnd = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.timeMod = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.NTP_addr = String(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.year = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.month = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.day = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.hour = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.minute = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.second = atoi(schowek);
+
 	}
 	f.close();
 }
