@@ -23,10 +23,10 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Wilg max (%) [CHGmax]</label>
-					<input class="form-control">
+					<input id="wilgMax" class="form-control">
 					<p class="help-block">Maksymalna wilgotność gleby po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
-				<select class="form-control">
+				<select id="wilgMaxOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -34,11 +34,11 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Temp min (%) [CHGmin]</label>
-					<input class="form-control">
+					<input id="wilgMin" class="form-control">
 					<p class="help-block">Minimalna wilgotność gleby po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
 				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="wilgMinOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -63,22 +63,21 @@
 					<label>
 						Wzrost wilgotności gleby (%)
 					</label>
-					<input class="form-control">
+					<input id="DeltaWilg" class="form-control">
 					<label>	
 						W czasie (s)
 					</label>
-					<input class="form-control">
+					<input  id="DeltaWilgTim" class="form-control">
 					<p class="help-block">Zmiana wilgotności gleby o określoną wartość w określonym czasie po którym nastąpi uruchomienie warunku</p>
 					<label>Wyłączenie warunku po czasie (Czas w sekundach, 0-ręczne wyłączenie warunku)</label>
-					<input class="form-control">
+					<input id="DeltaWilgRelayTim" class="form-control">
 				</div>
-				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="DeltaWilgOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
 				<div class="buttblock">
-					<input class="form-control" type="button" value="Zapisz">
+					<input onclick="sendWilgGl()" class="form-control" type="button" value="Zapisz">
 				</div>
 			</div>
 			
@@ -90,6 +89,9 @@
 		table.fraction { text-align: center; 
         margin-top:0.5em; margin-bottom:0.5em; line-height: 2em; }
 	</style>
+	<script>
+		getHumSettings();
+	</script>
 	<!-- /.row -->
 
 </div>

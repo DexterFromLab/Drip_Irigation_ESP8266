@@ -23,10 +23,10 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Temp max (°C) [CTmax]</label>
-					<input class="form-control">
+					<input id="tempMax" class="form-control">
 					<p class="help-block">Maksymalna temperatura po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
-				<select class="form-control">
+				<select id="tempMaxOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -34,11 +34,11 @@
 			<div class="jumbotron">
 				<div class="form-group">
 					<label>Temp min (°C) [CTmin]</label>
-					<input class="form-control">
+					<input id="tempMin" class="form-control">
 					<p class="help-block">Minimalna temperatura po przekroczeniu której<br>uruchomiony zostanie warunek załączenia przekaźnika</p>
 				</div>
 				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="tempMinOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
@@ -63,22 +63,22 @@
 					<label>
 						Wzrost temperatury (°C)
 					</label>
-					<input class="form-control">
+					<input id="DeltaT" class="form-control">
 					<label>	
 						W czasie (s)
 					</label>
-					<input class="form-control">
+					<input id="DeltaTim" class="form-control">
 					<p class="help-block">Zmiana temperatury o określoną wartość w określonym czasie po którym nastąpi uruchomienie warunku</p>
 					<label>Wyłączenie warunku po czasie (Czas w sekundach, 0-ręczne wyłączenie warunku)</label>
-					<input class="form-control">
+					<input id="DeltaRelayTime" class="form-control">
 				</div>
 				<div id="slider-range1"></div>
-				<select class="form-control">
+				<select id="DeltaTOn" class="form-control">
 					<option value="0">Wyłączone</option>
 					<option value="1">Włączone</option>
 				</select>
 				<div class="buttblock">
-					<input class="form-control" type="button" value="Zapisz">
+					<input class="form-control" type="button" value="Zapisz" onclick="sendTemp()">
 				</div>
 			</div>
 			
@@ -90,6 +90,9 @@
 		table.fraction { text-align: center; 
         margin-top:0.5em; margin-bottom:0.5em; line-height: 2em; }
 	</style>
+	<script>
+		getTemperatureSettings();
+	</script>
 	<!-- /.row -->
 
 </div>

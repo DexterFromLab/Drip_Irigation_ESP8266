@@ -11,15 +11,7 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Lesser General Public License for more details.
-  Yo
-  
-  
-  
-  
-  
-  
-  
-  u should have received a copy of the GNU Lesser General Public
+  You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
@@ -41,6 +33,7 @@
 #include <TimeAlarms.h>
 #include <WiFiUdp.h>
 #include "./struct-filler.h"
+#include "./ajax-requests.h"
 
 #define DBG_OUTPUT_PORT Serial
 
@@ -48,11 +41,17 @@
 
 #define wielokosc_bufora_pomiarow 100   //Ilość pomiarów do wykresu
 #define POMIARY_USREDNIANE	5
+//Control structures
+times_struct times;
+temperature_struct temperature;
+airHum_struct airHum;
+hum_struct hum;
+ethernet_struct ethernet;
+system_struct System_s;
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature DS18B20(&oneWire);
 //Measures
-
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
 const char* ssid = "Ether Eden";
@@ -174,8 +173,126 @@ Przykładowe zapytanie ajaxa z danymi
 			alert( "Data Saved: " + msg );
 		  });
 */
-void handleControl(){
-	DBG_OUTPUT_PORT.println("handleControl: " + String(server.args()));
+
+void timSterControl(){
+	DBG_OUTPUT_PORT.println("timSterControl: " + String(server.args()));
+	
+	times.tim1Max = String(server.arg("Tim1Max")).toInt();
+	times.tim1Min = String(server.arg("Tim1Min")).toInt();
+	times.tim1 = String(server.arg("Tim1Stat")).toInt();
+	times.tim2Max = String(server.arg("Tim2Min")).toInt();
+	times.tim2Min = String(server.arg("Tim2Max")).toInt();
+	times.tim2 = String(server.arg("Tim2Stat")).toInt();
+	times.tim3Max = String(server.arg("Tim3Min")).toInt();
+	times.tim3Min = String(server.arg("Tim3Max")).toInt();
+	times.tim3 = String(server.arg("Tim3Stat")).toInt();
+	DBG_OUTPUT_PORT.println("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
+	server.send(200, "text/json", "data send correctly!");
+}
+
+void temperatureControl(){
+	temperature.tempMax = String(server.arg("tempMax")).toInt();
+	temperature.tempMaxOn = String(server.arg("tempMaxOn")).toInt();
+	temperature.tempMin = String(server.arg("tempMin")).toInt();
+	temperature.tempMinOn = String(server.arg("tempMinOn")).toInt();
+	temperature.DeltaT = String(server.arg("DeltaT")).toInt();
+	temperature.DeltaTim = String(server.arg("DeltaTim")).toInt();
+	temperature.DeltaRelayTime = String(server.arg("DeltaRelayTime")).toInt();
+	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
+	DBG_OUTPUT_PORT.println("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
+	server.send(200, "text/json", "data send correctly!");
+}
+void airHumControl(){
+	airHum.wilgPowMax = String(server.arg("wilgPowMax")).toInt();
+	airHum.wilgPowMaxOn = String(server.arg("wilgPowMaxOn")).toInt();
+	airHum.wilgPowMin = String(server.arg("wilgPowMin")).toInt();
+	airHum.wilgPowMinOn = String(server.arg("wilgPowMinOn")).toInt();
+	airHum.DeltaWilgPow = String(server.arg("DeltaWilgPow")).toInt();
+	airHum.DeltaWilgPowTim = String(server.arg("DeltaWilgPowTim")).toInt();
+	airHum.DeltaWilgPowRelayTim = String(server.arg("DeltaWilgPowRelayTim")).toInt();
+	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
+	DBG_OUTPUT_PORT.println("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
+	server.send(200, "text/json", "data send correctly!");
+}
+void HumControl(){
+	hum.wilgMax = String(server.arg("wilgMax")).toInt();
+	hum.wilgMaxOn = String(server.arg("wilgMaxOn")).toInt();
+	hum.wilgMin = String(server.arg("wilgMin")).toInt();
+	hum.wilgMinOn = String(server.arg("wilgMinOn")).toInt();
+	hum.DeltaWilg = String(server.arg("DeltaWilg")).toInt();
+	hum.DeltaWilgTim = String(server.arg("DeltaWilgTim")).toInt();
+	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
+	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
+	DBG_OUTPUT_PORT.println("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
+	server.send(200, "text/json", "data send correctly!");
+}
+void ethernetControl(){
+	ethernet.ip0 = String(server.arg("ip0")).toInt();
+	ethernet.ip1 = String(server.arg("ip1")).toInt();
+	ethernet.ip2 = String(server.arg("ip2")).toInt();
+	ethernet.ip3 = String(server.arg("ip3")).toInt();
+	ethernet.ip3 = String(server.arg("ip3")).toInt();
+	ethernet.m0 = String(server.arg("m0")).toInt();
+	ethernet.m1 = String(server.arg("m1")).toInt();
+	ethernet.m2 = String(server.arg("m2")).toInt();
+	ethernet.m3 = String(server.arg("m3")).toInt();
+	ethernet.gat0 = String(server.arg("gat0")).toInt();
+	ethernet.gat1 = String(server.arg("gat1")).toInt();
+	ethernet.gat2 = String(server.arg("gat2")).toInt();
+	ethernet.gat3 = String(server.arg("gat3")).toInt();
+	ethernet.dns0 = String(server.arg("dns0")).toInt();
+	ethernet.dns1 = String(server.arg("dns1")).toInt();
+	ethernet.dns2 = String(server.arg("dns2")).toInt();
+	ethernet.dns3 = String(server.arg("dns3")).toInt();
+	ethernet.dhcpOn = String(server.arg("dhcpOn")).toInt();
+	DBG_OUTPUT_PORT.println(
+	"ip0: " + String((int)ethernet.ip0) + 
+	" ip1: " + String((int)ethernet.ip1) +
+	" ip2: " + String((int)ethernet.ip2) +
+	" ip3: " + String((int)ethernet.ip3) +
+	" m0: " + String((int)ethernet.m0) +
+	" m1: " + String((int)ethernet.m1) +
+	" m2: " + String((int)ethernet.m2) +
+	" m3: " + String((int)ethernet.m3) +
+	" gat0: " + String((int)ethernet.gat0) +
+	" gat1: " + String((int)ethernet.gat1) +
+	" gat2: " + String((int)ethernet.gat2) +
+	" gat3: " + String((int)ethernet.gat3) +
+	" dns0: " + String((int)ethernet.dns0) +
+	" dns1: " + String((int)ethernet.dns1) +
+	" dns2: " + String((int)ethernet.dns2) +
+	" dns3: " + String((int)ethernet.dns3) +
+	" dhcpOn: " + String((int)ethernet.dhcpOn) 
+	);
+	server.send(200, "text/json", "data send correctly!");
+}
+void systemControl(){
+	//const char* POSIX_wsk = server.arg("POSIX_time").c_str();
+	char * pKoniec;
+	System_s.workMod = String(server.arg("workMod")).toInt();
+	System_s.chandModeOff = String(server.arg("chandModeOff")).toInt();
+	System_s.chandModeHumTimeEnd = String(server.arg("chandModeHumTimeEnd")).toInt();
+	System_s.timeMod = String(server.arg("timeMod")).toInt();
+	System_s.NTP_addr = String(server.arg("NTP_addr"));
+	System_s.year = String(server.arg("year")).toInt();
+	System_s.month = String(server.arg("month")).toInt();
+	System_s.day = String(server.arg("day")).toInt();
+	System_s.hour = String(server.arg("hour")).toInt();
+	System_s.minute = String(server.arg("minute")).toInt();
+	System_s.second = String(server.arg("second")).toInt();
+	DBG_OUTPUT_PORT.println(
+		"workMod: " + String((int)System_s.workMod) + 
+		" chandModeOff: " + String((int)System_s.chandModeOff) +
+		" chandModeHumTimeEnd: " + String((int)System_s.chandModeHumTimeEnd) +
+		" timeMod: " + String((int)System_s.timeMod) +
+		" NTP_addr: " + System_s.NTP_addr +
+		" year: " + String((int)System_s.year) +
+		" month: " + String((int)System_s.month) +
+		" day: " + String((int)System_s.day) +
+		" hour: " + String((int)System_s.hour) +
+		" minute: " + String((int)System_s.minute) +
+		" second: " + String((int)System_s.second)
+		);
 	server.send(200, "text/json", "data send correctly!");
 }
 
@@ -326,7 +443,12 @@ void setup(void) {
 
   //SERVER INIT
   //Ustawienia sterowania
-  server.on("/cont", HTTP_POST, handleControl);
+  server.on("/timSter", HTTP_POST, timSterControl);
+  server.on("/temperature", HTTP_POST, temperatureControl);
+  server.on("/airHum", HTTP_POST, airHumControl);
+  server.on("/Hum", HTTP_POST, HumControl);
+  server.on("/ethernet", HTTP_POST, ethernetControl);
+  server.on("/system", HTTP_POST, systemControl);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
@@ -377,6 +499,117 @@ void setup(void) {
     server.send(200, "text/json", json);
     json = String();
   });
+    server.on("/timSter", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"tim1Max\":" + String(times.tim1Max);
+		json += ",\"tim1Min\":" + String(times.tim1Min);
+		json += ",\"tim1\":" + String((int)times.tim1);
+		json += ",\"tim2Max\":" + String(times.tim2Max);
+		json += ",\"tim2Min\":" + String(times.tim2Min);
+		json += ",\"tim2\":" + String((int)times.tim2);
+		json += ",\"tim3Max\":" + String(times.tim3Max);
+		json += ",\"tim3Min\":" + String(times.tim3Min);
+		json += ",\"tim3\":" + String((int)times.tim3);
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});
+	
+	server.on("/temperature", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"tempMax\":" + String((int)temperature.tempMax);
+		json += ",\"tempMaxOn\":" + String((int)temperature.tempMaxOn);
+		json += ",\"tempMin\":" + String((int)temperature.tempMin);
+		json += ",\"tempMinOn\":" + String((int)temperature.tempMinOn);
+		json += ",\"DeltaT\":" + String((int)temperature.DeltaT);
+		json += ",\"DeltaTim\":" + String((int)temperature.DeltaTim);
+		json += ",\"DeltaRelayTime\":" + String((int)temperature.DeltaRelayTime);
+		json += ",\"DeltaTOn\":" + String((int)temperature.DeltaTOn);
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});    
+	server.on("/airhum", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"wilgPowMax\":" + String((int)airHum.wilgPowMax);
+		json += ",\"wilgPowMaxOn\":" + String((int)airHum.wilgPowMaxOn);
+		json += ",\"wilgPowMin\":" + String((int)airHum.wilgPowMin);
+		json += ",\"wilgPowMinOn\":" + String((int)airHum.wilgPowMinOn);
+		json += ",\"DeltaWilgPow\":" + String((int)airHum.DeltaWilgPow);
+		json += ",\"DeltaWilgPowTim\":" + String(airHum.DeltaWilgPowTim);
+		json += ",\"DeltaWilgPowRelayTim\":" + String(airHum.DeltaWilgPowRelayTim);
+		json += ",\"DeltaWilgPowOn\":" + String((int)airHum.DeltaWilgPowOn);
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});    
+	server.on("/hum", HTTP_GET, []() {
+		String json = "{";
+		json += "\"wilgMax\":" + String((int)hum.wilgMax);
+		json += ",\"wilgMaxOn\":" + String((int)hum.wilgMaxOn);
+		json += ",\"wilgMin\":" + String((int)hum.wilgMin);
+		json += ",\"wilgMinOn\":" + String((int)hum.wilgMinOn);
+		json += ",\"DeltaWilg\":" + String((int)hum.DeltaWilg);
+		json += ",\"DeltaWilgTim\":" + String(hum.DeltaWilgTim);
+		json += ",\"DeltaWilgRelayTim\":" + String(hum.DeltaWilgRelayTim);
+		json += ",\"DeltaWilgOn\":" + String((int)hum.DeltaWilgOn);		
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});    
+	server.on("/ethernet", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"ip0\":" + String((int)ethernet.ip0);
+		json += ",\"ip1\":" + String((int)ethernet.ip1);
+		json += ",\"ip2\":" + String((int)ethernet.ip2);
+		json += ",\"ip3\":" + String((int)ethernet.ip3);
+		json += ",\"m0\":" + String((int)ethernet.m0);
+		json += ",\"m1\":" + String((int)ethernet.m1);
+		json += ",\"m2\":" + String((int)ethernet.m2);
+		json += ",\"m3\":" + String((int)ethernet.m3);
+		json += ",\"mac0\":" + String((int)ethernet.mac0);
+		json += ",\"mac1\":" + String((int)ethernet.mac1);
+		json += ",\"mac2\":" + String((int)ethernet.mac2);
+		json += ",\"mac3\":" + String((int)ethernet.mac3);
+		json += ",\"mac4\":" + String((int)ethernet.mac4);
+		json += ",\"mac5\":" + String((int)ethernet.mac5);
+		json += ",\"gat0\":" + String((int)ethernet.gat0);
+		json += ",\"gat1\":" + String((int)ethernet.gat1);
+		json += ",\"gat2\":" + String((int)ethernet.gat2);
+		json += ",\"gat3\":" + String((int)ethernet.gat3);
+		json += ",\"dns0\":" + String((int)ethernet.dns0);
+		json += ",\"dns1\":" + String((int)ethernet.dns1);
+		json += ",\"dns2\":" + String((int)ethernet.dns2);
+		json += ",\"dns3\":" + String((int)ethernet.dns3);
+		json += ",\"dhcpOn\":" + String((int)ethernet.dhcpOn);
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});    
+	server.on("/system", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"workMod\":" + String((int)System_s.workMod);
+		json += ",\"chandModeOff\":" + String((int)System_s.chandModeOff);
+		json += ",\"timeMod\":" + String((int)System_s.timeMod);
+		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeHumTimeEnd);
+
+		json += ",\"year\":" + String((int)System_s.year);
+		json += ",\"month\":" + String((int)System_s.month);
+		json += ",\"day\":" + String((int)System_s.day);
+		json += ",\"hour\":" + String((int)System_s.hour);
+		json += ",\"minute\":" + String((int)System_s.minute);
+		json += ",\"second\":" + String((int)System_s.second);
+
+		json += ",\"NTP_addr\":\"" + System_s.NTP_addr + "\"";
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});
 
   Serial.println("Starting UDP");
   Udp.begin(localPort);
