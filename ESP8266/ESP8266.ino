@@ -41,6 +41,8 @@
 
 #define wielokosc_bufora_pomiarow 100   //Ilość pomiarów do wykresu
 #define POMIARY_USREDNIANE	2
+#define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
+
 //Control structures
 times_struct times;
 temperature_struct temperature;
@@ -54,7 +56,7 @@ DallasTemperature DS18B20(&oneWire);
 //Measures
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "nokia";
+const char* ssid = "Ether Eden";
 const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
@@ -401,6 +403,10 @@ void Repeats(){
   Serial.println("15 second timer");         
 }
 void setup(void) {
+	
+  pinMode(ApClientPin, INPUT);     
+  digitalWrite(ApClientPin, HIGH);  
+  
   DBG_OUTPUT_PORT.begin(115200);
   DBG_OUTPUT_PORT.print("\n");
   DBG_OUTPUT_PORT.setDebugOutput(true);
@@ -413,6 +419,7 @@ void setup(void) {
   readHumConfig();
   readEthernetConfig();
   readSystemConfig();
+  
   
   
   {
@@ -430,32 +437,52 @@ void setup(void) {
   digitalClockDisplay();
 
   //WIFI INIT
-  Serial.print("Configuring access point...");
+
+  listNetworks();
+  DBG_OUTPUT_PORT.println("ApClientPin: " + String(digitalRead(ApClientPin)));
+  if(digitalRead(ApClientPin)){
+	  DBG_OUTPUT_PORT.printf("Connecting to %s\n", ssid);
+	  if (String(WiFi.SSID()) != String(ssid)) {
+		WiFi.begin(ssid, password);
+	  }
+	  while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		
+		if(ethernet.dhcpOn){
+			DBG_OUTPUT_PORT.print("DHCP enabled");
+			IPAddress dns(ethernet.dns0,ethernet.dns1,ethernet.dns2,ethernet.dns3);
+			// the router's gateway address:
+			IPAddress gateway(ethernet.gat0,ethernet.gat1,ethernet.gat2,ethernet.gat3);
+			// the subnet:
+			IPAddress subnet(ethernet.m0,ethernet.m1,ethernet.m2,ethernet.m3);
+
+			//the IP address is dependent on your network
+			IPAddress ip(ethernet.ip0,ethernet.ip1,ethernet.ip2,ethernet.ip3);
+			
+			WiFi.config(ip, dns, gateway, subnet);
+		}
+		
+		DBG_OUTPUT_PORT.print(".");
+
+		DBG_OUTPUT_PORT.println("");
+		DBG_OUTPUT_PORT.print("Connected! IP address: ");
+		DBG_OUTPUT_PORT.println(WiFi.localIP());
+	  }
+	  MDNS.begin(host);
+	  DBG_OUTPUT_PORT.print("Open http://");
+	  DBG_OUTPUT_PORT.print(host);
+	  DBG_OUTPUT_PORT.println(".local/edit to see the file browser");
+  }else{
+	  Serial.print("Configuring access point...");
   // You can remove the password parameter if you want the AP to be open. 
-  //WiFi.softAP("NodeMcu", "12345678");
+	  WiFi.softAP("NodeMcu", "12345678");
  
-  //  IPAddress myIP = WiFi.softAPIP();
-   // Serial.print("AP IP address: ");
-   // Serial.println(myIP);
+      IPAddress myIP = WiFi.softAPIP();
+      Serial.print("AP IP address: ");
+      Serial.println(myIP);
   //
-
-  DBG_OUTPUT_PORT.printf("Connecting to %s\n", ssid);
-  if (String(WiFi.SSID()) != String(ssid)) {
-    WiFi.begin(ssid, password);
+    
   }
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    DBG_OUTPUT_PORT.print(".");
-
-    DBG_OUTPUT_PORT.println("");
-    DBG_OUTPUT_PORT.print("Connected! IP address: ");
-    DBG_OUTPUT_PORT.println(WiFi.localIP());
-  }
-  MDNS.begin(host);
-  DBG_OUTPUT_PORT.print("Open http://");
-  DBG_OUTPUT_PORT.print(host);
-  DBG_OUTPUT_PORT.println(".local/edit to see the file browser");
-
 
   //SERVER INIT
   //Ustawienia sterowania
@@ -602,6 +629,9 @@ void setup(void) {
 		json += ",\"dns2\":" + String((int)ethernet.dns2);
 		json += ",\"dns3\":" + String((int)ethernet.dns3);
 		json += ",\"dhcpOn\":" + String((int)ethernet.dhcpOn);
+		
+		json += listNetworks();
+		
 		json += "}";
 		server.send(200, "text/json", json);
 		json = String();
@@ -1150,4 +1180,65 @@ void readSystemConfig(void){
 
 	}
 	f.close();
+}
+
+String listNetworks() {
+  String wrless;
+  // scan for nearby networks:
+  Serial.println("** Scan Networks **");
+  int numSsid = WiFi.scanNetworks();
+  if (numSsid == -1) {
+    Serial.println("Couldn't get a wifi connection");
+    while (true);
+  }
+
+  // print the list of networks seen:
+  Serial.print("number of available networks:");
+  Serial.println(numSsid);
+  wrless += ",\"numOfWiFi\":\"" + String(numSsid) +"\"";
+  // print the network number and name for each network found:
+  for (int thisNet = 0; thisNet < numSsid; thisNet++) {
+    Serial.print(thisNet);
+    Serial.print(") ");
+    Serial.print(WiFi.SSID(thisNet));
+	wrless += ",\"name"+String(thisNet)+"\":\"" + String(WiFi.SSID(thisNet)) +"\"";
+    Serial.print("\tSignal: ");
+	wrless += ",\"signal"+String(thisNet)+"\":\"" + String(WiFi.RSSI(thisNet))+"\"";
+    Serial.print(WiFi.RSSI(thisNet));
+    Serial.print(" dBm");
+    Serial.print("\tEncryption:");
+	wrless += ",\"encryption" + String(thisNet) +"\":\"" + printEncryptionType(WiFi.encryptionType(thisNet))+"\"";
+  }
+  return wrless;
+}
+
+String printEncryptionType(int thisType) {
+  String passType;
+  // read the encryption type and print out the name:
+  switch (thisType) {
+    case ENC_TYPE_WEP:
+      Serial.println("WEP");
+	  passType = "WEP";
+	  return(passType);
+      break;
+    case ENC_TYPE_TKIP:
+      Serial.println("WPA");
+	  passType = "WPA";
+	  return(passType);
+      break;
+    case ENC_TYPE_CCMP:
+      passType = "WPA2";
+	  return(passType);
+      break;
+    case ENC_TYPE_NONE:
+      Serial.println("None");
+	  passType = "None";
+	  return(passType);
+      break;
+    case ENC_TYPE_AUTO:
+      Serial.println("Auto");
+	  passType = "Auto";
+	  return(passType);
+      break;
+  }
 }
