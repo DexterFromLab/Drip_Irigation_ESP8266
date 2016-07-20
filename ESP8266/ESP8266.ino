@@ -56,8 +56,8 @@ DallasTemperature DS18B20(&oneWire);
 //Measures
 float temps[wielokosc_bufora_pomiarow];
 float temps_avg[POMIARY_USREDNIANE];
-const char* ssid = "Ether Eden";
-const char* password = "pingwin199";
+//const char* ssid = "Ether Eden";
+//const char* password = "pingwin199";
 const char* host = "esp8266fs";
 
 ESP8266WebServer server(80);
@@ -71,7 +71,7 @@ unsigned int temps_cnt;
 unsigned int measure_intervall = 10;//173
 
 // NTP Servers:
-static const char ntpServerName[] = "us.pool.ntp.org";
+//static const char ntpServerName[] = "us.pool.ntp.org";
 
 const int timeZone = 2;     // Central European Time
 
@@ -80,6 +80,8 @@ unsigned int localPort = 8888;  // local port to listen for UDP packets
 
 float temp;               //przechowuję chwilową wartość temp
 int last_meas_time[6];
+
+char NTP_found;
 void measure_task() {
 
   float suma;
@@ -246,11 +248,19 @@ void ethernetControl(){
 	ethernet.gat1 = String(server.arg("gat1")).toInt();
 	ethernet.gat2 = String(server.arg("gat2")).toInt();
 	ethernet.gat3 = String(server.arg("gat3")).toInt();
-	ethernet.dns0 = String(server.arg("dns0")).toInt();
-	ethernet.dns1 = String(server.arg("dns1")).toInt();
-	ethernet.dns2 = String(server.arg("dns2")).toInt();
-	ethernet.dns3 = String(server.arg("dns3")).toInt();
+	ethernet.dns1_0 = String(server.arg("dns1_0")).toInt();
+	ethernet.dns1_1 = String(server.arg("dns1_1")).toInt();
+	ethernet.dns1_2 = String(server.arg("dns1_2")).toInt();
+	ethernet.dns1_3 = String(server.arg("dns1_3")).toInt();
+	ethernet.dns2_0 = String(server.arg("dns2_0")).toInt();
+	ethernet.dns2_1 = String(server.arg("dns2_1")).toInt();
+	ethernet.dns2_2 = String(server.arg("dns2_2")).toInt();
+	ethernet.dns2_3 = String(server.arg("dns2_3")).toInt();
 	ethernet.dhcpOn = String(server.arg("dhcpOn")).toInt();
+	if(server.arg("siec") != ""){
+		ethernet.siec = server.arg("siec");
+		ethernet.haslo = server.arg("haslo");
+	}
 	DBG_OUTPUT_PORT.println(
 	"ip0: " + String((int)ethernet.ip0) + 
 	" ip1: " + String((int)ethernet.ip1) +
@@ -264,11 +274,17 @@ void ethernetControl(){
 	" gat1: " + String((int)ethernet.gat1) +
 	" gat2: " + String((int)ethernet.gat2) +
 	" gat3: " + String((int)ethernet.gat3) +
-	" dns0: " + String((int)ethernet.dns0) +
-	" dns1: " + String((int)ethernet.dns1) +
-	" dns2: " + String((int)ethernet.dns2) +
-	" dns3: " + String((int)ethernet.dns3) +
-	" dhcpOn: " + String((int)ethernet.dhcpOn) 
+	" dns1_0: " + String((int)ethernet.dns1_0) +
+	" dns1_1: " + String((int)ethernet.dns1_1) +
+	" dns1_2: " + String((int)ethernet.dns1_2) +
+	" dns1_3: " + String((int)ethernet.dns1_3) +
+	" dns2_0: " + String((int)ethernet.dns2_0) +
+	" dns2_1: " + String((int)ethernet.dns2_1) +
+	" dns2_2: " + String((int)ethernet.dns2_2) +
+	" dns2_3: " + String((int)ethernet.dns2_3) +
+	" dhcpOn: " + String((int)ethernet.dhcpOn) +
+	" siec: " + String(ethernet.siec) +
+	" haslo: " + String(ethernet.haslo)
 	);
 	server.send(200, "text/json", "data send correctly!");
 	saveEthernetConfig();
@@ -441,33 +457,69 @@ void setup(void) {
   listNetworks();
   DBG_OUTPUT_PORT.println("ApClientPin: " + String(digitalRead(ApClientPin)));
   if(digitalRead(ApClientPin)){
-	  DBG_OUTPUT_PORT.printf("Connecting to %s\n", ssid);
-	  if (String(WiFi.SSID()) != String(ssid)) {
-		WiFi.begin(ssid, password);
-	  }
+
 	  while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
 		
 		if(ethernet.dhcpOn){
 			DBG_OUTPUT_PORT.print("DHCP enabled");
-			IPAddress dns(ethernet.dns0,ethernet.dns1,ethernet.dns2,ethernet.dns3);
+			
+			DBG_OUTPUT_PORT.printf("Connecting to %s\n", ethernet.siec.c_str());
+			if (String(WiFi.SSID()) != ethernet.siec) {
+				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
+			}
+
+		}else{
+			
+			IPAddress dns1(ethernet.dns1_0,ethernet.dns1_1,ethernet.dns1_2,ethernet.dns1_3);
+			IPAddress dns2(ethernet.dns2_0,ethernet.dns2_1,ethernet.dns2_2,ethernet.dns2_3);
 			// the router's gateway address:
 			IPAddress gateway(ethernet.gat0,ethernet.gat1,ethernet.gat2,ethernet.gat3);
 			// the subnet:
-			IPAddress subnet(ethernet.m0,ethernet.m1,ethernet.m2,ethernet.m3);
 
+			IPAddress subnet(ethernet.m0,ethernet.m1,ethernet.m2,ethernet.m3);
 			//the IP address is dependent on your network
 			IPAddress ip(ethernet.ip0,ethernet.ip1,ethernet.ip2,ethernet.ip3);
-			
-			WiFi.config(ip, dns, gateway, subnet);
-		}
-		
-		DBG_OUTPUT_PORT.print(".");
 
-		DBG_OUTPUT_PORT.println("");
-		DBG_OUTPUT_PORT.print("Connected! IP address: ");
-		DBG_OUTPUT_PORT.println(WiFi.localIP());
-	  }
+			//config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
+			WiFi.config(ip,gateway,subnet,dns1,dns2);
+			DBG_OUTPUT_PORT.printf("Connecting to %s\n", ethernet.siec.c_str());
+			if (String(WiFi.SSID()) != ethernet.siec) {
+				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
+			}
+		}
+
+	  }		
+	ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
+	ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
+	ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
+	ethernet.ip0 = 0xFF & WiFi.localIP();
+
+	ethernet.m3 = (0xFF000000 & WiFi.subnetMask()) >> 24;
+	ethernet.m2 = (0xFF0000 & WiFi.subnetMask()) >> 16;
+	ethernet.m1 = (0xFF00 & WiFi.subnetMask()) >> 8;
+	ethernet.m0 = 0xFF & WiFi.subnetMask(); 
+
+	ethernet.gat3 = (0xFF000000 & WiFi.gatewayIP()) >> 24;
+	ethernet.gat2 = (0xFF0000 & WiFi.gatewayIP()) >> 16;
+	ethernet.gat1 = (0xFF00 & WiFi.gatewayIP()) >> 8;
+	ethernet.gat0 = 0xFF & WiFi.gatewayIP();
+
+	ethernet.dns1_3 = (0xFF000000 & WiFi.dnsIP(0)) >> 24;
+	ethernet.dns1_2 = (0xFF0000 & WiFi.dnsIP(0)) >> 16;
+	ethernet.dns1_1 = (0xFF00 & WiFi.dnsIP(0)) >> 8;
+	ethernet.dns1_0 = 0xFF & WiFi.dnsIP(0);
+
+	ethernet.dns2_3 = (0xFF000000 & WiFi.dnsIP(1)) >> 24;
+	ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
+	ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
+	ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
+	
+	DBG_OUTPUT_PORT.println("");
+	DBG_OUTPUT_PORT.print("Connected! IP address: ");
+	DBG_OUTPUT_PORT.println(WiFi.localIP());
+	  
+	  
 	  MDNS.begin(host);
 	  DBG_OUTPUT_PORT.print("Open http://");
 	  DBG_OUTPUT_PORT.print(host);
@@ -480,9 +532,36 @@ void setup(void) {
       IPAddress myIP = WiFi.softAPIP();
       Serial.print("AP IP address: ");
       Serial.println(myIP);
-  //
-    
+	  //Żeby ustawić własne parametry acces pointu
+	  //ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) 
+	  			
+		ethernet.ip3 = 1;
+		ethernet.ip2 = 4;
+		ethernet.ip1 = 168;
+		ethernet.ip0 = 192;
+
+		ethernet.m3 = 0;
+		ethernet.m2 = 255;
+		ethernet.m1 = 255;
+		ethernet.m0 = 255; 
+
+		ethernet.gat3 = 1;
+		ethernet.gat2 = 4;
+		ethernet.gat1 = 168;
+		ethernet.gat0 = 192;
+
+		ethernet.dns1_3 = 0;
+		ethernet.dns1_2 = 0;
+		ethernet.dns1_1 = 0;
+		ethernet.dns1_0 = 0;
+		
+		ethernet.dns2_3 = 0;
+		ethernet.dns2_2 = 0;
+		ethernet.dns2_1 = 0;
+		ethernet.dns2_0 = 0;
+  
   }
+
 
   //SERVER INIT
   //Ustawienia sterowania
@@ -604,6 +683,7 @@ void setup(void) {
 		json = String();
 	});    
 	server.on("/ethernet", HTTP_GET, []() {
+		byte mac[6];   
 		
 		String json = "{";
 		json += "\"ip0\":" + String((int)ethernet.ip0);
@@ -614,22 +694,29 @@ void setup(void) {
 		json += ",\"m1\":" + String((int)ethernet.m1);
 		json += ",\"m2\":" + String((int)ethernet.m2);
 		json += ",\"m3\":" + String((int)ethernet.m3);
-		json += ",\"mac0\":" + String((int)ethernet.mac0);
-		json += ",\"mac1\":" + String((int)ethernet.mac1);
-		json += ",\"mac2\":" + String((int)ethernet.mac2);
-		json += ",\"mac3\":" + String((int)ethernet.mac3);
-		json += ",\"mac4\":" + String((int)ethernet.mac4);
-		json += ",\"mac5\":" + String((int)ethernet.mac5);
+		
+		WiFi.macAddress(mac);
+		
+		json += ",\"mac0\":\"" + String(mac[5],HEX) +"\"";
+		json += ",\"mac1\":\"" + String(mac[4],HEX) +"\"";
+		json += ",\"mac2\":\"" + String(mac[3],HEX) +"\"";
+		json += ",\"mac3\":\"" + String(mac[3],HEX) +"\"";
+		json += ",\"mac4\":\"" + String(mac[2],HEX) +"\"";
+		json += ",\"mac5\":\"" + String(mac[1],HEX) +"\"";
+		
 		json += ",\"gat0\":" + String((int)ethernet.gat0);
 		json += ",\"gat1\":" + String((int)ethernet.gat1);
 		json += ",\"gat2\":" + String((int)ethernet.gat2);
 		json += ",\"gat3\":" + String((int)ethernet.gat3);
-		json += ",\"dns0\":" + String((int)ethernet.dns0);
-		json += ",\"dns1\":" + String((int)ethernet.dns1);
-		json += ",\"dns2\":" + String((int)ethernet.dns2);
-		json += ",\"dns3\":" + String((int)ethernet.dns3);
+		json += ",\"dns1_0\":" + String((int)ethernet.dns1_0);
+		json += ",\"dns1_1\":" + String((int)ethernet.dns1_1);
+		json += ",\"dns1_2\":" + String((int)ethernet.dns1_2);
+		json += ",\"dns1_3\":" + String((int)ethernet.dns1_3);
+		json += ",\"dns2_0\":" + String((int)ethernet.dns2_0);
+		json += ",\"dns2_1\":" + String((int)ethernet.dns2_1);
+		json += ",\"dns2_2\":" + String((int)ethernet.dns2_2);
+		json += ",\"dns2_3\":" + String((int)ethernet.dns2_3);
 		json += ",\"dhcpOn\":" + String((int)ethernet.dhcpOn);
-		
 		json += listNetworks();
 		
 		json += "}";
@@ -656,15 +743,17 @@ void setup(void) {
 		server.send(200, "text/json", json);
 		json = String();
 	});
-
-  Serial.println("Starting UDP");
-  Udp.begin(localPort);
-  Serial.print("Local port: ");
-  Serial.println(Udp.localPort());
-  Serial.println("waiting for sync");
-  setSyncProvider(getNtpTime);
-  setSyncInterval(300);
-  
+	if(digitalRead(ApClientPin)){
+		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
+		  Serial.println("Starting UDP");
+		  Udp.begin(localPort);
+		  Serial.print("Local port: ");
+		  Serial.println(Udp.localPort());
+		  Serial.println("waiting for sync");
+		  setSyncProvider(getNtpTime);
+		  setSyncInterval(300);
+		} 
+	}
   server.begin();
   DBG_OUTPUT_PORT.println("HTTP server started");
 }
@@ -693,8 +782,8 @@ time_t getNtpTime()
   while (Udp.parsePacket() > 0) ; // discard any previously received packets
   Serial.println("Transmit NTP Request");
   // get a random server from the pool
-  WiFi.hostByName(ntpServerName, ntpServerIP);
-  Serial.print(ntpServerName);
+  WiFi.hostByName(System_s.NTP_addr.c_str(), ntpServerIP);
+  Serial.print(System_s.NTP_addr.c_str());
   Serial.print(": ");
   Serial.println(ntpServerIP);
   sendNTPpacket(ntpServerIP);
@@ -710,6 +799,9 @@ time_t getNtpTime()
       secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
       secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
       secsSince1900 |= (unsigned long)packetBuffer[43];
+	  
+	  NTP_found++;
+	  
       return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
     }
   }
@@ -1027,12 +1119,20 @@ void saveEthernetConfig(void){
 		f.print(String((int)ethernet.gat2) + ";");
 		f.print(String((int)ethernet.gat3) + ";");
 		
-		f.print(String((int)ethernet.dns0) + ";");
-		f.print(String((int)ethernet.dns1) + ";");
-		f.print(String((int)ethernet.dns2) + ";");
-		f.print(String((int)ethernet.dns3) + ";");
+		f.print(String((int)ethernet.dns1_0) + ";");
+		f.print(String((int)ethernet.dns1_1) + ";");
+		f.print(String((int)ethernet.dns1_2) + ";");
+		f.print(String((int)ethernet.dns1_3) + ";");
+		
+		f.print(String((int)ethernet.dns2_0) + ";");
+		f.print(String((int)ethernet.dns2_1) + ";");
+		f.print(String((int)ethernet.dns2_2) + ";");
+		f.print(String((int)ethernet.dns2_3) + ";");
 		
 		f.print(String((int)ethernet.dhcpOn) + ";");
+		
+		f.print(ethernet.siec + ";");
+		f.print(ethernet.haslo + ";");
 
 		f.println();
 	}
@@ -1090,19 +1190,37 @@ void readEthernetConfig(void){
 		ethernet.gat3 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
-		ethernet.dns0 = atoi(schowek);
+		ethernet.dns1_0 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
-		ethernet.dns1 = atoi(schowek);
+		ethernet.dns1_1 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
-		ethernet.dns2 = atoi(schowek);
+		ethernet.dns1_2 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
-		ethernet.dns3 = atoi(schowek);
+		ethernet.dns1_3 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns2_0 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns2_1 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns2_2 = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.dns2_3 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
 		ethernet.dhcpOn = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		ethernet.siec = schowek;
+			
+		schowek = strtok( NULL , korektor );
+		ethernet.haslo = schowek;
 
 	}
 	f.close();
@@ -1195,7 +1313,7 @@ String listNetworks() {
   // print the list of networks seen:
   Serial.print("number of available networks:");
   Serial.println(numSsid);
-  wrless += ",\"numOfWiFi\":\"" + String(numSsid) +"\"";
+  wrless += ",\"numOfWiFi\":" + String(numSsid);
   // print the network number and name for each network found:
   for (int thisNet = 0; thisNet < numSsid; thisNet++) {
     Serial.print(thisNet);
@@ -1203,7 +1321,7 @@ String listNetworks() {
     Serial.print(WiFi.SSID(thisNet));
 	wrless += ",\"name"+String(thisNet)+"\":\"" + String(WiFi.SSID(thisNet)) +"\"";
     Serial.print("\tSignal: ");
-	wrless += ",\"signal"+String(thisNet)+"\":\"" + String(WiFi.RSSI(thisNet))+"\"";
+	wrless += ",\"signal"+String(thisNet)+"\":" + String(WiFi.RSSI(thisNet));
     Serial.print(WiFi.RSSI(thisNet));
     Serial.print(" dBm");
     Serial.print("\tEncryption:");

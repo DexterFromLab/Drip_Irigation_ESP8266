@@ -29,13 +29,22 @@
 					<input id="mac" class="form-control" disabled>
 					<label>Adres Bramy xxx.xxx.xxx.xxx</label>
 					<input id="gat" class="form-control">
-					<label>DNS xxx.xxx.xxx.xxx</label>
-					<input id="dns" class="form-control">
+					<label>DNS1 xxx.xxx.xxx.xxx</label>
+					<input id="dns1" class="form-control">
+					<label>DNS2 xxx.xxx.xxx.xxx</label>
+					<input id="dns2" class="form-control">
 					<label id="dhcp">DHCP</label>			
 					<select id="dhcpOn" class="form-control">
-					<option value="0">Wyłączone</option>
-					<option value="1">Włączone</option>
-				</select>
+						<option value="0">Wyłączone</option>
+						<option value="1">Włączone</option>
+					</select>
+					<label id="wifi">Sieci Wi-Fi</label>
+					<select id="wifiList" class="form-control" onclick="$('#wifiChoose').val($('#wifiList').val())">
+					</select>
+					<label id="wifi">Wybrana sieć</label>
+					<input id="wifiChoose" class="form-control">
+					<label id="wifi">Hasło do sieci</label>
+					<input id="wifiPass" type="password" class="form-control">
 				<div class="buttblock">
 					<input onclick="sendInter()" class="form-control" type="button" value="Zapisz">
 				</div>

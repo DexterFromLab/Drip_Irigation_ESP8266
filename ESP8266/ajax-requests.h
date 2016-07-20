@@ -55,21 +55,21 @@ typedef struct ethernet{
 	char m1;
 	char m2;
 	char m3;
-	char mac0;
-	char mac1;
-	char mac2;
-	char mac3;
-	char mac4;
-	char mac5;
 	char gat0;
 	char gat1;
 	char gat2;
 	char gat3;
-	char dns0;
-	char dns1;
-	char dns2;
-	char dns3;
+	char dns1_0;
+	char dns1_1;
+	char dns1_2;
+	char dns1_3;
+	char dns2_0;
+	char dns2_1;
+	char dns2_2;
+	char dns2_3;
 	char dhcpOn;
+	String siec;
+	String haslo;
 }ethernet_struct;
 
 typedef struct system{

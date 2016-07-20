@@ -107,10 +107,40 @@ function sendWilgGl(){
 	});
 }
 function sendInter(){
+	
+	ValidateIPaddress($("#ip").val(),0);
+	ValidateIPaddress($("#m").val(),1);
+	ValidateIPaddress($("#gat").val(),2);
+	ValidateIPaddress($("#dns1").val(),3);
+	ValidateIPaddress($("#dns2").val(),4);
+	
 	$.ajax({
 	  method: "POST",
 	  url: "ethernet",
-	  data: { ip0: $("#ip").val().substr(0,3), ip1: $("#ip").val().substr(4,3), ip2: $("#ip").val().substr(8,3), ip3: $("#ip").val().substr(12,3), m0: $("#m").val().substr(0,3), m1: $("#m").val().substr(4,3), m2: $("#m").val().substr(8,3), m3: $("#m").val().substr(12,3),gat0: $("#gat").val().substr(0,3), gat1: $("#gat").val().substr(4,3), gat2: $("#gat").val().substr(8,3), gat3: $("#gat").val().substr(12,3), dns0: $("#dns").val().substr(0,3), dns1: $("#dns").val().substr(4,3), dns2: $("#dns").val().substr(8,3), dns3: $("#dns").val().substr(12,3), dhcpOn: $("#dhcpOn").val() }
+	  data: { 
+		ip0: $('#ip').val().split('.')[0], 
+		ip1: $("#ip").val().split('.')[1], 
+		ip2: $("#ip").val().split('.')[2], 
+		ip3: $("#ip").val().split('.')[3], 
+		m0: $("#m").val().split('.')[0], 
+		m1: $("#m").val().split('.')[1], 
+		m2: $("#m").val().split('.')[2], 
+		m3: $("#m").val().split('.')[3],
+		gat0: $("#gat").val().split('.')[0], 
+		gat1: $("#gat").val().split('.')[1], 
+		gat2: $("#gat").val().split('.')[2], 
+		gat3: $("#gat").val().split('.')[3], 
+		dns1_0: $("#dns1").val().split('.')[0], 
+		dns1_1: $("#dns1").val().split('.')[1], 
+		dns1_2: $("#dns1").val().split('.')[2], 
+		dns1_3: $("#dns1").val().split('.')[3],
+		dns2_0: $("#dns2").val().split('.')[0], 
+		dns2_1: $("#dns2").val().split('.')[1], 
+		dns2_2: $("#dns2").val().split('.')[2], 
+		dns2_3: $("#dns2").val().split('.')[3], 
+		dhcpOn: $("#dhcpOn").val(), 
+		siec: $("#wifiChoose").val(), 
+		haslo: $("#wifiPass").val()}
 	})
 	.done(function( msg ) {
 		alert( "Data Saved: " + msg );
@@ -240,13 +270,29 @@ function getEthernetSettings() {
 				response.gat2.toString() + "."+
 				response.gat3.toString()
 			);
-			$("#dns").val(
-				response.dns0.toString() + "."+
-				response.dns1.toString() + "."+
-				response.dns2.toString() + "."+
-				response.dns3.toString()
+			$("#dns1").val(
+				response.dns1_0.toString() + "."+
+				response.dns1_1.toString() + "."+
+				response.dns1_2.toString() + "."+
+				response.dns1_3.toString()
+			);
+			$("#dns2").val(
+				response.dns2_0.toString() + "."+
+				response.dns2_1.toString() + "."+
+				response.dns2_2.toString() + "."+
+				response.dns2_3.toString()
 			);
 			$("#dhcpOn").val(response.dhcpOn);
+			var i = 0;
+			
+			var x = document.getElementById("wifiList");
+			
+			for(i = 0; i<(response.numOfWiFi); i++){
+				var option = document.createElement("option");
+				option.text = eval("response.name" + i.toString()) +" siła sygnału: "+ eval("response.signal" + i.toString()).toString() + " typ hasła: " + eval("response.encryption" + i.toString());
+				option.value = eval("response.name" + i.toString());
+				x.add(option);
+			}
 		}
 	});
 }
@@ -293,3 +339,24 @@ function fillTimeField(date){
 function padLeft(nr, n, str){
     return Array(n-String(nr).length+1).join(str||'0')+nr;
 }
+
+//walidacja
+
+function ValidateIPaddress(ipaddress,typ)   
+{  
+ if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress))  
+  {  
+    return (true)  
+  }
+if(typ == 0)  
+	alert("Zła składnia adresu IP");
+else if(typ == 1)
+	alert("Zła składnia adresu maski podsieci");
+else if(typ == 2)
+	alert("Zła składnia adresu bramy wyjściowej");
+else if(typ == 3)
+	alert("Zła składnia adresu DNS1");
+else if(typ == 4)
+	alert("Zła składnia adresu DNS2");
+return (false)  
+} 
