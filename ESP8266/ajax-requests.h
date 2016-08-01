@@ -45,7 +45,7 @@ typedef struct hum{
 	unsigned short DeltaWilgRelayTim;
 	char DeltaWilgOn;
 }hum_struct;
-//parametry ippobierane przy trarcie jeżeli dhcpOn = 0
+//parametry ippobierane przy trarcie jeĹĽeli dhcpOn = 0
 typedef struct ethernet{
 	char ip0;
 	char ip1;
@@ -76,7 +76,7 @@ typedef struct system{
 	char workMod; //0-automatyczny, 1-zdefiniowany, 2-reczny
 	char chandModeOff; //0-wylaczony, 1-po czasie, 2- wilg-max
 	char chandModeHumTimeEnd; // jesli chandModeOff 1 to max 3600 [%] a jesli 2 to 100 [%]
-	char timeMod; //0-czas z serwera 1- ręczny
+	char timeMod; //0-czas z serwera 1- rÄ™czny
 	String NTP_addr;
 	unsigned int year;
 	char month;
@@ -87,3 +87,4 @@ typedef struct system{
 }system_struct;
 
 #endif
+

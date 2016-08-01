@@ -32,14 +32,14 @@
 #include <TimeLib.h>
 #include <TimeAlarms.h>
 #include <WiFiUdp.h>
-#include "./struct-filler.h"
 #include "./ajax-requests.h"
+#include "./equationParser.h"
 
 #define DBG_OUTPUT_PORT Serial
 
 #define ONE_WIRE_BUS 2  // DS18B20 pin
 
-#define wielokosc_bufora_pomiarow 100   //Ilość pomiarów do wykresu
+#define wielokosc_bufora_pomiarow 100   //IloĹ›Ä‡ pomiarĂłw do wykresu
 #define POMIARY_USREDNIANE	2
 #define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
 
@@ -68,7 +68,7 @@ unsigned char tmp_cnt;
 unsigned char buff_full_cnt;
 unsigned int temps_cnt;
 
-unsigned int measure_intervall = 10;//173
+unsigned int measure_intervall = 173;//173
 
 // NTP Servers:
 //static const char ntpServerName[] = "us.pool.ntp.org";
@@ -78,10 +78,13 @@ const int timeZone = 2;     // Central European Time
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
 
-float temp;               //przechowuję chwilową wartość temp
+float temp;               //przechowujÄ™ chwilowÄ… wartoĹ›Ä‡ temp
 int last_meas_time[6];
 
 char NTP_found;
+
+ExprEval eval;	//Klasa parsujÄ…ca rĂłwnania matematyczne
+
 void measure_task() {
 
   float suma;
@@ -162,12 +165,12 @@ String getContentType(String filename) {
   return "text/plain";
 }
 /*
-	int server.args() - liczba argumentów od ajaxa
+	int server.args() - liczba argumentĂłw od ajaxa
 	String arg(String name);        // get request argument value by name
 	String arg(int i);              // get request argument value by number
 	String argName(int i);          // get request argument name by number
 
-Przykładowe zapytanie ajaxa z danymi
+PrzykĹ‚adowe zapytanie ajaxa z danymi
 		$.ajax({
 		  method: "POST",
 		  url: "cont",
@@ -319,7 +322,11 @@ void systemControl(){
 	server.send(200, "text/json", "data send correctly!");
 	saveSystemConfig();
 }
-
+void parseEquation(){
+	String equation;
+	equation = String(server.arg("Equation"));
+	server.send(200, "text/json", String(eval.Count((EVAL_CHAR*)equation.c_str())));
+}
 bool handleFileRead(String path) {
   DBG_OUTPUT_PORT.println("handleFileRead: " + path);
   if (path.endsWith("/")) path += "index.htm";
@@ -368,7 +375,18 @@ void handleFileDelete() {
   server.send(200, "text/plain", "");
   path = String();
 }
-
+void fileDelete() {
+  if (server.args() == 0) return server.send(500, "text/plain", "BAD ARGS");
+  String path = server.arg(0);
+  DBG_OUTPUT_PORT.println("handleFileDelete: " + path);
+  if (path == "/")
+    return server.send(500, "text/plain", "BAD PATH");
+  if (!SPIFFS.exists(path))
+    return server.send(404, "text/plain", "FileNotFound");
+  SPIFFS.remove(path);
+  server.send(200, "text/plain", "");
+  path = String();
+}
 void handleFileCreate() {
   if (server.args() == 0)
     return server.send(500, "text/plain", "BAD ARGS");
@@ -406,7 +424,7 @@ void handleFileList() {
     output += "{\"type\":\"";
     output += (isDir) ? "dir" : "file";
     output += "\",\"name\":\"";
-    output += String(entry.name()).substring(1);
+    output += String(entry.name());
     output += "\"}";
     entry.close();
   }
@@ -414,7 +432,42 @@ void handleFileList() {
   output += "]";
   server.send(200, "text/json", output);
 }
-
+String scriptName;
+void getScriptLine(){
+	saveScriptFile(server.arg("scriptLine"));
+	server.send(200, "text/json", scriptName);
+}
+void getScriptName(){
+	scriptName = String(server.arg("scriptName"));
+	server.send(200, "text/json", scriptName);
+}
+void getScriptContent(){
+	File f = SPIFFS.open(String(server.arg("scriptName")), "r+");
+	String output;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		output = f.readString();
+	}
+	f.close();
+	server.send(200, "text/json", output);	
+}
+void getScriptsNames(){
+	String path = "/";
+	Dir dir = SPIFFS.openDir(path);
+	String output = "[";
+	while (dir.next()) {
+		File entry = dir.openFile("r");
+		if(strstr(String(entry.name()).c_str(),".scr")){
+			if (output != "[") output += ',';
+				output += "{\"name\":\"/";
+				output += String(entry.name()).substring(1);
+				output += "\"}";
+		}	
+	}
+	output += "]";
+	server.send(200, "text/json", output);
+}
 void Repeats(){
   Serial.println("15 second timer");         
 }
@@ -428,7 +481,7 @@ void setup(void) {
   DBG_OUTPUT_PORT.setDebugOutput(true);
   SPIFFS.begin();
   
-  //wczytanie ustawień z plikow
+  //wczytanie ustawieĹ„ z plikow
   readTimesConfig();
   readTemperaturesConfig();
   readAirhumConfig();
@@ -532,7 +585,7 @@ void setup(void) {
       IPAddress myIP = WiFi.softAPIP();
       Serial.print("AP IP address: ");
       Serial.println(myIP);
-	  //Żeby ustawić własne parametry acces pointu
+	  //Ĺ»eby ustawiÄ‡ wĹ‚asne parametry acces pointu
 	  //ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) 
 	  			
 		ethernet.ip3 = 1;
@@ -564,6 +617,10 @@ void setup(void) {
 
 
   //SERVER INIT
+  //delete
+  server.on("/getScriptContent", HTTP_GET, getScriptContent);
+  //delete
+  server.on("/deleteFile", HTTP_POST, fileDelete);
   //Ustawienia sterowania
   server.on("/timSter", HTTP_POST, timSterControl);
   server.on("/temperature", HTTP_POST, temperatureControl);
@@ -571,6 +628,14 @@ void setup(void) {
   server.on("/Hum", HTTP_POST, HumControl);
   server.on("/ethernet", HTTP_POST, ethernetControl);
   server.on("/system", HTTP_POST, systemControl);
+  //rownanie matematyczne do parsera
+  server.on("/parse", HTTP_POST, parseEquation);
+  //Zapisz nazwę pliku
+  server.on("/getScriptName", HTTP_POST, getScriptName);
+  //Zapisz zawartość pliku
+  server.on("/getScriptLine", HTTP_POST, getScriptLine);
+  //Pobierz listę plików
+  server.on("/getScriptsNames", HTTP_GET, getScriptsNames);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
@@ -581,6 +646,7 @@ void setup(void) {
   server.on("/edit", HTTP_PUT, handleFileCreate);
   //delete file
   server.on("/edit", HTTP_DELETE, handleFileDelete);
+
   //first callback is called after the request has ended with all parsed arguments
   //second callback handles file uploads at that location
   server.on("/edit", HTTP_POST, []() {
@@ -1360,3 +1426,38 @@ String printEncryptionType(int thisType) {
       break;
   }
 }
+
+//Funkcja zapisuje przyjmowany skrypt do pliku
+String saveScriptFile(String scriptContent){
+	File f = SPIFFS.open(scriptName, "w+");
+	Serial.println("Script name: " + scriptName);
+	if (!f) {
+		Serial.println("file open failed");
+		f.close();
+		return "";
+	}else{
+		Serial.println("Script content: " + scriptContent);
+		f.print(scriptContent);
+	}
+
+	f.close();
+	return scriptContent;
+}
+/*
+String getScriptList(){
+	String path = "\\";
+	Dir dir = SPIFFS.openDir(path);
+	String output = "[";
+	while (dir.next()) {
+		if(strstr(String(entry.name()).c_str(),".scr")){
+			File entry = dir.openFile("r");
+			if (output != "[") output += ',';
+				output += "{\",\"name\":\"";
+				output += String(entry.name()).substring(1);
+				output += "\"}";
+		}	
+	}
+	output += "]";
+	server.send(200, "text/json", output);
+}
+*/

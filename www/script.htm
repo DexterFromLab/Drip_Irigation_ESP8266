@@ -1,0 +1,38 @@
+﻿<meta charset="utf-8">
+<div class="container-fluid">
+	<!-- Page Heading -->
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Skrypt
+				<small>Podgląd plików skryptu</small>
+			</h1>
+			<ol class="breadcrumb">
+				<li>
+					<i class="fa fa-dashboard"></i>  <a href="index.html">Informacje ogólne</a>
+				</li>
+				<li class="active">
+					<i class="fa fa-file-text-o"></i> Skrypt
+				</li>
+			</ol>
+		</div>
+	</div>
+	<!-- /.row -->
+
+	<div id="script-field">
+			<div class="jumbotron">
+			<p>Wybór pliku skryptu</p>
+				<select id="scriptSelector"></select>
+				<input class="form-control" type="button" value="Pobierz" onclick="getScriptContent($('#scriptSelector').val())">
+				<input class="form-control" type="button" value="Kasuj" onclick="deleteFile($('#scriptSelector').val())">			
+			<p>Pole edycji skryptu</p>
+				<textarea style="width: 50%; height: 500px"  id="controlScript"></textarea>
+
+			<p>Nazwa skryptu</p>
+				<input type="text" id="scriptName"></input><input class="form-control" type="button" value="Zapisz" onclick="getName()">
+			</div>
+	</div>
+	<script>
+		getScriptsNames();
+	</script>
+<!-- /.container-fluid -->

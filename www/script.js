@@ -1,4 +1,4 @@
-var TimMin = new Array(0,0,0);
+﻿var TimMin = new Array(0,0,0);
 var TimMax = new Array(0,0,0);
 
 function setSlider(name,num){
@@ -66,7 +66,9 @@ function setSlider(name,num){
 		}
 	});
 }
+
 function sendCzasy(){
+
 	$.ajax({
 	  method: "POST",
 	  url: "timSter",
@@ -77,6 +79,14 @@ function sendCzasy(){
 	});
 }
 function sendTemp(){
+	var VailRes = 0;
+	VailRes += VaildRange(0,255,"tempMax","Temp max");
+	VailRes += VaildRange(0,255,"tempMin","Temp min");
+	VailRes += VaildRange(0,255,"DeltaT","Wzrost temperatury");
+	VailRes += VaildRange(0,65535,"DeltaTim","W czasie");
+	VailRes += VaildRange(0,65535,"DeltaRelayTime","Wyłączenie warunku po czasie");
+	if(VailRes) return;
+	
 	$.ajax({
 	  method: "POST",
 	  url: "temperature",
@@ -87,6 +97,14 @@ function sendTemp(){
 	});
 }
 function sendWilgPow(){
+	var VailRes = 0;
+	VailRes += VaildRange(0,255,"wilgPowMax","Wilg max");
+	VailRes += VaildRange(0,255,"wilgPowMin","Wilg min");
+	VailRes += VaildRange(0,255,"DeltaWilgPow","Wzrost wilgotności powietrza");
+	VailRes += VaildRange(0,65535,"DeltaWilgPowTim","W czasie");
+	VailRes += VaildRange(0,65535,"DeltaWilgPowRelayTim","Wyłączenie warunku po czasie");
+	if(VailRes) return;
+	
 	$.ajax({
 	  method: "POST",
 	  url: "airHum",
@@ -97,6 +115,14 @@ function sendWilgPow(){
 	});
 }
 function sendWilgGl(){
+	var VailRes = 0;
+	VailRes += VaildRange(0,255,"wilgMax","Wilg max");
+	VailRes += VaildRange(0,255,"wilgMin","Wilg min");
+	VailRes += VaildRange(0,255,"DeltaWilg","Wzrost wilgotności gleby");
+	VailRes += VaildRange(0,65535,"DeltaWilgTim","W czasie");
+	VailRes += VaildRange(0,65535,"DeltaWilgRelayTim","Wyłączenie warunku po czasie");
+	if(VailRes) return;
+	
 	$.ajax({
 	  method: "POST",
 	  url: "Hum",
@@ -147,6 +173,10 @@ function sendInter(){
 	});
 }
 function sendSys(){
+	var VailRes = 0;
+	VailRes += VaildRange(0,255,"chandModeHumTimeEnd","Graniczna wartość czasu [s] lub wilgotności[%]");
+	if(VailRes) return;
+	
 	var date = getTimeField();
 	$.ajax({
 	  method: "POST",
@@ -169,6 +199,18 @@ function sendSys(){
 		alert( "Data Saved: " + msg );
 	});
 }
+function sendEquation(equation){
+	
+	$.ajax({
+	  method: "POST",
+	  url: "parse",
+	  data: { Equation: equation.toString() }
+	})
+	.done(function( msg ) {
+		alert( msg );
+	});
+}
+
 function getTemperatureSettings() {
 	$.ajax({
 		type: "GET",
@@ -360,3 +402,99 @@ else if(typ == 4)
 	alert("Zła składnia adresu DNS2");
 return (false)  
 } 
+function VaildRange(min, max, id,typ){
+	val = Number($('#'+id).val());
+	var mess;
+	if(((val<min)|(val>max))){
+		if(val<min) {mess = "mała"} else{ mess = "duża"};
+		alert("Wartość "+typ+" jest zbyt " + mess + ".");
+		return 1;
+	}
+}
+
+
+function sendScript(){
+	var content = $('#controlScript').val()
+	$.ajax({
+	  method: "POST",
+	  url: "getScriptLine",
+	  data: { scriptLine : content },
+	  success: function(response) {
+		alert("Script " + name + " saved in file system")
+		$("#page-wrapper").load( "script.htm" );
+	  }, error: function (error) {
+        if(name == error.responseText){
+			alert("Plik "+ name + " wysłany poprawnie");
+			$("#page-wrapper").load( "script.htm" );
+		}else{
+			alert("Błąd wysyłania danych");
+		}
+      }
+	})
+}
+var name 
+function getName(){
+	name = "/"
+	name += $('#scriptName').val()
+	if(name.split(".").pop() == "scr"){
+		$.ajax({
+		  method: "POST",
+		  url: "getScriptName",
+		  data: { scriptName : name },
+		  success: function(response) {
+			sendScript();
+		  },
+		  error: function (error) {
+			if(name == error.responseText){
+				sendScript();
+			}else{
+				alert("Błąd wysyłania danych");
+			}
+		  }
+		})
+	}else{
+		alert("Zły format pliku, nazwa musi być zakończona .scr");
+	}
+}
+function getScriptsNames(){
+	var z=0;
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/getScriptsNames",
+		success: function(response) {
+			for(z ; z<response.length ; z++){
+				var x = document.getElementById("scriptSelector");
+					var option = document.createElement("option");
+					option.text = response[z].name;
+					option.value = response[z].name;
+					x.add(option);
+			}
+		}
+	});	
+}
+function deleteFile(name){
+	$.ajax({
+		type: "POST",
+		datatype: "html",
+		url: "/deleteFile",
+		data: {file: name},
+		success: function(response) {
+			$("#page-wrapper").load( "script.htm" );
+		}
+	});	
+}
+function getScriptContent(name){
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/getScriptContent",
+		data: {scriptName: name},
+		success: function(response) {
+			$("#controlScript").text(response.content)
+		},
+		error: function(response){
+			$("#controlScript").text(response.responseText)			
+		}
+	});	
+}
