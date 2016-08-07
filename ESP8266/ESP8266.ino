@@ -35,6 +35,8 @@
 #include "./ajax-requests.h"
 #include "./equationParser.h"
 
+#include <limits.h>
+
 #define DBG_OUTPUT_PORT Serial
 
 #define ONE_WIRE_BUS 2  // DS18B20 pin
@@ -135,6 +137,21 @@ void measure_task() {
   tmp_cnt++;
 }
 
+void scriptTask(void){
+	File f = SPIFFS.open(System_s.workingScript, "r+");
+	String script_line;
+	if (!f) {
+		Serial.println("file open failed");
+	}else{
+		script_line = f.readStringUntil('\n');
+		Serial.println(String(eval.Count((EVAL_CHAR*)script_line.c_str())));
+		while(script_line != ""){
+			script_line = f.readStringUntil('\n');
+			Serial.println(String(eval.Count((EVAL_CHAR*)script_line.c_str())));	
+		}
+	}
+	f.close();
+}
 //format bytes
 String formatBytes(size_t bytes) {
   if (bytes < 1024) {
@@ -194,7 +211,7 @@ void timSterControl(){
 	times.tim3Min = String(server.arg("Tim3Max")).toInt();
 	times.tim3 = String(server.arg("Tim3Stat")).toInt();
 	DBG_OUTPUT_PORT.println("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveTimesConfig();
 }
 
@@ -208,7 +225,7 @@ void temperatureControl(){
 	temperature.DeltaRelayTime = String(server.arg("DeltaRelayTime")).toInt();
 	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
 	DBG_OUTPUT_PORT.println("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveTemperatureConfig();
 }
 void airHumControl(){
@@ -221,7 +238,7 @@ void airHumControl(){
 	airHum.DeltaWilgPowRelayTim = String(server.arg("DeltaWilgPowRelayTim")).toInt();
 	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
 	DBG_OUTPUT_PORT.println("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveAirhumConfig();
 }
 void HumControl(){
@@ -234,7 +251,7 @@ void HumControl(){
 	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
 	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
 	DBG_OUTPUT_PORT.println("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveHumConfig();
 }
 void ethernetControl(){
@@ -289,7 +306,7 @@ void ethernetControl(){
 	" siec: " + String(ethernet.siec) +
 	" haslo: " + String(ethernet.haslo)
 	);
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveEthernetConfig();
 }
 void systemControl(){
@@ -319,8 +336,18 @@ void systemControl(){
 		" minute: " + String((int)System_s.minute) +
 		" second: " + String((int)System_s.second)
 		);
-	server.send(200, "text/json", "data send correctly!");
+	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveSystemConfig();
+}
+void scriptSettings(){
+	System_s.workingScript = String(server.arg("workingScript"));
+	System_s.relayScriptTime = String(server.arg("relayScriptTime")).toInt();
+	DBG_OUTPUT_PORT.println(
+		"workingScript: " + String(System_s.workingScript) + 
+		" relayScriptTime: " + String(System_s.relayScriptTime)
+		);
+	server.send(200, "text/json", "\"Data send correctly!\"");
+	saveSystemConfig();	
 }
 void parseEquation(){
 	String equation;
@@ -503,6 +530,10 @@ void setup(void) {
   //mesures
   setTime(8,29,0,1,1,11); // set time to Saturday 8:29:00am Jan 1 2011
   Alarm.timerRepeat(measure_intervall, measure_task);
+  if(System_s.relayScriptTime < 5){
+	System_s.relayScriptTime = 5;
+  }
+  Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
   digitalClockDisplay();
 
   //WIFI INIT
@@ -628,6 +659,7 @@ void setup(void) {
   server.on("/Hum", HTTP_POST, HumControl);
   server.on("/ethernet", HTTP_POST, ethernetControl);
   server.on("/system", HTTP_POST, systemControl);
+  server.on("/scriptSettings", HTTP_POST, scriptSettings);
   //rownanie matematyczne do parsera
   server.on("/parse", HTTP_POST, parseEquation);
   //Zapisz nazwę pliku
@@ -809,6 +841,18 @@ void setup(void) {
 		server.send(200, "text/json", json);
 		json = String();
 	});
+	server.on("/scriptSettings", HTTP_GET, []() {
+		
+		String json = "{";
+		json += "\"workingScript\":\"" + System_s.workingScript +"\"";
+		json += ",\"relayScriptTime\":" + String(System_s.relayScriptTime);
+
+		json += "}";
+		server.send(200, "text/json", json);
+		json = String();
+	});
+	
+	
 	if(digitalRead(ApClientPin)){
 		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
 		  Serial.println("Starting UDP");
@@ -1309,7 +1353,8 @@ void saveSystemConfig(void){
 		f.print(String((int)System_s.hour) + ";");
 		f.print(String((int)System_s.minute) + ";");
 		f.print(String((int)System_s.second) + ";");
-		
+		f.print(System_s.workingScript + ";");
+		f.print(String((int)System_s.relayScriptTime) + ";");
 		f.println();
 	}
 	f.close();
@@ -1361,6 +1406,12 @@ void readSystemConfig(void){
 		
 		schowek = strtok( NULL , korektor );
 		System_s.second = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.workingScript = String(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.relayScriptTime = atoi(schowek);
 
 	}
 	f.close();

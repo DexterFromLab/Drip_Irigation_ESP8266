@@ -84,6 +84,8 @@ typedef struct system{
 	char hour;
 	char minute;
 	char second;
+	String workingScript;
+	unsigned int relayScriptTime;
 }system_struct;
 
 #endif

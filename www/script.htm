@@ -23,8 +23,13 @@
 			<div class="jumbotron">
 			<p>Wybór pliku skryptu</p>
 				<select id="scriptSelector"></select>
-				<input class="form-control" type="button" value="Pobierz" onclick="getScriptContent($('#scriptSelector').val())">
-				<input class="form-control" type="button" value="Kasuj" onclick="deleteFile($('#scriptSelector').val())">			
+				<p>Interwał wykonywania skryptu</p>
+				<input id="scriptInter" type="text"></input>
+				<div>
+					<input class="form-control" type="button" value="Ustaw" onclick="sendScriptSettings()">
+					<input class="form-control" type="button" value="Pobierz" onclick="getScriptContent($('#scriptSelector').val())">
+					<input class="form-control" type="button" value="Kasuj" onclick="deleteFile($('#scriptSelector').val())">
+				</div>			
 			<p>Pole edycji skryptu</p>
 				<textarea style="width: 50%; height: 500px"  id="controlScript"></textarea>
 
@@ -34,5 +39,7 @@
 	</div>
 	<script>
 		getScriptsNames();
+		getScriptSettings();
 	</script>
+	
 <!-- /.container-fluid -->

@@ -207,10 +207,34 @@ function sendEquation(equation){
 	  data: { Equation: equation.toString() }
 	})
 	.done(function( msg ) {
-		alert( msg );
+		console.log( msg );
 	});
 }
-
+function sendScriptSettings(){
+	var VailRes = 0;
+	VailRes += VaildRange(0,65535,"scriptInter","Interwał wykonywania skryptu");
+	if(VailRes) return;
+	
+	$.ajax({
+	  method: "POST",
+	  url: "scriptSettings",
+	  data: { workingScript: $('#scriptSelector').val(), relayScriptTime: $("#scriptInter").val() }
+	})
+	.done(function( msg ) {
+		alert( "Data Saved: " + msg );
+	});
+}
+function getScriptSettings() {
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/scriptSettings",
+		success: function(response) {
+			$("#scriptSelector").val(response.workingScript);
+			$("#scriptInter").val(response.relayScriptTime);
+		}
+	});
+}
 function getTemperatureSettings() {
 	$.ajax({
 		type: "GET",

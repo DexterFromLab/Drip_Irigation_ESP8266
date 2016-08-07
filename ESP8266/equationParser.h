@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #define DBG_OUTPUT_PORT Serial
 enum EXPR_EVAL_ERR {
 	EEE_NO_ERROR = 0,
@@ -223,15 +224,18 @@ private:
 	//Check variables in equation string
 	double CheckVirables(EVAL_CHAR* expr){
 		//deklaracje nazw zmiennych w passerze, późńiej należy przypisać odpowiednia tablice z danymi
-		String virName[] = {"Test1","Test2","Test3","wynik"};
+		String virName[] = {"Test1","Test2","Test3","P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
 		//przypisanie wartości do zmiennych
-		double value[] = {1,2,3,wyniki[0]};
+		double value[] = {1,2,3,wyniki[0],wyniki[1],wyniki[2],wyniki[3],wyniki[4],wyniki[5],wyniki[6],wyniki[7],wyniki[8],wyniki[9]};
 		
 		char liczba[20];
 		char str_temp[6];
 		unsigned int i;//counter
+		double wynik;
 		
 		sprintf(wyrazenie,expr);
+		
+		DBG_OUTPUT_PORT.println("Rownanie i zmienne: " + String(wyrazenie));
 		
 		for(i=0;i<sizeof(value)/sizeof(value[0]);i++){
 			if(strstr(wyrazenie,virName[i].c_str()) > 0){
@@ -241,8 +245,12 @@ private:
 			}
 		}
 
-		DBG_OUTPUT_PORT.println(wyrazenie);
-		return Eval(wyrazenie);
+		DBG_OUTPUT_PORT.println("Liczby w równaniu: "+ String(wyrazenie));
+		
+		wynik = Eval(wyrazenie);
+		if(wynik > 1000000) wynik = 1000000;
+		if(wynik < -1000000) wynik = -1000000;
+		return wynik;
 		//return &wyrazenie[0];
 		//*expr = *wyrazenie;
 	}
@@ -283,9 +291,10 @@ private:
 			DBG_OUTPUT_PORT.println(systemVirName[i]);
 			DBG_OUTPUT_PORT.println(virNameS);
 			if(String(systemVirName[i]) == virNameS){
-				DBG_OUTPUT_PORT.println(expr);
+				//DBG_OUTPUT_PORT.println("Równanie: " + String(expr) + " wynik:" + String(CheckVirables(expr)) +" i:" +String(i));
 				wyniki[i] = CheckVirables(expr);
-				DBG_OUTPUT_PORT.println(wyniki[i]);
+				
+				//DBG_OUTPUT_PORT.println(wyniki[i]);
 				return wyniki[i];
 			}
 		}
