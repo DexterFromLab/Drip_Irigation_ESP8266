@@ -23,28 +23,38 @@
 	#define DB2(x)
 #endif;
 
+#include <vector>
+
+//Tablice zmienych wejœciowych
+std::vector <String>	inputVirablesNames;
+std::vector <float>		inputVirablesValues;
+std::vector <String>	outputVirablesNames;
+std::vector <float>		outputVirablesValues;
+
+void readMagistralConfig(void);
+void countAllocMeasuresSize(void);
+
 char response[20];
 
 //deklaracje klass sensorow i urz. wyk
 
 class sensorExecutorObiect{
 	public:
-	float temp;
-	float hum;
-	float hum_g;
+	short temp;
+	short hum;
+	char hum_g;
 
 	unsigned int config;	
 	unsigned int addr;
 	unsigned int classSize;
 	unsigned int measCount;
+	unsigned int numOfMeasure;
 	
-	#define numOfMeasure	100 //ilosc pomiarow odkladanych do tablicy
 	
 	void init(unsigned int conf, unsigned int address){
 		classSize = sizeof(sensorExecutorObiect);
 		config = conf;
 		addr = address;
-		create_tables();
 		measCount = 0;
 	}
 	
@@ -61,20 +71,20 @@ class sensorExecutorObiect{
 					if(config&1){
 						wsk = strchr(response,'t');
 						wsk++;
-						temp = atof(wsk);
+						temp = short(atof(wsk)*10);
 						DB1("T"+String(addr)+":"+String(temp));
 					}
 					if(config&2){
 						wsk = strchr(response,'h');
 						wsk++;
-						hum = atof(wsk);
+						hum = short(atof(wsk)*10);
 						DB1("H"+String(addr)+":"+String(hum));
 					}
 					if(config&4){
 						wsk = strchr(response,'g');
 						wsk++;
-						hum_g = atof(wsk);
-						DB1("G"+String(addr)+":"+String(hum_g));
+						hum_g = short(atof(wsk));
+						DB1("G"+String(addr)+":"+String((short)hum_g));
 					}
 				}
 			}
@@ -98,10 +108,11 @@ class sensorExecutorObiect{
 				*(tab_hum+numOfMeasure-1) = hum;
 				*(tab_hum_g+numOfMeasure-1) = hum_g;
 				#ifdef DEBUG2
+				DB2("Used numOfMeasure="+String(numOfMeasure));
 				for(int i = 0;i<numOfMeasure;i++){
-					DB2("T"+String(i)+":"+String(*(tab_temp+i)) + " " +
-						"H"+String(i)+":"+String(*(tab_hum+i))+ " " +
-						"G"+String(i)+":"+String(*(tab_hum_g+i))
+					DB2("T"+String(i)+":"+String(float(*(tab_temp+i))/10) + " " +
+						"H"+String(i)+":"+String(float(*(tab_hum+i))/10)+ " " +
+						"G"+String(i)+":"+String(short(*(tab_hum_g+i)))
 					);
 					ESP.wdtFeed();
 				}
@@ -111,29 +122,33 @@ class sensorExecutorObiect{
 		}
 	}
 	unsigned int sizeOfClass(void){
+		classSize = 0;
+		if(config & 1) classSize = sizeof(short);			//We are counting class size
+		if(config & 2) classSize += sizeof(short);
+		if(config & 4) classSize += sizeof(char);
 		return classSize;
 	}
-	private:	
 	
-	float * tab_temp;
-	float * tab_hum;
-	float * tab_hum_g;
 	
+	short * tab_temp;
+	short * tab_hum;
+	char * tab_hum_g;
+
 	//Funkcja tworzaca tablice danych w zaleznosci od konfiguracji urzadzenia
-	void create_tables(void){
-		
-		
+	void create_tables(unsigned int measuresNum){
+		numOfMeasure = measuresNum;
+		DB2("Created numOfMeasure="+String(numOfMeasure));
 		if(config & 1){
-			tab_temp = new float[numOfMeasure];
-			classSize += sizeof(float)* numOfMeasure;			//We are counting class size
+			tab_temp = new short[numOfMeasure];			//tablica pomiarow
+			inputVirablesNames.push_back("Temp"+String(addr));				//wektor danych wejœciowych
 		}
 		if(config & 2){
-			tab_hum = new float[numOfMeasure];
-			classSize += sizeof(float)* numOfMeasure;
+			tab_hum = new short[numOfMeasure];
+			inputVirablesNames.push_back("Hum"+String(addr));
 		}
 		if(config & 4){
-			tab_hum_g = new float[numOfMeasure];
-			classSize += sizeof(float)* numOfMeasure;
+			tab_hum_g = new char[numOfMeasure];
+			inputVirablesNames.push_back("SoilH"+String(addr));
 		}
 	}
 	
@@ -145,7 +160,8 @@ sensorExecutorObiect * obPointArr[MAX_NUM_SEN];		//Array of pointers to sensor o
 void setup(void){
 	OUT.begin(BAUDRATE);
 	OUT.setTimeout(SERIAL_TIMEOUT);
-	readMagistralConfig();
+	readMagistralConfig();				//and init virtual obiects
+	countAllocMeasuresSize();
 	OUT.setTimeout(SERIAL_TIMEOUT1);
 	
 } 
@@ -191,5 +207,29 @@ void readMagistralConfig(void){
 	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
 		DB1("Size ob."+String(i)+": " + String(obPointArr[i]->sizeOfClass()));
 	}
+	
+}
+void countAllocMeasuresSize(void){
+	unsigned int sizeOfallMeasures = 0;
+	unsigned int numberOfMeasures;
+	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+		sizeOfallMeasures += obPointArr[i]->sizeOfClass();
+	}
+
+	DB1("Size of all class: "+String(sizeOfallMeasures));
+	
 	DB1("ESP free heap: "+String(ESP.getFreeHeap()));
+	if(sizeOfallMeasures>0) numberOfMeasures = (unsigned int)((ESP.getFreeHeap()-3000)/sizeOfallMeasures);
+	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+		if(sizeOfallMeasures>0) obPointArr[i]->create_tables(numberOfMeasures);
+		DB1("Heap"+String(i)+": "+String(ESP.getFreeHeap()));
+	}
+	DB1("Liczba pomiarów: "+String(obPointArr[0]->numOfMeasure)+String(" heap: ")+String(ESP.getFreeHeap()));
+	#ifdef DEBUG2
+		DB2("Lista nazw zmiennych");
+		for(int i = 0;i<inputVirablesNames.size();i++){
+			DB2(inputVirablesNames[i]);
+		}
+	#endif
+	
 }
