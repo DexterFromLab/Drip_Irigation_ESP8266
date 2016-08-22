@@ -4,7 +4,7 @@
 #define SERIAL_TIMEOUT			300
 #define SERIAL_TIMEOUT1			30        //Delay timeouts between sensors asking
 
-#define DEBUG2				//Czy debug jest w³¹czony?
+//#define DEBUG2				//Czy debug jest w³¹czony?
 
 #ifdef DEBUG
 	#define DB1(x)	Serial.println(x)

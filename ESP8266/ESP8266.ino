@@ -22,28 +22,13 @@
   access the sample web page at http://esp8266fs.local
   edit the page by going to http://esp8266fs.local/edit
 */
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266mDNS.h>
-#include <FS.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
-#include <TimeLib.h>
-#include <TimeAlarms.h>
-#include <WiFiUdp.h>
-#include "./ajax-requests.h"
-#include "./equationParser.h"
 
-#include <limits.h>
+#include "esp8266.h"
 
-#define DBG_OUTPUT_PORT Serial
+//#define DBG_OUTPUT_PORT Serial
 
-#define ONE_WIRE_BUS 2  // DS18B20 pin
 
-#define wielokosc_bufora_pomiarow 100   //IloĹ›Ä‡ pomiarĂłw do wykresu
-#define POMIARY_USREDNIANE	2
-#define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
+
 
 //Control structures
 times_struct times;
@@ -94,11 +79,11 @@ void measure_task() {
   DS18B20.requestTemperatures();
   temp = DS18B20.getTempCByIndex(0);
   temps_avg[tmp_cnt] = temp;
-  //Serial.print("Temperature: ");
- // Serial.println(temps_avg[tmp_cnt]);
+  //DB1("Temperature: ");
+ // DB1(temps_avg[tmp_cnt]);
 	snprintf(tmpStr,sizeof(tmpStr),"Temps%d: ",tmp_cnt);
-	Serial.print(tmpStr);
-	Serial.println(temps_avg[tmp_cnt]);
+	DB1(tmpStr);
+	DB1(temps_avg[tmp_cnt]);
 	if (tmp_cnt >= (POMIARY_USREDNIANE -1)) {
     //temps[temps_cnt];
 
@@ -114,13 +99,16 @@ void measure_task() {
 		}
 		temps[wielokosc_bufora_pomiarow - 1] = suma / (float)POMIARY_USREDNIANE;
 	}
-    for(i = 0;i<wielokosc_bufora_pomiarow;i++){
-		snprintf(tmpStr,sizeof(tmpStr),"Bufor pomiaru%d: ",i);
-		Serial.print(tmpStr);
-		Serial.println(temps[i]);
-	}
-    Serial.print("Srednia: ");
-    Serial.println(temps[0]);
+	#ifdef DEBUG2
+		for(i = 0;i<wielokosc_bufora_pomiarow;i++){
+			snprintf(tmpStr,sizeof(tmpStr),"Bufor pomiaru%d: ",i);
+			DB1(tmpStr);
+			DB1(temps[i]);
+			ESP.wdtFeed();
+		}
+	#endif
+    DB1("Srednia: ");
+    DB1(temps[0]);
     if(temps_cnt < wielokosc_bufora_pomiarow) temps_cnt++;
 	
 	last_meas_time[0] = year();
@@ -141,13 +129,13 @@ void scriptTask(void){
 	File f = SPIFFS.open(System_s.workingScript, "r+");
 	String script_line;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		script_line = f.readStringUntil('\n');
-		Serial.println(String(eval.Count((EVAL_CHAR*)script_line.c_str())));
+		DB1(String(eval.Count((EVAL_CHAR*)script_line.c_str())));
 		while(script_line != ""){
 			script_line = f.readStringUntil('\n');
-			Serial.println(String(eval.Count((EVAL_CHAR*)script_line.c_str())));	
+			DB1(String(eval.Count((EVAL_CHAR*)script_line.c_str())));	
 		}
 	}
 	f.close();
@@ -199,7 +187,7 @@ PrzykĹ‚adowe zapytanie ajaxa z danymi
 */
 
 void timSterControl(){
-	DBG_OUTPUT_PORT.println("timSterControl: " + String(server.args()));
+	DB1("timSterControl: " + String(server.args()));
 	
 	times.tim1Max = String(server.arg("Tim1Max")).toInt();
 	times.tim1Min = String(server.arg("Tim1Min")).toInt();
@@ -210,7 +198,7 @@ void timSterControl(){
 	times.tim3Max = String(server.arg("Tim3Min")).toInt();
 	times.tim3Min = String(server.arg("Tim3Max")).toInt();
 	times.tim3 = String(server.arg("Tim3Stat")).toInt();
-	DBG_OUTPUT_PORT.println("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
+	DB1("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveTimesConfig();
 }
@@ -224,7 +212,7 @@ void temperatureControl(){
 	temperature.DeltaTim = String(server.arg("DeltaTim")).toInt();
 	temperature.DeltaRelayTime = String(server.arg("DeltaRelayTime")).toInt();
 	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
-	DBG_OUTPUT_PORT.println("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
+	DB1("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveTemperatureConfig();
 }
@@ -237,7 +225,7 @@ void airHumControl(){
 	airHum.DeltaWilgPowTim = String(server.arg("DeltaWilgPowTim")).toInt();
 	airHum.DeltaWilgPowRelayTim = String(server.arg("DeltaWilgPowRelayTim")).toInt();
 	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
-	DBG_OUTPUT_PORT.println("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
+	DB1("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveAirhumConfig();
 }
@@ -250,7 +238,7 @@ void HumControl(){
 	hum.DeltaWilgTim = String(server.arg("DeltaWilgTim")).toInt();
 	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
 	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
-	DBG_OUTPUT_PORT.println("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
+	DB1("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveHumConfig();
 }
@@ -281,7 +269,7 @@ void ethernetControl(){
 		ethernet.siec = server.arg("siec");
 		ethernet.haslo = server.arg("haslo");
 	}
-	DBG_OUTPUT_PORT.println(
+	DB1(
 	"ip0: " + String((int)ethernet.ip0) + 
 	" ip1: " + String((int)ethernet.ip1) +
 	" ip2: " + String((int)ethernet.ip2) +
@@ -323,7 +311,7 @@ void systemControl(){
 	System_s.hour = String(server.arg("hour")).toInt();
 	System_s.minute = String(server.arg("minute")).toInt();
 	System_s.second = String(server.arg("second")).toInt();
-	DBG_OUTPUT_PORT.println(
+	DB1(
 		"workMod: " + String((int)System_s.workMod) + 
 		" chandModeOff: " + String((int)System_s.chandModeOff) +
 		" chandModeHumTimeEnd: " + String((int)System_s.chandModeHumTimeEnd) +
@@ -342,7 +330,7 @@ void systemControl(){
 void scriptSettings(){
 	System_s.workingScript = String(server.arg("workingScript"));
 	System_s.relayScriptTime = String(server.arg("relayScriptTime")).toInt();
-	DBG_OUTPUT_PORT.println(
+	DB1(
 		"workingScript: " + String(System_s.workingScript) + 
 		" relayScriptTime: " + String(System_s.relayScriptTime)
 		);
@@ -355,7 +343,7 @@ void parseEquation(){
 	server.send(200, "text/json", String(eval.Count((EVAL_CHAR*)equation.c_str())));
 }
 bool handleFileRead(String path) {
-  DBG_OUTPUT_PORT.println("handleFileRead: " + path);
+  DB1("handleFileRead: " + path);
   if (path.endsWith("/")) path += "index.htm";
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
@@ -376,24 +364,24 @@ void handleFileUpload() {
   if (upload.status == UPLOAD_FILE_START) {
     String filename = upload.filename;
     if (!filename.startsWith("/")) filename = "/" + filename;
-    DBG_OUTPUT_PORT.print("handleFileUpload Name: "); DBG_OUTPUT_PORT.println(filename);
+    DB1("handleFileUpload Name: "); DB1(filename);
     fsUploadFile = SPIFFS.open(filename, "w");
     filename = String();
   } else if (upload.status == UPLOAD_FILE_WRITE) {
-    //DBG_OUTPUT_PORT.print("handleFileUpload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+    //DB1("handleFileUpload Data: "); DB1(upload.currentSize);
     if (fsUploadFile)
       fsUploadFile.write(upload.buf, upload.currentSize);
   } else if (upload.status == UPLOAD_FILE_END) {
     if (fsUploadFile)
       fsUploadFile.close();
-    DBG_OUTPUT_PORT.print("handleFileUpload Size: "); DBG_OUTPUT_PORT.println(upload.totalSize);
+    DB1("handleFileUpload Size: "); DB1(upload.totalSize);
   }
 }
 
 void handleFileDelete() {
   if (server.args() == 0) return server.send(500, "text/plain", "BAD ARGS");
   String path = server.arg(0);
-  DBG_OUTPUT_PORT.println("handleFileDelete: " + path);
+  DB1("handleFileDelete: " + path);
   if (path == "/")
     return server.send(500, "text/plain", "BAD PATH");
   if (!SPIFFS.exists(path))
@@ -405,7 +393,7 @@ void handleFileDelete() {
 void fileDelete() {
   if (server.args() == 0) return server.send(500, "text/plain", "BAD ARGS");
   String path = server.arg(0);
-  DBG_OUTPUT_PORT.println("handleFileDelete: " + path);
+  DB1("handleFileDelete: " + path);
   if (path == "/")
     return server.send(500, "text/plain", "BAD PATH");
   if (!SPIFFS.exists(path))
@@ -418,7 +406,7 @@ void handleFileCreate() {
   if (server.args() == 0)
     return server.send(500, "text/plain", "BAD ARGS");
   String path = server.arg(0);
-  DBG_OUTPUT_PORT.println("handleFileCreate: " + path);
+  DB1("handleFileCreate: " + path);
   if (path == "/")
     return server.send(500, "text/plain", "BAD PATH");
   if (SPIFFS.exists(path))
@@ -439,7 +427,7 @@ void handleFileList() {
   }
 
   String path = server.arg("dir");
-  DBG_OUTPUT_PORT.println("handleFileList: " + path);
+  DB1("handleFileList: " + path);
   Dir dir = SPIFFS.openDir(path);
   path = String();
 
@@ -472,7 +460,7 @@ void getScriptContent(){
 	File f = SPIFFS.open(String(server.arg("scriptName")), "r+");
 	String output;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		output = f.readString();
 	}
@@ -496,36 +484,36 @@ void getScriptsNames(){
 	server.send(200, "text/json", output);
 }
 void Repeats(){
-  Serial.println("15 second timer");         
+  DB1("15 second timer");         
 }
 void setup(void) {
 	
-  pinMode(ApClientPin, INPUT);     
-  digitalWrite(ApClientPin, HIGH);  
-  
-  DBG_OUTPUT_PORT.begin(115200);
-  DBG_OUTPUT_PORT.print("\n");
-  DBG_OUTPUT_PORT.setDebugOutput(true);
-  SPIFFS.begin();
-  
-  //wczytanie ustawieĹ„ z plikow
-  readTimesConfig();
-  readTemperaturesConfig();
-  readAirhumConfig();
-  readHumConfig();
-  readEthernetConfig();
-  readSystemConfig();
-  
-  
+	pinMode(ApClientPin, INPUT);     
+	digitalWrite(ApClientPin, HIGH);  
+
+	OUT.begin(BAUDRATE);
+	OUT.print("\n");
+	OUT.setDebugOutput(true);
+	SPIFFS.begin();
+
+	//wczytanie ustawieĹ„ z plikow
+	readTimesConfig();
+	readTemperaturesConfig();
+	readAirhumConfig();
+	readHumConfig();
+	readEthernetConfig();
+	readSystemConfig();
+
+
   
   {
     Dir dir = SPIFFS.openDir("/");
     while (dir.next()) {
       String fileName = dir.fileName();
       size_t fileSize = dir.fileSize();
-      DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+      DB1("FS File: "+String(fileName)+", size: " + String(formatBytes(fileSize)));
     }
-    DBG_OUTPUT_PORT.printf("\n");
+    DB1("\n");
   }
   //mesures
   setTime(8,29,0,1,1,11); // set time to Saturday 8:29:00am Jan 1 2011
@@ -539,16 +527,16 @@ void setup(void) {
   //WIFI INIT
 
   listNetworks();
-  DBG_OUTPUT_PORT.println("ApClientPin: " + String(digitalRead(ApClientPin)));
+  DB1("ApClientPin: " + String(digitalRead(ApClientPin)));
   if(digitalRead(ApClientPin)){
 
 	  while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
 		
 		if(ethernet.dhcpOn){
-			DBG_OUTPUT_PORT.print("DHCP enabled");
+			DB1("DHCP enabled");
 			
-			DBG_OUTPUT_PORT.printf("Connecting to %s\n", ethernet.siec.c_str());
+			DB1("Connecting to " + String(ethernet.siec));
 			if (String(WiFi.SSID()) != ethernet.siec) {
 				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
 			}
@@ -567,7 +555,7 @@ void setup(void) {
 
 			//config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
 			WiFi.config(ip,gateway,subnet,dns1,dns2);
-			DBG_OUTPUT_PORT.printf("Connecting to %s\n", ethernet.siec.c_str());
+			DB1("Connecting to " + String(ethernet.siec));
 			if (String(WiFi.SSID()) != ethernet.siec) {
 				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
 			}
@@ -599,23 +587,23 @@ void setup(void) {
 	ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
 	ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
 	
-	DBG_OUTPUT_PORT.println("");
-	DBG_OUTPUT_PORT.print("Connected! IP address: ");
-	DBG_OUTPUT_PORT.println(WiFi.localIP());
+	DB1("");
+	DB1("Connected! IP address: ");
+	DB1(WiFi.localIP());
 	  
 	  
 	  MDNS.begin(host);
-	  DBG_OUTPUT_PORT.print("Open http://");
-	  DBG_OUTPUT_PORT.print(host);
-	  DBG_OUTPUT_PORT.println(".local/edit to see the file browser");
+	  DB1("Open http://");
+	  DB1(host);
+	  DB1(".local/edit to see the file browser");
   }else{
-	  Serial.print("Configuring access point...");
+	  DB1("Configuring access point...");
   // You can remove the password parameter if you want the AP to be open. 
 	  WiFi.softAP("NodeMcu", "12345678");
  
       IPAddress myIP = WiFi.softAPIP();
-      Serial.print("AP IP address: ");
-      Serial.println(myIP);
+      DB1("AP IP address: ");
+      DB1(myIP);
 	  //Ĺ»eby ustawiÄ‡ wĹ‚asne parametry acces pointu
 	  //ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) 
 	  			
@@ -713,6 +701,7 @@ void setup(void) {
 	}
     for(i = 0;i<=wielokosc_bufora_pomiarow;i++){
         json += ",\"t" + String(i) + "\":" + String(temps[i]);
+		ESP.wdtFeed();
       }
 
     json += "}";
@@ -855,17 +844,27 @@ void setup(void) {
 	
 	if(digitalRead(ApClientPin)){
 		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
-		  Serial.println("Starting UDP");
+		  DB1("Starting UDP");
 		  Udp.begin(localPort);
-		  Serial.print("Local port: ");
-		  Serial.println(Udp.localPort());
-		  Serial.println("waiting for sync");
+		  DB1("Local port: ");
+		  DB1(Udp.localPort());
+		  DB1("waiting for sync");
 		  setSyncProvider(getNtpTime);
 		  setSyncInterval(300);
 		} 
 	}
   server.begin();
-  DBG_OUTPUT_PORT.println("HTTP server started");
+  DB1("HTTP server started");
+  
+  
+	//Konfiguracja sond
+	OUT.begin(BAUDRATE);
+	OUT.setTimeout(SERIAL_TIMEOUT);
+	readMagistralConfig();				//and init virtual obiects
+	countAllocMeasuresSize();
+	OUT.setTimeout(SERIAL_TIMEOUT1);
+  
+  
 }
 time_t prevDisplay = 0; // when the digital clock was displayed
 void loop(void) {
@@ -890,18 +889,18 @@ time_t getNtpTime()
   IPAddress ntpServerIP; // NTP server's ip address
 
   while (Udp.parsePacket() > 0) ; // discard any previously received packets
-  Serial.println("Transmit NTP Request");
+  DB1("Transmit NTP Request");
   // get a random server from the pool
   WiFi.hostByName(System_s.NTP_addr.c_str(), ntpServerIP);
-  Serial.print(System_s.NTP_addr.c_str());
-  Serial.print(": ");
-  Serial.println(ntpServerIP);
+  DB1(System_s.NTP_addr.c_str());
+  DB1(": ");
+  DB1(ntpServerIP);
   sendNTPpacket(ntpServerIP);
   uint32_t beginWait = millis();
   while (millis() - beginWait < 1500) {
     int size = Udp.parsePacket();
     if (size >= NTP_PACKET_SIZE) {
-      Serial.println("Receive NTP Response");
+      DB1("Receive NTP Response");
       Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
       unsigned long secsSince1900;
       // convert four bytes starting at location 40 to a long integer
@@ -915,7 +914,7 @@ time_t getNtpTime()
       return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
     }
   }
-  Serial.println("No NTP Response :-(");
+  DB1("No NTP Response :-(");
   return 0; // return 0 if unable to get the time
 }
 
@@ -944,31 +943,31 @@ void sendNTPpacket(IPAddress &address)
 void digitalClockDisplay()
 {
   // digital clock display of the time
-  Serial.print(hour());
+  DB1(hour());
   printDigits(minute());
   printDigits(second());
-  Serial.print(" ");
-  Serial.print(day());
-  Serial.print(".");
-  Serial.print(month());
-  Serial.print(".");
-  Serial.print(year());
-  Serial.println();
+  DB1(" ");
+  DB1(day());
+  DB1(".");
+  DB1(month());
+  DB1(".");
+  DB1(year());
+  DB1();
 }
 
 void printDigits(int digits)
 {
   // utility for digital clock display: prints preceding colon and leading 0
-  Serial.print(":");
+  DB1(":");
   if (digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
+    DB1('0');
+  DB1(digits);
 }
 
 void saveTimesConfig(void){
 	File f = SPIFFS.open("/timesConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String(times.tim1Max) + ";");
@@ -992,47 +991,47 @@ void readTimesConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		times.tim1Max = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
 		times.tim1Min = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim1 = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim2Max = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim2Min = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim2 = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim3Max = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim3Min = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 		schowek = strtok( NULL , korektor );
 		times.tim3 = atoi(schowek);
-		Serial.println(schowek);
+		DB1(schowek);
 	}
 	f.close();
 }
 void saveTemperatureConfig(void){
 	File f = SPIFFS.open("/tempConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String((int)temperature.tempMax) + ";");
@@ -1054,14 +1053,14 @@ void readTemperaturesConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		temperature.tempMax = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1091,7 +1090,7 @@ void readTemperaturesConfig(void){
 void saveAirhumConfig(void){
 	File f = SPIFFS.open("/airhumConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String((int)airHum.wilgPowMax) + ";");
@@ -1114,14 +1113,14 @@ void readAirhumConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		airHum.wilgPowMax = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1151,7 +1150,7 @@ void readAirhumConfig(void){
 void saveHumConfig(void){
 	File f = SPIFFS.open("/humConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String((int)hum.wilgMax) + ";");
@@ -1174,14 +1173,14 @@ void readHumConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		hum.wilgMax = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1211,7 +1210,7 @@ void readHumConfig(void){
 void saveEthernetConfig(void){
 	File f = SPIFFS.open("/ethernetConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String((int)ethernet.ip0) + ";");
@@ -1256,14 +1255,14 @@ void readEthernetConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		ethernet.ip0 = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1339,7 +1338,7 @@ void readEthernetConfig(void){
 void saveSystemConfig(void){
 	File f = SPIFFS.open("/systemConf.txt", "w+");
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		//ustawienia czasow
 		f.print(String((int)System_s.workMod) + ";");
@@ -1367,14 +1366,14 @@ void readSystemConfig(void){
 	char * schowek;
 	String settings_str;
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 	}else{
 		settings_str = f.readStringUntil('\n');
-		Serial.println(settings_str);
+		DB1(settings_str);
 		settings_str.toCharArray(charBuf, 500);
-		Serial.println(charBuf);
+		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
-		Serial.println(schowek);
+		DB1(schowek);
 		System_s.workMod = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1420,28 +1419,28 @@ void readSystemConfig(void){
 String listNetworks() {
   String wrless;
   // scan for nearby networks:
-  Serial.println("** Scan Networks **");
+  DB1("** Scan Networks **");
   int numSsid = WiFi.scanNetworks();
   if (numSsid == -1) {
-    Serial.println("Couldn't get a wifi connection");
+    DB1("Couldn't get a wifi connection");
     while (true);
   }
 
   // print the list of networks seen:
-  Serial.print("number of available networks:");
-  Serial.println(numSsid);
+  DB1("number of available networks:");
+  DB1(numSsid);
   wrless += ",\"numOfWiFi\":" + String(numSsid);
   // print the network number and name for each network found:
   for (int thisNet = 0; thisNet < numSsid; thisNet++) {
-    Serial.print(thisNet);
-    Serial.print(") ");
-    Serial.print(WiFi.SSID(thisNet));
+    DB1(thisNet);
+    DB1(") ");
+    DB1(WiFi.SSID(thisNet));
 	wrless += ",\"name"+String(thisNet)+"\":\"" + String(WiFi.SSID(thisNet)) +"\"";
-    Serial.print("\tSignal: ");
+    DB1("\tSignal: ");
 	wrless += ",\"signal"+String(thisNet)+"\":" + String(WiFi.RSSI(thisNet));
-    Serial.print(WiFi.RSSI(thisNet));
-    Serial.print(" dBm");
-    Serial.print("\tEncryption:");
+    DB1(WiFi.RSSI(thisNet));
+    DB1(" dBm");
+    DB1("\tEncryption:");
 	wrless += ",\"encryption" + String(thisNet) +"\":\"" + printEncryptionType(WiFi.encryptionType(thisNet))+"\"";
   }
   return wrless;
@@ -1452,12 +1451,12 @@ String printEncryptionType(int thisType) {
   // read the encryption type and print out the name:
   switch (thisType) {
     case ENC_TYPE_WEP:
-      Serial.println("WEP");
+      DB1("WEP");
 	  passType = "WEP";
 	  return(passType);
       break;
     case ENC_TYPE_TKIP:
-      Serial.println("WPA");
+      DB1("WPA");
 	  passType = "WPA";
 	  return(passType);
       break;
@@ -1466,12 +1465,12 @@ String printEncryptionType(int thisType) {
 	  return(passType);
       break;
     case ENC_TYPE_NONE:
-      Serial.println("None");
+      DB1("None");
 	  passType = "None";
 	  return(passType);
       break;
     case ENC_TYPE_AUTO:
-      Serial.println("Auto");
+      DB1("Auto");
 	  passType = "Auto";
 	  return(passType);
       break;
@@ -1481,13 +1480,13 @@ String printEncryptionType(int thisType) {
 //Funkcja zapisuje przyjmowany skrypt do pliku
 String saveScriptFile(String scriptContent){
 	File f = SPIFFS.open(scriptName, "w+");
-	Serial.println("Script name: " + scriptName);
+	DB1("Script name: " + scriptName);
 	if (!f) {
-		Serial.println("file open failed");
+		DB1("file open failed");
 		f.close();
 		return "";
 	}else{
-		Serial.println("Script content: " + scriptContent);
+		DB1("Script content: " + scriptContent);
 		f.print(scriptContent);
 	}
 
