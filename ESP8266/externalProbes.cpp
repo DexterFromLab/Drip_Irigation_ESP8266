@@ -1,9 +1,9 @@
 ﻿#include "./externalProbes.h"
 
 std::vector <String>		inputVirablesNames;
-std::vector <float>		inputVirablesValues;
+std::vector <float>			inputVirablesValues;
 std::vector <String>		outputVirablesNames;
-std::vector <float>		outputVirablesValues;
+std::vector <float>			outputVirablesValues;
 
 void readMagistralConfig(void);
 void countAllocMeasuresSize(void);

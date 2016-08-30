@@ -1,15 +1,21 @@
 #ifndef _EquationParser_
 #define _EquationParser_
 
-#include <ESP8266WiFi.h>
-#include<math.h>
-#include<stdio.h>
+//#include <ESP8266WiFi.h>
+#include <math.h>
+#include <stdio.h>
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#define DBG_OUTPUT_PORT Serial
+#include "./definicje.h"
+#include "./externalProbes.h"
+
+
+void reloadVirValues(void);
+
+//#define DBG_OUTPUT_PORT Serial
 enum EXPR_EVAL_ERR {
 	EEE_NO_ERROR = 0,
 	EEE_PARENTHESIS = 1,
@@ -27,8 +33,8 @@ private:
 	char wyrazenie[300];
 
 	//zmienne systemowe do których mogą być zwracane wartości
-	char systemVirName[ZMIENNE_ZWRACANE][10] = {"P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
-	double wyniki[ZMIENNE_ZWRACANE];
+	//char systemVirName[ZMIENNE_ZWRACANE][10] = {"P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
+	//double wyniki[ZMIENNE_ZWRACANE];
 	// Parse a number or an expression in parenthesis
 	double ParseAtom(EVAL_CHAR*& expr) {
 		// Skip spaces
@@ -224,9 +230,9 @@ private:
 	//Check variables in equation string
 	double CheckVirables(EVAL_CHAR* expr){
 		//deklaracje nazw zmiennych w passerze, późńiej należy przypisać odpowiednia tablice z danymi
-		String virName[] = {"Test1","Test2","Test3","P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
+		//String virName[] = {"Test1","Test2","Test3","P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
 		//przypisanie wartości do zmiennych
-		double value[] = {1,2,3,wyniki[0],wyniki[1],wyniki[2],wyniki[3],wyniki[4],wyniki[5],wyniki[6],wyniki[7],wyniki[8],wyniki[9]};
+		//double value[] = {1,2,3,wyniki[0],wyniki[1],wyniki[2],wyniki[3],wyniki[4],wyniki[5],wyniki[6],wyniki[7],wyniki[8],wyniki[9]};
 		
 		char liczba[20];
 		char str_temp[6];
@@ -235,17 +241,17 @@ private:
 		
 		sprintf(wyrazenie,expr);
 		
-		DBG_OUTPUT_PORT.println("Rownanie i zmienne: " + String(wyrazenie));
+		DB1("Rownanie i zmienne: " + String(wyrazenie));
 		
-		for(i=0;i<sizeof(value)/sizeof(value[0]);i++){
-			if(strstr(wyrazenie,virName[i].c_str()) > 0){
-				dtostrf(value[i], 4, 2, str_temp);
+		for(i=0;i<outputVirablesNames.size();i++){
+			if(strstr(wyrazenie,outputVirablesNames[i].c_str()) > 0){
+				dtostrf(outputVirablesValues[i], 4, 2, str_temp);
 				sprintf(liczba,"%s",str_temp);
-				sprintf(wyrazenie,replace(wyrazenie,virName[i].c_str(),liczba));
+				sprintf(wyrazenie,replace(wyrazenie,outputVirablesNames[i].c_str(),liczba));
 			}
 		}
 
-		DBG_OUTPUT_PORT.println("Liczby w równaniu: "+ String(wyrazenie));
+		DB1("Liczby w równaniu: "+ String(wyrazenie));
 		
 		wynik = Eval(wyrazenie);
 		if(wynik > 1000000) wynik = 1000000;
@@ -287,15 +293,15 @@ private:
 		virNameS = String(wsk+1);
 		int i;
 		
-		for(i =0; i<ZMIENNE_ZWRACANE;i++){
-			DBG_OUTPUT_PORT.println(systemVirName[i]);
-			DBG_OUTPUT_PORT.println(virNameS);
-			if(String(systemVirName[i]) == virNameS){
-				//DBG_OUTPUT_PORT.println("Równanie: " + String(expr) + " wynik:" + String(CheckVirables(expr)) +" i:" +String(i));
-				wyniki[i] = CheckVirables(expr);
+		for(i =0; i<outputVirablesNames.size();i++){
+			DB1(outputVirablesNames[i]);
+			DB1(virNameS);
+			if(String(outputVirablesNames[i]) == virNameS){
+				//DB1("Równanie: " + String(expr) + " wynik:" + String(CheckVirables(expr)) +" i:" +String(i));
+				outputVirablesValues[i] = CheckVirables(expr);
 				
-				//DBG_OUTPUT_PORT.println(wyniki[i]);
-				return wyniki[i];
+				//DB1(outputVirablesValues[i]);
+				return outputVirablesValues[i];
 			}
 		}
 
@@ -309,6 +315,27 @@ private:
 		return _err_pos;
 	}
 };
+
+class externalVirables{
+	unsigned int beginSize = 0;
+	public:
+	void initSizeOfProbesValues(void){
+		beginSize = inputVirablesNames.size();
+	}
+	void initInputVirablesNames(){
+		
+	}
+	void reloadVirValues(void){
+		for(int i = 0; i<MAX_NUM_SEN;i++){
+			obPointArr[i]->loadVirableValue();
+		}
+
+		inputVirablesValues[beginSize+0] = 123;//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
+		inputVirablesValues[beginSize+1] = 321;
+	}
+};
+
+extern externalVirables externVir;
 
 #endif
 

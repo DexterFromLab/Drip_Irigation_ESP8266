@@ -115,25 +115,44 @@ class sensorExecutorObiect{
 	short * tab_temp;
 	short * tab_hum;
 	char * tab_hum_g;
-
+	//Numery kolejnych zmiennych w tablicy danych
+	char tempNum;
+	char humNum;
+	char hum_gNum;
 	//Funkcja tworzaca tablice danych w zaleznosci od konfiguracji urzadzenia
 	void create_tables(unsigned int measuresNum){
 		numOfMeasure = measuresNum;
 		DB2("Created numOfMeasure="+String(numOfMeasure));
 		if(config & 1){
 			tab_temp = new short[numOfMeasure];			//tablica pomiarow
+			tempNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("Temp"+String(addr));				//wektor danych wejściowych
 		}
 		if(config & 2){
 			tab_hum = new short[numOfMeasure];
+			humNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("Hum"+String(addr));
 		}
 		if(config & 4){
 			tab_hum_g = new char[numOfMeasure];
+			hum_gNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("SoilH"+String(addr));
 		}
 	}
 	
+	//Funkcja przypisujaca wartosc aktualnych pomiarow do zmiennych lokalnych
+	void loadVirableValue(void){
+		char counter = 0;
+		if(config & 1){
+			inputVirablesNames[tempNum] = temp;
+			}
+		if(config & 2){
+			inputVirablesNames[humNum] = hum;
+			}
+		if(config & 4){
+			inputVirablesNames[hum_gNum] = hum_g;
+			} 
+	}
 };
 
 extern sensorExecutorObiect * obPointArr[MAX_NUM_SEN];

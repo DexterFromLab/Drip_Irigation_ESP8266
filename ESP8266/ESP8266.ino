@@ -864,6 +864,7 @@ void setup(void) {
 	countAllocMeasuresSize();
 	OUT.setTimeout(SERIAL_TIMEOUT1);
   
+	externVir.initSizeOfProbesValues();
   
 }
 time_t prevDisplay = 0; // when the digital clock was displayed
