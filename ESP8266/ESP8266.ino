@@ -123,6 +123,10 @@ void measure_task() {
   }
 
   tmp_cnt++;
+  
+  for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+	obPointArr[i]->readMeasurments();
+  }
 }
 
 void scriptTask(void){
@@ -131,11 +135,12 @@ void scriptTask(void){
 	if (!f) {
 		DB1("file open failed");
 	}else{
+		externVir.reloadVirValues();
 		script_line = f.readStringUntil('\n');
-		DB1(String(eval.Count((EVAL_CHAR*)script_line.c_str())));
+		String(eval.Count((EVAL_CHAR*)script_line.c_str()));
 		while(script_line != ""){
 			script_line = f.readStringUntil('\n');
-			DB1(String(eval.Count((EVAL_CHAR*)script_line.c_str())));	
+			String(eval.Count((EVAL_CHAR*)script_line.c_str()));	
 		}
 	}
 	f.close();
@@ -517,22 +522,17 @@ void setup(void) {
   }
   //mesures
   setTime(8,29,0,1,1,11); // set time to Saturday 8:29:00am Jan 1 2011
-  Alarm.timerRepeat(measure_intervall, measure_task);
-  if(System_s.relayScriptTime < 5){
-	System_s.relayScriptTime = 5;
-  }
-  Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
-  digitalClockDisplay();
+
 
   //WIFI INIT
 
   listNetworks();
-  DB1("ApClientPin: " + String(digitalRead(ApClientPin)));
-  if(digitalRead(ApClientPin)){
-
+  short conn = digitalRead(ApClientPin);
+  DB1("ApClientPin: " + String(conn));
+  if(conn){
+  
 	  while (WiFi.status() != WL_CONNECTED) {
 		delay(500);
-		
 		if(ethernet.dhcpOn){
 			DB1("DHCP enabled");
 			
@@ -555,13 +555,33 @@ void setup(void) {
 
 			//config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
 			WiFi.config(ip,gateway,subnet,dns1,dns2);
+			delay(100);
 			DB1("Connecting to " + String(ethernet.siec));
 			if (String(WiFi.SSID()) != ethernet.siec) {
 				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
 			}
+			DB1("Inicjalizacja!");
+			for(int i = 0;i<20;i++){
+				DB1("Connecting...");
+				delay(100);
+				if(
+					(ethernet.ip3 == (0xFF000000 & WiFi.localIP()) >> 24)
+					||(ethernet.ip2 == (0xFF0000 & WiFi.localIP()) >> 16)
+					||(ethernet.ip1 == (0xFF00 & WiFi.localIP()) >> 8)
+					||(ethernet.ip0 == 0xFF & WiFi.localIP())
+				) break;
+				WiFi.config(ip,gateway,subnet,dns1,dns2);
+			}
 		}
-
 	  }		
+	if(ethernet.dhcpOn == 0){
+		if(
+			(ethernet.ip3 != (0xFF000000 & WiFi.localIP()) >> 24)
+			||(ethernet.ip2 != (0xFF0000 & WiFi.localIP()) >> 16)
+			||(ethernet.ip1 != (0xFF00 & WiFi.localIP()) >> 8)
+			||(ethernet.ip0 != 0xFF & WiFi.localIP())
+		) ESP.restart();  
+	} 
 	ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
 	ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
 	ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
@@ -587,11 +607,13 @@ void setup(void) {
 	ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
 	ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
 	
+	
+
+	
 	DB1("");
 	DB1("Connected! IP address: ");
 	DB1(WiFi.localIP());
-	  
-	  
+	
 	  MDNS.begin(host);
 	  DB1("Open http://");
 	  DB1(host);
@@ -633,6 +655,7 @@ void setup(void) {
 		ethernet.dns2_0 = 0;
   
   }
+
 
 
   //SERVER INIT
@@ -818,12 +841,12 @@ void setup(void) {
 		json += ",\"timeMod\":" + String((int)System_s.timeMod);
 		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeHumTimeEnd);
 
-		json += ",\"year\":" + String((int)System_s.year);
-		json += ",\"month\":" + String((int)System_s.month);
-		json += ",\"day\":" + String((int)System_s.day);
-		json += ",\"hour\":" + String((int)System_s.hour);
-		json += ",\"minute\":" + String((int)System_s.minute);
-		json += ",\"second\":" + String((int)System_s.second);
+		json += ",\"year\":" + String((int)year());
+		json += ",\"month\":" + String((int)month());
+		json += ",\"day\":" + String((int)day());
+		json += ",\"hour\":" + String((int)hour());
+		json += ",\"minute\":" + String((int)minute());
+		json += ",\"second\":" + String((int)second());
 
 		json += ",\"NTP_addr\":\"" + System_s.NTP_addr + "\"";
 		json += "}";
@@ -841,7 +864,12 @@ void setup(void) {
 		json = String();
 	});
 	
-	
+	server.on("/systemVirablesValues", HTTP_GET, []() {
+		server.send(200, "text/json", externVir.generateValNamePairString());
+	});
+	server.on("/systemOutVirablesValues", HTTP_GET, []() {
+		server.send(200, "text/json", externVir.generateOutValNamePairString());
+	});
 	if(digitalRead(ApClientPin)){
 		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
 		  DB1("Starting UDP");
@@ -863,8 +891,20 @@ void setup(void) {
 	readMagistralConfig();				//and init virtual obiects
 	countAllocMeasuresSize();
 	OUT.setTimeout(SERIAL_TIMEOUT1);
-  
-	externVir.initSizeOfProbesValues();
+	
+	externVir.initSizeOfProbesValues();		//przypisywanie pamieci dla pomiarow
+	externVir.initInputVirablesNames();		//inicjacja nazw zmiennych wejsciowych
+	externVir.initOutputVirablesNames();	//init zmiennych wyjsciowych
+	measure_task();							//odczyt pomiarow
+	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
+	//Zadania okresowe
+	Alarm.timerRepeat(measure_intervall, measure_task);
+	if(System_s.relayScriptTime < 5){
+	System_s.relayScriptTime = 5;
+	}
+	Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
+	digitalClockDisplay();
+
   
 }
 time_t prevDisplay = 0; // when the digital clock was displayed

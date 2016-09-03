@@ -23,3 +23,4 @@
 #define BAUDRATE				9600
 #define SERIAL_TIMEOUT			300
 #define SERIAL_TIMEOUT1			30        //Delay timeouts between sensors asking
+#define	FREE_RAM				8000		//wolny ram po przydzieleniu danych do tablic pomiarowych

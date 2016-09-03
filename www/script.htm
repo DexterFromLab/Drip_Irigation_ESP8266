@@ -29,10 +29,13 @@
 					<input class="form-control" type="button" value="Ustaw" onclick="sendScriptSettings()">
 					<input class="form-control" type="button" value="Pobierz" onclick="getScriptContent($('#scriptSelector').val())">
 					<input class="form-control" type="button" value="Kasuj" onclick="deleteFile($('#scriptSelector').val())">
-				</div>			
-			<p>Pole edycji skryptu</p>
-				<textarea style="width: 50%; height: 500px"  id="controlScript"></textarea>
-
+				</div>
+			<div style="display: inline">
+				<p>Pole edycji skryptu</p>
+					<textarea style="width: 450px; height: 500px"  id="controlScript"></textarea>
+					<textarea style="width: 150px; height: 500px"  id="scriptVirables"></textarea>
+					<textarea style="width: 150px; height: 500px"  id="scriptOutVirables"></textarea>
+			</div>
 			<p>Nazwa skryptu</p>
 				<input type="text" id="scriptName"></input><input class="form-control" type="button" value="Zapisz" onclick="getName()">
 			</div>
@@ -40,6 +43,7 @@
 	<script>
 		getScriptsNames();
 		getScriptSettings();
+		
 	</script>
 	
 <!-- /.container-fluid -->

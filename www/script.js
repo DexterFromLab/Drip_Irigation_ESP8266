@@ -224,6 +224,7 @@ function sendScriptSettings(){
 		alert( "Data Saved: " + msg );
 	});
 }
+var relayScriptTime
 function getScriptSettings() {
 	$.ajax({
 		type: "GET",
@@ -232,6 +233,9 @@ function getScriptSettings() {
 		success: function(response) {
 			$("#scriptSelector").val(response.workingScript);
 			$("#scriptInter").val(response.relayScriptTime);
+			relayScriptTime = response.relayScriptTime;
+			$("#scriptName").val(response.workingScript.substr(1));
+			getSystemVirables();
 		}
 	});
 }
@@ -521,4 +525,42 @@ function getScriptContent(name){
 			$("#controlScript").text(response.responseText)			
 		}
 	});	
+}
+function getSystemVirables(){
+	getSystemVirablesAjax();
+	setInterval(function(){
+		getSystemVirablesAjax();
+	}, relayScriptTime*1000);
+}
+function getSystemVirablesAjax(){
+		$.ajax({
+			type: "GET",
+			datatype: "html",
+			url: "/systemVirablesValues",
+			success: function(response) {
+				var string = "Zmienne wejściowe\n";
+				for(var i = 0;i<response.length;i++){
+					string += response[i].n + ": " + response[i].v + "\n";
+				}
+				$("#scriptVirables").text(string);
+			},
+			error: function(response){
+				
+			}
+		});	
+		$.ajax({
+			type: "GET",
+			datatype: "html",
+			url: "/systemOutVirablesValues",
+			success: function(response) {
+				var string = "Zmienne wyjściowe\n";
+				for(var i = 0;i<response.length;i++){
+					string += response[i].n + ": " + response[i].v + "\n";
+				}
+				$("#scriptOutVirables").text(string);
+			},
+			error: function(response){
+				
+			}
+		});
 }

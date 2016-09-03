@@ -60,7 +60,7 @@ void countAllocMeasuresSize(void){
 	DB1("Size of all class: "+String(sizeOfallMeasures));
 	
 	DB1("ESP free heap: "+String(ESP.getFreeHeap()));
-	if(sizeOfallMeasures>0) numberOfMeasures = (unsigned int)((ESP.getFreeHeap()-3000)/sizeOfallMeasures);
+	if(sizeOfallMeasures>0) numberOfMeasures = (unsigned int)((ESP.getFreeHeap()-FREE_RAM)/sizeOfallMeasures);
 	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
 		if(sizeOfallMeasures>0) obPointArr[i]->create_tables(numberOfMeasures);
 		DB1("Heap"+String(i)+": "+String(ESP.getFreeHeap()));
@@ -69,7 +69,7 @@ void countAllocMeasuresSize(void){
 	#ifdef DEBUG2
 		DB2("Lista nazw zmiennych");
 		for(int i = 0;i<inputVirablesNames.size();i++){
-			DB2(inputVirablesNames[i]);
+			DB2(inputVirablesNames.at(i));
 		}
 	#endif
 	

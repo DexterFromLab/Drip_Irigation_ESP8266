@@ -127,16 +127,19 @@ class sensorExecutorObiect{
 			tab_temp = new short[numOfMeasure];			//tablica pomiarow
 			tempNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("Temp"+String(addr));				//wektor danych wejściowych
+			inputVirablesValues.push_back(0);
 		}
 		if(config & 2){
 			tab_hum = new short[numOfMeasure];
 			humNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("Hum"+String(addr));
+			inputVirablesValues.push_back(0);
 		}
 		if(config & 4){
 			tab_hum_g = new char[numOfMeasure];
 			hum_gNum = inputVirablesNames.size();
 			inputVirablesNames.push_back("SoilH"+String(addr));
+			inputVirablesValues.push_back(0);
 		}
 	}
 	
@@ -144,13 +147,16 @@ class sensorExecutorObiect{
 	void loadVirableValue(void){
 		char counter = 0;
 		if(config & 1){
-			inputVirablesNames[tempNum] = temp;
+			inputVirablesValues[tempNum] = temp/10;
+			DB2("Temp"+String(addr)+": "+String(inputVirablesValues[tempNum]));
 			}
 		if(config & 2){
-			inputVirablesNames[humNum] = hum;
+			inputVirablesValues[humNum] = hum/10;
+			DB2("hum"+String(addr)+": "+String(inputVirablesValues[humNum]));
 			}
 		if(config & 4){
-			inputVirablesNames[hum_gNum] = hum_g;
+			inputVirablesValues[hum_gNum] = hum_g/10;
+			DB2("hum_g"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
 			} 
 	}
 };

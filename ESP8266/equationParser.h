@@ -11,9 +11,10 @@
 #include <limits.h>
 #include "./definicje.h"
 #include "./externalProbes.h"
-
+#include <TimeLib.h>
 
 void reloadVirValues(void);
+
 
 //#define DBG_OUTPUT_PORT Serial
 enum EXPR_EVAL_ERR {
@@ -243,11 +244,11 @@ private:
 		
 		DB1("Rownanie i zmienne: " + String(wyrazenie));
 		
-		for(i=0;i<outputVirablesNames.size();i++){
-			if(strstr(wyrazenie,outputVirablesNames[i].c_str()) > 0){
-				dtostrf(outputVirablesValues[i], 4, 2, str_temp);
+		for(i=0;i<inputVirablesNames.size();i++){
+			if(strstr(wyrazenie,inputVirablesNames[i].c_str()) > 0){
+				dtostrf(inputVirablesValues[i], 4, 2, str_temp);
 				sprintf(liczba,"%s",str_temp);
-				sprintf(wyrazenie,replace(wyrazenie,outputVirablesNames[i].c_str(),liczba));
+				sprintf(wyrazenie,replace(wyrazenie,inputVirablesNames[i].c_str(),liczba));
 			}
 		}
 
@@ -323,15 +324,86 @@ class externalVirables{
 		beginSize = inputVirablesNames.size();
 	}
 	void initInputVirablesNames(){
-		
+		//Dodawanie nazw zmiennych do tablicy
+		inputVirablesNames.push_back("hour");		//nazwa
+		inputVirablesValues.push_back((float)hour());			//init value
+		inputVirablesNames.push_back("minute");		//nazwa
+		inputVirablesValues.push_back((float)minute());			//init value
+		inputVirablesNames.push_back("second");		//nazwa
+		inputVirablesValues.push_back((float)second());			//init value
+		inputVirablesNames.push_back("day");		//nazwa
+		inputVirablesValues.push_back((float)day());			//init value
+		inputVirablesNames.push_back("weekday");		//nazwa
+		inputVirablesValues.push_back((float)weekday());			//init value
+		inputVirablesNames.push_back("month");		//nazwa
+		inputVirablesValues.push_back((float)month());			//init value
+		inputVirablesNames.push_back("year");		//nazwa
+		inputVirablesValues.push_back((float)year());			//init value
+		inputVirablesNames.push_back("DaySec");		//nazwa
+		inputVirablesValues.push_back(((float)hour()*3600)+((float)minute()*60)+(float)second());			//init value
+		inputVirablesNames.push_back("Tmp1");		//nazwa
+		inputVirablesValues.push_back(0);			//init value
+		inputVirablesNames.push_back("Tmp2");
+		inputVirablesValues.push_back(0);
+	}
+	void initOutputVirablesNames(void){
+		outputVirablesNames.push_back("Tmp1");		//nazwa
+		outputVirablesValues.push_back(0);			//init value
+		outputVirablesNames.push_back("Tmp2");		
+		outputVirablesValues.push_back(0);			
 	}
 	void reloadVirValues(void){
 		for(int i = 0; i<MAX_NUM_SEN;i++){
 			obPointArr[i]->loadVirableValue();
 		}
-
-		inputVirablesValues[beginSize+0] = 123;//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
-		inputVirablesValues[beginSize+1] = 321;
+		//Wczytywanie wskazanych danych do tablicy
+		inputVirablesValues[beginSize+0] = (float)hour();
+		inputVirablesValues[beginSize+1] = (float)minute();
+		inputVirablesValues[beginSize+2] = (float)second();
+		inputVirablesValues[beginSize+3] = (float)day();
+		inputVirablesValues[beginSize+4] = (float)weekday();
+		inputVirablesValues[beginSize+5] = (float)month();
+		inputVirablesValues[beginSize+6] = (float)year();
+		inputVirablesValues[beginSize+7] = ((float)hour()*3600)+((float)minute()*60)+(float)second(); //sekunda dnia
+		inputVirablesValues[beginSize+8] = outputVirablesValues[0];//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
+		inputVirablesValues[beginSize+9] = outputVirablesValues[1];
+		//Zmienne wyjsciowe
+		
+		
+	#ifdef DEBUG2
+		DB2("Lista nazw zmiennych");
+		for(int i = 0;i<inputVirablesNames.size();i++){
+			DB2(String(inputVirablesNames.at(i)));
+		}
+		DB2("Wartosci zmiennych");
+		for(int i = 0;i<inputVirablesValues.size();i++){
+			DB2(inputVirablesValues[i]);
+		}
+	#endif
+	}
+	String generateValNamePairString(){
+		reloadVirValues();
+		String nameAndValues = "[";
+		for(int i = 0;i<inputVirablesNames.size();i++){
+			if(i != 0) nameAndValues += ",";
+			nameAndValues += "{\"n\":\"";
+			nameAndValues += String(inputVirablesNames[i]) +"\""; 
+			nameAndValues += ",\"v\":\"" + String(inputVirablesValues[i]) +"\"}";
+		}
+		nameAndValues += "]";
+		return nameAndValues;
+	}
+	String generateOutValNamePairString(){
+		reloadVirValues();
+		String nameAndValues = "[";
+		for(int i = 0;i<outputVirablesNames.size();i++){
+			if(i != 0) nameAndValues += ",";
+			nameAndValues += "{\"n\":\"";
+			nameAndValues += String(outputVirablesNames[i]) +"\""; 
+			nameAndValues += ",\"v\":\"" + String(outputVirablesValues[i]) +"\"}";
+		}
+		nameAndValues += "]";
+		return nameAndValues;
 	}
 };
 
