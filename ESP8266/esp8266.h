@@ -21,6 +21,15 @@
 #include "./externalProbes.h"
 #include "./definicje.h"
 
+extern "C" {
+#include "c_types.h"
+#include "ets_sys.h"
+#include "os_type.h"
+#include "osapi.h"
+#include "mem.h"
+#include "user_interface.h"
+}
+
 #define ONE_WIRE_BUS 2  // DS18B20 pin
 
 #define wielokosc_bufora_pomiarow 100   //IloĹ›Ä‡ pomiarĂłw do wykresu

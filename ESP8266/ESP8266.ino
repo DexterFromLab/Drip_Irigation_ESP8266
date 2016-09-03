@@ -542,7 +542,6 @@ void setup(void) {
 			}
 
 		}else{
-			
 			IPAddress dns1(ethernet.dns1_0,ethernet.dns1_1,ethernet.dns1_2,ethernet.dns1_3);
 			IPAddress dns2(ethernet.dns2_0,ethernet.dns2_1,ethernet.dns2_2,ethernet.dns2_3);
 			// the router's gateway address:
@@ -580,7 +579,7 @@ void setup(void) {
 			||(ethernet.ip2 != (0xFF0000 & WiFi.localIP()) >> 16)
 			||(ethernet.ip1 != (0xFF00 & WiFi.localIP()) >> 8)
 			||(ethernet.ip0 != 0xFF & WiFi.localIP())
-		) ESP.restart();  
+		) ESP.reset();  
 	} 
 	ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
 	ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;

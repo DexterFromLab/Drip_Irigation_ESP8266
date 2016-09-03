@@ -526,11 +526,15 @@ function getScriptContent(name){
 		}
 	});	
 }
+var firstInit = 0;
 function getSystemVirables(){
 	getSystemVirablesAjax();
-	setInterval(function(){
-		getSystemVirablesAjax();
-	}, relayScriptTime*1000);
+	if(firstInit == 0){
+		setInterval(function(){
+			getSystemVirablesAjax();
+		}, relayScriptTime*1000);
+		firstInit++;
+	}
 }
 function getSystemVirablesAjax(){
 		$.ajax({
