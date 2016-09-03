@@ -31,10 +31,6 @@
 
 
 //Control structures
-times_struct times;
-temperature_struct temperature;
-airHum_struct airHum;
-hum_struct hum;
 ethernet_struct ethernet;
 system_struct System_s;
 
@@ -191,62 +187,6 @@ PrzykĹ‚adowe zapytanie ajaxa z danymi
 		  });
 */
 
-void timSterControl(){
-	DB1("timSterControl: " + String(server.args()));
-	
-	times.tim1Max = String(server.arg("Tim1Max")).toInt();
-	times.tim1Min = String(server.arg("Tim1Min")).toInt();
-	times.tim1 = String(server.arg("Tim1Stat")).toInt();
-	times.tim2Max = String(server.arg("Tim2Min")).toInt();
-	times.tim2Min = String(server.arg("Tim2Max")).toInt();
-	times.tim2 = String(server.arg("Tim2Stat")).toInt();
-	times.tim3Max = String(server.arg("Tim3Min")).toInt();
-	times.tim3Min = String(server.arg("Tim3Max")).toInt();
-	times.tim3 = String(server.arg("Tim3Stat")).toInt();
-	DB1("Tim1Max: " + String(times.tim1Max) + ",tim1Min: " + String(times.tim1Min) + ",tim1: " + String((int)times.tim1) + ",tim2Max: " + String(times.tim2Max) + ",tim2Min: " + String(times.tim2Min) + ",tim2: " + String((int)times.tim2) + ",tim3Max: " + String(times.tim3Max) + ",tim3Min: " + String(times.tim3Min) + ",tim3: " + String((int)times.tim3) );
-	server.send(200, "text/json", "\"Data send correctly!\"");
-	saveTimesConfig();
-}
-
-void temperatureControl(){
-	temperature.tempMax = String(server.arg("tempMax")).toInt();
-	temperature.tempMaxOn = String(server.arg("tempMaxOn")).toInt();
-	temperature.tempMin = String(server.arg("tempMin")).toInt();
-	temperature.tempMinOn = String(server.arg("tempMinOn")).toInt();
-	temperature.DeltaT = String(server.arg("DeltaT")).toInt();
-	temperature.DeltaTim = String(server.arg("DeltaTim")).toInt();
-	temperature.DeltaRelayTime = String(server.arg("DeltaRelayTime")).toInt();
-	temperature.DeltaTOn = String(server.arg("DeltaTOn")).toInt();
-	DB1("tempMax: "+String((int)temperature.tempMax)+" ,tempMaxOn:"+String((int)temperature.tempMaxOn)+" ,tempMin: "+String((int)temperature.tempMin)+" ,tempMinOn: "+String((int)temperature.tempMinOn)+",DeltaT: "+String((int)temperature.DeltaT)+" ,DeltaTim: "+String((int)temperature.DeltaTim)+" ,DeltaRelayTime: "+String((int)temperature.DeltaRelayTime)+" ,DeltaTOn: "+String((int)temperature.DeltaTOn));
-	server.send(200, "text/json", "\"Data send correctly!\"");
-	saveTemperatureConfig();
-}
-void airHumControl(){
-	airHum.wilgPowMax = String(server.arg("wilgPowMax")).toInt();
-	airHum.wilgPowMaxOn = String(server.arg("wilgPowMaxOn")).toInt();
-	airHum.wilgPowMin = String(server.arg("wilgPowMin")).toInt();
-	airHum.wilgPowMinOn = String(server.arg("wilgPowMinOn")).toInt();
-	airHum.DeltaWilgPow = String(server.arg("DeltaWilgPow")).toInt();
-	airHum.DeltaWilgPowTim = String(server.arg("DeltaWilgPowTim")).toInt();
-	airHum.DeltaWilgPowRelayTim = String(server.arg("DeltaWilgPowRelayTim")).toInt();
-	airHum.DeltaWilgPowOn = String(server.arg("DeltaWilgPowOn")).toInt();
-	DB1("wilgPowMax: "+String((int)airHum.wilgPowMax)+" ,wilgPowMaxOn:"+String((int)airHum.wilgPowMaxOn)+" ,wilgPowMin: "+String((int)airHum.wilgPowMin)+" ,wilgPowMinOn: "+String((int)airHum.wilgPowMinOn)+",DeltaWilgPow: "+String((int)airHum.DeltaWilgPow)+" ,DeltaWilgPowTim: "+String((int)airHum.DeltaWilgPowTim)+" ,DeltaWilgPowRelayTim: "+String((int)airHum.DeltaWilgPowRelayTim)+" ,DeltaWilgPowOn: "+String((int)airHum.DeltaWilgPowOn));
-	server.send(200, "text/json", "\"Data send correctly!\"");
-	saveAirhumConfig();
-}
-void HumControl(){
-	hum.wilgMax = String(server.arg("wilgMax")).toInt();
-	hum.wilgMaxOn = String(server.arg("wilgMaxOn")).toInt();
-	hum.wilgMin = String(server.arg("wilgMin")).toInt();
-	hum.wilgMinOn = String(server.arg("wilgMinOn")).toInt();
-	hum.DeltaWilg = String(server.arg("DeltaWilg")).toInt();
-	hum.DeltaWilgTim = String(server.arg("DeltaWilgTim")).toInt();
-	hum.DeltaWilgRelayTim = String(server.arg("DeltaWilgRelayTim")).toInt();
-	hum.DeltaWilgOn = String(server.arg("DeltaWilgOn")).toInt();
-	DB1("WilgMax: "+String((int)hum.wilgMax)+" ,WilgMaxOn:"+String((int)hum.wilgMaxOn)+" ,WilgMin: "+String((int)hum.wilgMin)+" ,WilgMinOn: "+String((int)hum.wilgMinOn)+",DeltaWilg: "+String((int)hum.DeltaWilg)+" ,DeltaWilgTim: "+String((int)hum.DeltaWilgTim)+" ,DeltaWilgRelayTim: "+String((int)hum.DeltaWilgRelayTim)+" ,DeltaWilgOn: "+String((int)hum.DeltaWilgOn));
-	server.send(200, "text/json", "\"Data send correctly!\"");
-	saveHumConfig();
-}
 void ethernetControl(){
 	ethernet.ip0 = String(server.arg("ip0")).toInt();
 	ethernet.ip1 = String(server.arg("ip1")).toInt();
@@ -502,10 +442,6 @@ void setup(void) {
 	SPIFFS.begin();
 
 	//wczytanie ustawieĹ„ z plikow
-	readTimesConfig();
-	readTemperaturesConfig();
-	readAirhumConfig();
-	readHumConfig();
 	readEthernetConfig();
 	readSystemConfig();
 
@@ -663,10 +599,6 @@ void setup(void) {
   //delete
   server.on("/deleteFile", HTTP_POST, fileDelete);
   //Ustawienia sterowania
-  server.on("/timSter", HTTP_POST, timSterControl);
-  server.on("/temperature", HTTP_POST, temperatureControl);
-  server.on("/airHum", HTTP_POST, airHumControl);
-  server.on("/Hum", HTTP_POST, HumControl);
   server.on("/ethernet", HTTP_POST, ethernetControl);
   server.on("/system", HTTP_POST, systemControl);
   server.on("/scriptSettings", HTTP_POST, scriptSettings);
@@ -730,67 +662,7 @@ void setup(void) {
     server.send(200, "text/json", json);
     json = String();
   });
-    server.on("/timSter", HTTP_GET, []() {
-		
-		String json = "{";
-		json += "\"tim1Max\":" + String(times.tim1Max);
-		json += ",\"tim1Min\":" + String(times.tim1Min);
-		json += ",\"tim1\":" + String((int)times.tim1);
-		json += ",\"tim2Max\":" + String(times.tim2Max);
-		json += ",\"tim2Min\":" + String(times.tim2Min);
-		json += ",\"tim2\":" + String((int)times.tim2);
-		json += ",\"tim3Max\":" + String(times.tim3Max);
-		json += ",\"tim3Min\":" + String(times.tim3Min);
-		json += ",\"tim3\":" + String((int)times.tim3);
-		json += "}";
-		server.send(200, "text/json", json);
-		json = String();
-	});
-	
-	server.on("/temperature", HTTP_GET, []() {
-		
-		String json = "{";
-		json += "\"tempMax\":" + String((int)temperature.tempMax);
-		json += ",\"tempMaxOn\":" + String((int)temperature.tempMaxOn);
-		json += ",\"tempMin\":" + String((int)temperature.tempMin);
-		json += ",\"tempMinOn\":" + String((int)temperature.tempMinOn);
-		json += ",\"DeltaT\":" + String((int)temperature.DeltaT);
-		json += ",\"DeltaTim\":" + String((int)temperature.DeltaTim);
-		json += ",\"DeltaRelayTime\":" + String((int)temperature.DeltaRelayTime);
-		json += ",\"DeltaTOn\":" + String((int)temperature.DeltaTOn);
-		json += "}";
-		server.send(200, "text/json", json);
-		json = String();
-	});    
-	server.on("/airhum", HTTP_GET, []() {
-		
-		String json = "{";
-		json += "\"wilgPowMax\":" + String((int)airHum.wilgPowMax);
-		json += ",\"wilgPowMaxOn\":" + String((int)airHum.wilgPowMaxOn);
-		json += ",\"wilgPowMin\":" + String((int)airHum.wilgPowMin);
-		json += ",\"wilgPowMinOn\":" + String((int)airHum.wilgPowMinOn);
-		json += ",\"DeltaWilgPow\":" + String((int)airHum.DeltaWilgPow);
-		json += ",\"DeltaWilgPowTim\":" + String(airHum.DeltaWilgPowTim);
-		json += ",\"DeltaWilgPowRelayTim\":" + String(airHum.DeltaWilgPowRelayTim);
-		json += ",\"DeltaWilgPowOn\":" + String((int)airHum.DeltaWilgPowOn);
-		json += "}";
-		server.send(200, "text/json", json);
-		json = String();
-	});    
-	server.on("/hum", HTTP_GET, []() {
-		String json = "{";
-		json += "\"wilgMax\":" + String((int)hum.wilgMax);
-		json += ",\"wilgMaxOn\":" + String((int)hum.wilgMaxOn);
-		json += ",\"wilgMin\":" + String((int)hum.wilgMin);
-		json += ",\"wilgMinOn\":" + String((int)hum.wilgMinOn);
-		json += ",\"DeltaWilg\":" + String((int)hum.DeltaWilg);
-		json += ",\"DeltaWilgTim\":" + String(hum.DeltaWilgTim);
-		json += ",\"DeltaWilgRelayTim\":" + String(hum.DeltaWilgRelayTim);
-		json += ",\"DeltaWilgOn\":" + String((int)hum.DeltaWilgOn);		
-		json += "}";
-		server.send(200, "text/json", json);
-		json = String();
-	});    
+
 	server.on("/ethernet", HTTP_GET, []() {
 		byte mac[6];   
 		
@@ -1002,249 +874,6 @@ void printDigits(int digits)
   if (digits < 10)
     DB1('0');
   DB1(digits);
-}
-
-void saveTimesConfig(void){
-	File f = SPIFFS.open("/timesConf.txt", "w+");
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		//ustawienia czasow
-		f.print(String(times.tim1Max) + ";");
-		f.print(String(times.tim1Min) + ";");
-		f.print(String((int)times.tim1) + ";");
-		f.print(String(times.tim2Max) + ";");
-		f.print(String(times.tim2Min) + ";");
-		f.print(String((int)times.tim2) + ";");
-		f.print(String(times.tim3Max) + ";");
-		f.print(String(times.tim3Min) + ";");
-		f.print(String((int)times.tim3) + ";");
-		f.println();
-	}
-	f.close();
-}
-
-void readTimesConfig(void){
-	File f = SPIFFS.open("/timesConf.txt", "r+");
-	char charBuf[500];
-	char korektor[] = ";";
-	char * schowek;
-	String settings_str;
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		settings_str = f.readStringUntil('\n');
-		DB1(settings_str);
-		settings_str.toCharArray(charBuf, 500);
-		DB1(charBuf);
-		schowek = strtok( charBuf , korektor );
-		DB1(schowek);
-		times.tim1Max = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		times.tim1Min = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim1 = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim2Max = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim2Min = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim2 = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim3Max = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim3Min = atoi(schowek);
-		DB1(schowek);
-		schowek = strtok( NULL , korektor );
-		times.tim3 = atoi(schowek);
-		DB1(schowek);
-	}
-	f.close();
-}
-void saveTemperatureConfig(void){
-	File f = SPIFFS.open("/tempConf.txt", "w+");
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		//ustawienia czasow
-		f.print(String((int)temperature.tempMax) + ";");
-		f.print(String((int)temperature.tempMaxOn) + ";");
-		f.print(String((int)temperature.tempMin) + ";");
-		f.print(String((int)temperature.tempMinOn) + ";");
-		f.print(String((int)temperature.DeltaT) + ";");
-		f.print(String(temperature.DeltaTim) + ";");
-		f.print(String(temperature.DeltaRelayTime) + ";");
-		f.print(String((int)temperature.DeltaTOn) + ";");
-		f.println();
-	}
-	f.close();
-}
-void readTemperaturesConfig(void){
-	File f = SPIFFS.open("/tempConf.txt", "r+");
-	char charBuf[500];
-	char korektor[] = ";";
-	char * schowek;
-	String settings_str;
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		settings_str = f.readStringUntil('\n');
-		DB1(settings_str);
-		settings_str.toCharArray(charBuf, 500);
-		DB1(charBuf);
-		schowek = strtok( charBuf , korektor );
-		DB1(schowek);
-		temperature.tempMax = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.tempMaxOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.tempMin = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.tempMinOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.DeltaT = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.DeltaTim = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.DeltaRelayTime = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		temperature.DeltaTOn = atoi(schowek);
-	}
-	f.close();
-}
-
-void saveAirhumConfig(void){
-	File f = SPIFFS.open("/airhumConf.txt", "w+");
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		//ustawienia czasow
-		f.print(String((int)airHum.wilgPowMax) + ";");
-		f.print(String((int)airHum.wilgPowMaxOn) + ";");
-		f.print(String((int)airHum.wilgPowMin) + ";");
-		f.print(String((int)airHum.wilgPowMinOn) + ";");
-		f.print(String((int)airHum.DeltaWilgPow) + ";");
-		f.print(String(airHum.DeltaWilgPowTim) + ";");
-		f.print(String(airHum.DeltaWilgPowRelayTim) + ";");
-		f.print(String((int)airHum.DeltaWilgPowOn) + ";");
-		f.println();
-	}
-	f.close();
-}
-
-void readAirhumConfig(void){
-	File f = SPIFFS.open("/airhumConf.txt", "r+");
-	char charBuf[500];
-	char korektor[] = ";";
-	char * schowek;
-	String settings_str;
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		settings_str = f.readStringUntil('\n');
-		DB1(settings_str);
-		settings_str.toCharArray(charBuf, 500);
-		DB1(charBuf);
-		schowek = strtok( charBuf , korektor );
-		DB1(schowek);
-		airHum.wilgPowMax = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.wilgPowMaxOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.wilgPowMin = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.wilgPowMinOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.DeltaWilgPow = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.DeltaWilgPowTim = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.DeltaWilgPowRelayTim = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		airHum.DeltaWilgPowOn = atoi(schowek);
-	}
-	f.close();
-}
-
-void saveHumConfig(void){
-	File f = SPIFFS.open("/humConf.txt", "w+");
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		//ustawienia czasow
-		f.print(String((int)hum.wilgMax) + ";");
-		f.print(String((int)hum.wilgMaxOn) + ";");
-		f.print(String((int)hum.wilgMin) + ";");
-		f.print(String((int)hum.wilgMinOn) + ";");
-		f.print(String((int)hum.DeltaWilg) + ";");
-		f.print(String(hum.DeltaWilgTim) + ";");
-		f.print(String(hum.DeltaWilgRelayTim) + ";");
-		f.print(String((int)hum.DeltaWilgOn) + ";");
-		f.println();
-	}
-	f.close();
-}
-
-void readHumConfig(void){
-	File f = SPIFFS.open("/humConf.txt", "r+");
-	char charBuf[500];
-	char korektor[] = ";";
-	char * schowek;
-	String settings_str;
-	if (!f) {
-		DB1("file open failed");
-	}else{
-		settings_str = f.readStringUntil('\n');
-		DB1(settings_str);
-		settings_str.toCharArray(charBuf, 500);
-		DB1(charBuf);
-		schowek = strtok( charBuf , korektor );
-		DB1(schowek);
-		hum.wilgMax = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.wilgMaxOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.wilgMin = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.wilgMinOn = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.DeltaWilg = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.DeltaWilgTim = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.DeltaWilgRelayTim = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		hum.DeltaWilgOn = atoi(schowek);
-	}
-	f.close();
 }
 
 void saveEthernetConfig(void){

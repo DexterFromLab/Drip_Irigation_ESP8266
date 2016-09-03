@@ -1,51 +1,6 @@
 #ifndef _Ajax_req_
 #define _Ajax_req_
 
-typedef struct times{
-	int tim1Max;
-	int tim1Min;
-	char tim1;
-	int tim2Max;
-	int tim2Min;
-	char tim2;
-	int tim3Max;
-	int tim3Min;
-	char tim3;
-}times_struct;
-
-typedef struct temperature{
-	char tempMax;
-	char tempMaxOn;
-	char tempMin;
-	char tempMinOn;
-	char DeltaT;
-	unsigned short DeltaTim;
-	unsigned short DeltaRelayTime;
-	char DeltaTOn;
-}temperature_struct;
-
-typedef struct airhum{
-	char wilgPowMax;
-	char wilgPowMaxOn;
-	char wilgPowMin;
-	char wilgPowMinOn;
-	char DeltaWilgPow;
-	unsigned short DeltaWilgPowTim;
-	unsigned short DeltaWilgPowRelayTim;
-	char DeltaWilgPowOn;
-}airHum_struct;
-
-typedef struct hum{
-	char wilgMax;
-	char wilgMaxOn;
-	char wilgMin;
-	char wilgMinOn;
-	char DeltaWilg;
-	unsigned short DeltaWilgTim;
-	unsigned short DeltaWilgRelayTim;
-	char DeltaWilgOn;
-}hum_struct;
-//parametry ippobierane przy trarcie jeĹĽeli dhcpOn = 0
 typedef struct ethernet{
 	char ip0;
 	char ip1;
