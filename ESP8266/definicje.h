@@ -1,6 +1,6 @@
 ﻿#define OUT	Serial
 
-#define DEBUG2				//Czy debug jest włączony?
+//#define DEBUG2				//Czy debug jest włączony?
 
 #ifdef DEBUG
 	#define DB1(x)	Serial.println(x)

@@ -51,7 +51,7 @@ unsigned char tmp_cnt;
 unsigned char buff_full_cnt;
 unsigned int temps_cnt;
 
-unsigned int measure_intervall = 173;//173
+unsigned int measure_intervall = 5;//173
 
 // NTP Servers:
 //static const char ntpServerName[] = "us.pool.ntp.org";
@@ -245,9 +245,6 @@ void ethernetControl(){
 void systemControl(){
 	//const char* POSIX_wsk = server.arg("POSIX_time").c_str();
 	char * pKoniec;
-	System_s.workMod = String(server.arg("workMod")).toInt();
-	System_s.chandModeOff = String(server.arg("chandModeOff")).toInt();
-	System_s.chandModeHumTimeEnd = String(server.arg("chandModeHumTimeEnd")).toInt();
 	System_s.timeMod = String(server.arg("timeMod")).toInt();
 	System_s.NTP_addr = String(server.arg("NTP_addr"));
 	System_s.year = String(server.arg("year")).toInt();
@@ -257,9 +254,6 @@ void systemControl(){
 	System_s.minute = String(server.arg("minute")).toInt();
 	System_s.second = String(server.arg("second")).toInt();
 	DB1(
-		"workMod: " + String((int)System_s.workMod) + 
-		" chandModeOff: " + String((int)System_s.chandModeOff) +
-		" chandModeHumTimeEnd: " + String((int)System_s.chandModeHumTimeEnd) +
 		" timeMod: " + String((int)System_s.timeMod) +
 		" NTP_addr: " + System_s.NTP_addr +
 		" year: " + String((int)System_s.year) +
@@ -428,6 +422,18 @@ void getScriptsNames(){
 	output += "]";
 	server.send(200, "text/json", output);
 }
+void getMeasureValues(){
+	String output = "[";
+	for(int i = 0; i<MAX_NUM_SEN;i++){
+		if(output == "["){
+			output += obPointArr[i]->getAjaxMeasuredValues(0);
+		}else{
+			output += obPointArr[i]->getAjaxMeasuredValues(1);
+		}
+	}
+	output += "]";
+	server.send(200, "text/json", output);
+}
 void Repeats(){
   DB1("15 second timer");         
 }
@@ -463,134 +469,8 @@ void setup(void) {
   //WIFI INIT
 
   listNetworks();
-  short conn = digitalRead(ApClientPin);
-  DB1("ApClientPin: " + String(conn));
-  if(conn){
-  
-	  while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		if(ethernet.dhcpOn){
-			DB1("DHCP enabled");
-			
-			DB1("Connecting to " + String(ethernet.siec));
-			if (String(WiFi.SSID()) != ethernet.siec) {
-				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
-			}
 
-		}else{
-			IPAddress dns1(ethernet.dns1_0,ethernet.dns1_1,ethernet.dns1_2,ethernet.dns1_3);
-			IPAddress dns2(ethernet.dns2_0,ethernet.dns2_1,ethernet.dns2_2,ethernet.dns2_3);
-			// the router's gateway address:
-			IPAddress gateway(ethernet.gat0,ethernet.gat1,ethernet.gat2,ethernet.gat3);
-			// the subnet:
-
-			IPAddress subnet(ethernet.m0,ethernet.m1,ethernet.m2,ethernet.m3);
-			//the IP address is dependent on your network
-			IPAddress ip(ethernet.ip0,ethernet.ip1,ethernet.ip2,ethernet.ip3);
-
-			//config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
-			WiFi.config(ip,gateway,subnet,dns1,dns2);
-			delay(100);
-			DB1("Connecting to " + String(ethernet.siec));
-			if (String(WiFi.SSID()) != ethernet.siec) {
-				WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
-			}
-			DB1("Inicjalizacja!");
-			for(int i = 0;i<20;i++){
-				DB1("Connecting...");
-				delay(100);
-				if(
-					(ethernet.ip3 == (0xFF000000 & WiFi.localIP()) >> 24)
-					||(ethernet.ip2 == (0xFF0000 & WiFi.localIP()) >> 16)
-					||(ethernet.ip1 == (0xFF00 & WiFi.localIP()) >> 8)
-					||(ethernet.ip0 == 0xFF & WiFi.localIP())
-				) break;
-				WiFi.config(ip,gateway,subnet,dns1,dns2);
-			}
-		}
-	  }		
-	if(ethernet.dhcpOn == 0){
-		if(
-			(ethernet.ip3 != (0xFF000000 & WiFi.localIP()) >> 24)
-			||(ethernet.ip2 != (0xFF0000 & WiFi.localIP()) >> 16)
-			||(ethernet.ip1 != (0xFF00 & WiFi.localIP()) >> 8)
-			||(ethernet.ip0 != 0xFF & WiFi.localIP())
-		) ESP.reset();  
-	} 
-	ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
-	ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
-	ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
-	ethernet.ip0 = 0xFF & WiFi.localIP();
-
-	ethernet.m3 = (0xFF000000 & WiFi.subnetMask()) >> 24;
-	ethernet.m2 = (0xFF0000 & WiFi.subnetMask()) >> 16;
-	ethernet.m1 = (0xFF00 & WiFi.subnetMask()) >> 8;
-	ethernet.m0 = 0xFF & WiFi.subnetMask(); 
-
-	ethernet.gat3 = (0xFF000000 & WiFi.gatewayIP()) >> 24;
-	ethernet.gat2 = (0xFF0000 & WiFi.gatewayIP()) >> 16;
-	ethernet.gat1 = (0xFF00 & WiFi.gatewayIP()) >> 8;
-	ethernet.gat0 = 0xFF & WiFi.gatewayIP();
-
-	ethernet.dns1_3 = (0xFF000000 & WiFi.dnsIP(0)) >> 24;
-	ethernet.dns1_2 = (0xFF0000 & WiFi.dnsIP(0)) >> 16;
-	ethernet.dns1_1 = (0xFF00 & WiFi.dnsIP(0)) >> 8;
-	ethernet.dns1_0 = 0xFF & WiFi.dnsIP(0);
-
-	ethernet.dns2_3 = (0xFF000000 & WiFi.dnsIP(1)) >> 24;
-	ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
-	ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
-	ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
-	
-	
-
-	
-	DB1("");
-	DB1("Connected! IP address: ");
-	DB1(WiFi.localIP());
-	
-	  MDNS.begin(host);
-	  DB1("Open http://");
-	  DB1(host);
-	  DB1(".local/edit to see the file browser");
-  }else{
-	  DB1("Configuring access point...");
-  // You can remove the password parameter if you want the AP to be open. 
-	  WiFi.softAP("NodeMcu", "12345678");
- 
-      IPAddress myIP = WiFi.softAPIP();
-      DB1("AP IP address: ");
-      DB1(myIP);
-	  //Ĺ»eby ustawiÄ‡ wĹ‚asne parametry acces pointu
-	  //ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) 
-	  			
-		ethernet.ip3 = 1;
-		ethernet.ip2 = 4;
-		ethernet.ip1 = 168;
-		ethernet.ip0 = 192;
-
-		ethernet.m3 = 0;
-		ethernet.m2 = 255;
-		ethernet.m1 = 255;
-		ethernet.m0 = 255; 
-
-		ethernet.gat3 = 1;
-		ethernet.gat2 = 4;
-		ethernet.gat1 = 168;
-		ethernet.gat0 = 192;
-
-		ethernet.dns1_3 = 0;
-		ethernet.dns1_2 = 0;
-		ethernet.dns1_1 = 0;
-		ethernet.dns1_0 = 0;
-		
-		ethernet.dns2_3 = 0;
-		ethernet.dns2_2 = 0;
-		ethernet.dns2_1 = 0;
-		ethernet.dns2_0 = 0;
-  
-  }
-
+  tryToConnect();
 
 
   //SERVER INIT
@@ -610,6 +490,7 @@ void setup(void) {
   server.on("/getScriptLine", HTTP_POST, getScriptLine);
   //Pobierz listę plików
   server.on("/getScriptsNames", HTTP_GET, getScriptsNames);
+  server.on("/measureValues", HTTP_GET, getMeasureValues);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   //load editor
@@ -707,10 +588,7 @@ void setup(void) {
 	server.on("/system", HTTP_GET, []() {
 		
 		String json = "{";
-		json += "\"workMod\":" + String((int)System_s.workMod);
-		json += ",\"chandModeOff\":" + String((int)System_s.chandModeOff);
-		json += ",\"timeMod\":" + String((int)System_s.timeMod);
-		json += ",\"chandModeHumTimeEnd\":" + String((int)System_s.chandModeHumTimeEnd);
+		json += "\"timeMod\":" + String((int)System_s.timeMod);
 
 		json += ",\"year\":" + String((int)year());
 		json += ",\"month\":" + String((int)month());
@@ -741,7 +619,7 @@ void setup(void) {
 	server.on("/systemOutVirablesValues", HTTP_GET, []() {
 		server.send(200, "text/json", externVir.generateOutValNamePairString());
 	});
-	if(digitalRead(ApClientPin)){
+	if(digitalRead(ApClientPin)&&(System_s.timeMod==0)){
 		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
 		  DB1("Starting UDP");
 		  Udp.begin(localPort);
@@ -770,6 +648,7 @@ void setup(void) {
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
 	Alarm.timerRepeat(measure_intervall, measure_task);
+	Alarm.timerRepeat(60, tryToConnect);
 	if(System_s.relayScriptTime < 5){
 	System_s.relayScriptTime = 5;
 	}
@@ -1010,9 +889,6 @@ void saveSystemConfig(void){
 		DB1("file open failed");
 	}else{
 		//ustawienia czasow
-		f.print(String((int)System_s.workMod) + ";");
-		f.print(String((int)System_s.chandModeOff) + ";");
-		f.print(String((int)System_s.chandModeHumTimeEnd) + ";");
 		f.print(String((int)System_s.timeMod) + ";");
 		f.print(String(System_s.NTP_addr) + ";");
 		f.print(String(System_s.year) + ";");
@@ -1043,15 +919,7 @@ void readSystemConfig(void){
 		DB1(charBuf);
 		schowek = strtok( charBuf , korektor );
 		DB1(schowek);
-		System_s.workMod = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		System_s.chandModeOff = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
-		System_s.chandModeHumTimeEnd = atoi(schowek);
-		
-		schowek = strtok( NULL , korektor );
+
 		System_s.timeMod = atoi(schowek);
 		
 		schowek = strtok( NULL , korektor );
@@ -1161,6 +1029,141 @@ String saveScriptFile(String scriptContent){
 
 	f.close();
 	return scriptContent;
+}
+char apConnected = 0;
+void tryToConnect(void){
+	short conn = digitalRead(ApClientPin);
+
+	if((WiFi.status() != WL_CONNECTED)&&(apConnected == 0)){
+	  DB1("ApClientPin: " + String(conn));
+	  if(conn){
+		//10 times trying to connect with wi-fi
+		  //for (int conCounter = 0; (conCounter < 10)/*&&(WiFi.status() != WL_CONNECTED)*/; conCounter++) {
+			delay(500);
+			if(ethernet.dhcpOn){
+				DB1("DHCP enabled");
+				
+				DB1("Connecting to " + String(ethernet.siec));
+				if (String(WiFi.SSID()) != ethernet.siec) {
+					WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
+				}
+
+			}else{
+				IPAddress dns1(ethernet.dns1_0,ethernet.dns1_1,ethernet.dns1_2,ethernet.dns1_3);
+				IPAddress dns2(ethernet.dns2_0,ethernet.dns2_1,ethernet.dns2_2,ethernet.dns2_3);
+				// the router's gateway address:
+				IPAddress gateway(ethernet.gat0,ethernet.gat1,ethernet.gat2,ethernet.gat3);
+				// the subnet:
+
+				IPAddress subnet(ethernet.m0,ethernet.m1,ethernet.m2,ethernet.m3);
+				//the IP address is dependent on your network
+				IPAddress ip(ethernet.ip0,ethernet.ip1,ethernet.ip2,ethernet.ip3);
+
+				//config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1, IPAddress dns2)
+				WiFi.config(ip,gateway,subnet,dns1,dns2);
+				delay(100);
+				DB1("Connecting to " + String(ethernet.siec));
+				if (String(WiFi.SSID()) != ethernet.siec) {
+					WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
+				}
+				DB1("Inicjalizacja!");
+				for(int i = 0;i<20;i++){
+					DB1("Connecting...");
+					delay(100);
+					if(
+						(ethernet.ip3 == (0xFF000000 & WiFi.localIP()) >> 24)
+						||(ethernet.ip2 == (0xFF0000 & WiFi.localIP()) >> 16)
+						||(ethernet.ip1 == (0xFF00 & WiFi.localIP()) >> 8)
+						||(ethernet.ip0 == 0xFF & WiFi.localIP())
+					) break;
+					WiFi.config(ip,gateway,subnet,dns1,dns2);
+				}
+			}
+		 // }		
+		if(ethernet.dhcpOn == 0){
+			if(
+				(ethernet.ip3 != (0xFF000000 & WiFi.localIP()) >> 24)
+				||(ethernet.ip2 != (0xFF0000 & WiFi.localIP()) >> 16)
+				||(ethernet.ip1 != (0xFF00 & WiFi.localIP()) >> 8)
+				||(ethernet.ip0 != 0xFF & WiFi.localIP())
+			) ESP.reset();  
+		} 
+		ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
+		ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
+		ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
+		ethernet.ip0 = 0xFF & WiFi.localIP();
+
+		ethernet.m3 = (0xFF000000 & WiFi.subnetMask()) >> 24;
+		ethernet.m2 = (0xFF0000 & WiFi.subnetMask()) >> 16;
+		ethernet.m1 = (0xFF00 & WiFi.subnetMask()) >> 8;
+		ethernet.m0 = 0xFF & WiFi.subnetMask(); 
+
+		ethernet.gat3 = (0xFF000000 & WiFi.gatewayIP()) >> 24;
+		ethernet.gat2 = (0xFF0000 & WiFi.gatewayIP()) >> 16;
+		ethernet.gat1 = (0xFF00 & WiFi.gatewayIP()) >> 8;
+		ethernet.gat0 = 0xFF & WiFi.gatewayIP();
+
+		ethernet.dns1_3 = (0xFF000000 & WiFi.dnsIP(0)) >> 24;
+		ethernet.dns1_2 = (0xFF0000 & WiFi.dnsIP(0)) >> 16;
+		ethernet.dns1_1 = (0xFF00 & WiFi.dnsIP(0)) >> 8;
+		ethernet.dns1_0 = 0xFF & WiFi.dnsIP(0);
+
+		ethernet.dns2_3 = (0xFF000000 & WiFi.dnsIP(1)) >> 24;
+		ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
+		ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
+		ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
+		
+		
+
+		
+		DB1("");
+		DB1("Connected! IP address: ");
+		DB1(WiFi.localIP());
+		
+		  MDNS.begin(host);
+		  DB1("Open http://");
+		  DB1(host);
+		  DB1(".local/edit to see the file browser");
+	  }else{
+		  
+		  apConnected++;
+		  DB1("Configuring access point...");
+	  // You can remove the password parameter if you want the AP to be open. 
+		  WiFi.softAP("NodeMcu", "12345678");
+	 
+		  IPAddress myIP = WiFi.softAPIP();
+		  DB1("AP IP address: ");
+		  DB1(myIP);
+		  //Ĺ»eby ustawiÄ‡ wĹ‚asne parametry acces pointu
+		  //ESP8266WiFiAPClass::softAPConfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) 
+					
+			ethernet.ip3 = 1;
+			ethernet.ip2 = 4;
+			ethernet.ip1 = 168;
+			ethernet.ip0 = 192;
+
+			ethernet.m3 = 0;
+			ethernet.m2 = 255;
+			ethernet.m1 = 255;
+			ethernet.m0 = 255; 
+
+			ethernet.gat3 = 1;
+			ethernet.gat2 = 4;
+			ethernet.gat1 = 168;
+			ethernet.gat0 = 192;
+
+			ethernet.dns1_3 = 0;
+			ethernet.dns1_2 = 0;
+			ethernet.dns1_1 = 0;
+			ethernet.dns1_0 = 0;
+			
+			ethernet.dns2_3 = 0;
+			ethernet.dns2_2 = 0;
+			ethernet.dns2_1 = 0;
+			ethernet.dns2_0 = 0;
+	  
+	  }
+	}
 }
 /*
 String getScriptList(){

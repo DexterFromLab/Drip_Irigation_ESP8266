@@ -159,6 +159,41 @@ class sensorExecutorObiect{
 			DB2("hum_g"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
 			} 
 	}
+	//Funkcja tworzaca odpowiedz na zapytanie ajaxa o zawartosc probek w archiwum
+	String getAjaxMeasuredValues(char next){
+		String json = "";
+		if(config & 1){
+			if(next) json += ",";
+			json += "{\"Nam\": \"temp"+String(addr)+"\"";
+			json += ",\"Count\": ";
+			json += String(measCount);
+			for(int i = 0;i<measCount;i++){
+				json += ",\"V"+String(i)+"\":" + String((float)(tab_temp[i]/10));
+			}
+			json += "}";
+		}
+		if(config & 2){
+			if((config & 1)  ||next) json += ",";
+			json += "{\"Nam\": \"hum"+String(addr)+"\"";
+			json += ",\"Count\": ";
+			json += String(measCount);
+			for(int i = 0;i<measCount;i++){
+				json += ",\"V"+String(i)+"\":" + String((float)(tab_hum[i]/10));
+			}
+			json += "}";
+		}
+		if(config & 4){
+			if((config & 1)||(config & 2) || next) json += ",";
+			json += "{\"Nam\": \"hum_g"+String(addr)+"\"";
+			json += ",\"Count\": ";
+			json += String(measCount);
+			for(int i = 0;i<measCount;i++){
+				json += ",\"V"+String(i)+"\":" + String((float)((unsigned int)tab_hum_g[i]/10));
+			}
+			json += "}";
+		}
+		return json;
+	}
 };
 
 extern sensorExecutorObiect * obPointArr[MAX_NUM_SEN];

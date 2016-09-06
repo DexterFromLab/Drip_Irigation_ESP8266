@@ -78,6 +78,7 @@ void saveEthernetConfig(void);
 void readEthernetConfig(void);
 void saveSystemConfig(void);
 void readSystemConfig(void);
+void tryToConnect(void);
 String listNetworks();
 String printEncryptionType(int thisType);
 String saveScriptFile(String scriptContent);
