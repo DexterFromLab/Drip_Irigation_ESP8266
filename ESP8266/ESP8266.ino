@@ -424,13 +424,12 @@ void getScriptsNames(){
 }
 void getMeasureValues(){
 	String output = "[";
-	for(int i = 0; i<MAX_NUM_SEN;i++){
-		if(output == "["){
-			output += obPointArr[i]->getAjaxMeasuredValues(0);
-		}else{
-			output += obPointArr[i]->getAjaxMeasuredValues(1);
-		}
-	}
+	//if(output == "["){
+		output += obPointArr[atoi(server.arg("numb").c_str())]->getAjaxMeasuredValues(0,server.arg("measName"),atoi(server.arg("Cmin").c_str()),atoi(server.arg("Cmax").c_str()));
+	//}else{
+	//	output += obPointArr[atoi(server.arg("numb").c_str())]->getAjaxMeasuredValues(1,server.arg("measName"),atoi(server.arg("Cmin").c_str()),atoi(server.arg("Cmax").c_str()));
+	//}
+	
 	output += "]";
 	server.send(200, "text/json", output);
 }
@@ -1165,6 +1164,21 @@ void tryToConnect(void){
 	  }
 	}
 }
+/*
+int GetNumber(String input) {
+  char buff[100];
+  sprintf(buff,input.c_str());
+  char * str;
+  str = &buff[0];
+  while (!(*str >= '0' && *str <= '9') && (*str != '-') && (*str != '+')) str++;
+  int number;
+  if (sscanf(str, "%d", &number) == 1) {
+    return number;
+  }
+  // No int found
+  return -1; 
+}
+*/
 /*
 String getScriptList(){
 	String path = "\\";

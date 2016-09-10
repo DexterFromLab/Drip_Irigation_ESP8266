@@ -152,42 +152,43 @@ class sensorExecutorObiect{
 			}
 		if(config & 2){
 			inputVirablesValues[humNum] = hum/10;
-			DB2("hum"+String(addr)+": "+String(inputVirablesValues[humNum]));
+			DB2("Hum"+String(addr)+": "+String(inputVirablesValues[humNum]));
 			}
 		if(config & 4){
 			inputVirablesValues[hum_gNum] = hum_g/10;
-			DB2("hum_g"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
+			DB2("SoilH"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
 			} 
 	}
 	//Funkcja tworzaca odpowiedz na zapytanie ajaxa o zawartosc probek w archiwum
-	String getAjaxMeasuredValues(char next){
+	String getAjaxMeasuredValues(char next, String name, unsigned int start, unsigned int stop){
 		String json = "";
-		if(config & 1){
-			if(next) json += ",";
-			json += "{\"Nam\": \"temp"+String(addr)+"\"";
+		if((stop + 1)>=measCount) stop = measCount-1;
+		if((config & 1)&&(strstr(name.c_str(), "Temp") != NULL)){
+			//if(next) json += ",";
+			json += "{\"Nam\": \"Temp"+String(addr)+"\"";
 			json += ",\"Count\": ";
 			json += String(measCount);
-			for(int i = 0;i<measCount;i++){
+			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)(tab_temp[i]/10));
 			}
 			json += "}";
 		}
-		if(config & 2){
-			if((config & 1)  ||next) json += ",";
-			json += "{\"Nam\": \"hum"+String(addr)+"\"";
+		if((config & 2)&&(strstr(name.c_str(), "Hum") != NULL)){
+			//if(((config & 1)  || next)) json += ",";
+			json += "{\"Nam\": \"Hum"+String(addr)+"\"";
 			json += ",\"Count\": ";
 			json += String(measCount);
-			for(int i = 0;i<measCount;i++){
+			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)(tab_hum[i]/10));
 			}
 			json += "}";
 		}
-		if(config & 4){
-			if((config & 1)||(config & 2) || next) json += ",";
-			json += "{\"Nam\": \"hum_g"+String(addr)+"\"";
+		if((config & 4)&&(strstr(name.c_str(), "Soil") != NULL)){
+			//if(((config & 1)||(config & 2) || next)) json += ",";
+			json += "{\"Nam\": \"SoilH"+String(addr)+"\"";
 			json += ",\"Count\": ";
 			json += String(measCount);
-			for(int i = 0;i<measCount;i++){
+			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)((unsigned int)tab_hum_g[i]/10));
 			}
 			json += "}";

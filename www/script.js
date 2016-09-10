@@ -526,6 +526,7 @@ function getScriptContent(name){
 		}
 	});	
 }
+
 var firstInit = 0;
 function getSystemVirables(){
 	getSystemVirablesAjax();
@@ -568,3 +569,56 @@ function getSystemVirablesAjax(){
 			}
 		});
 }
+
+
+	var step = 10;
+	var readedData = [];
+	var ValName = "";
+	var iteration = 1;
+	var redy = 0;
+	var errorGet = 0;
+	function initMeasures(name){
+		ValName = name;
+		getMeasureValues(name,0,step,pushMeasure);
+		errorGet = 0;
+		readedData = [];
+		iteration = 1;
+	}
+	function pushMeasure(name,numberOfProbes,values){
+
+		if((iteration*step)<numberOfProbes){
+			for(var i = ((iteration-1)*step);i<((iteration-1)*step+step);i++){
+				readedData.push(eval("values.V"+i.toString()));
+			}
+			getMeasureValues(name,((iteration)*step),((iteration)*step+step),pushMeasure);
+			iteration++;
+			redy = 0;
+		}else{
+			for(var i = ((iteration-1)*step);i<(numberOfProbes);i++){
+				readedData.push(eval("values.V"+i.toString()));
+			}
+			redy = 1;
+		}
+		
+	}
+	function getMeasureValues(Name,min,max,callFunc){
+		$.ajax({
+			type: "GET",
+			datatype: "html",
+			url: "/measureValues",
+			data: {measName: Name, Cmin: min, Cmax: max, numb: Number(Name.match(/\d+/)[0])},
+			timeout: 3000,
+			success: function(response) {
+				console.log(response);
+				try{
+					callFunc(Name,response[0].Count,response[0]);
+				}catch(e){
+					errorGet = 1;
+				}
+			},
+			error: function(){
+				errorGet = 1;
+			}
+		});	
+	}
+

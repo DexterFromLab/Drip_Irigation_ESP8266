@@ -20,6 +20,9 @@
 #include <vector>
 #include "./externalProbes.h"
 #include "./definicje.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 extern "C" {
 #include "c_types.h"
@@ -79,6 +82,7 @@ void readEthernetConfig(void);
 void saveSystemConfig(void);
 void readSystemConfig(void);
 void tryToConnect(void);
+int GetNumber(String input);
 String listNetworks();
 String printEncryptionType(int thisType);
 String saveScriptFile(String scriptContent);
