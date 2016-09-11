@@ -64,6 +64,7 @@ void getScriptLine();
 void getScriptName();
 void getScriptContent();
 void getScriptsNames();
+void getMeasuredConfigAjax();
 void Repeats();
 time_t getNtpTime();
 void sendNTPpacket(IPAddress &address);

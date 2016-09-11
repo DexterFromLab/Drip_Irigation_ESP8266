@@ -276,6 +276,21 @@ void scriptSettings(){
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveSystemConfig();	
 }
+void getMeasuredConfigAjax(){
+	String output = "";
+	
+	String allTypes = "";
+	
+	for(int i = 0; i<MAX_NUM_SEN; i++){
+		allTypes += obPointArr[i]->getMeasuredConfigAjax();
+	}
+	
+	output += "{\"intervall\":" +String(5);
+	output += ",\"allMeasuredTypes\":\"" + String(allTypes)+"\"";
+	output += "}";
+	server.send(200, "text/json", output);
+}
+
 void parseEquation(){
 	String equation;
 	equation = String(server.arg("Equation"));
@@ -492,6 +507,7 @@ void setup(void) {
   server.on("/measureValues", HTTP_GET, getMeasureValues);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
+  server.on("/getMeasuredConfigAjax", HTTP_GET, getMeasuredConfigAjax);
   //load editor
   server.on("/edit", HTTP_GET, []() {
     if (!handleFileRead("/edit.htm")) server.send(404, "text/plain", "FileNotFound");

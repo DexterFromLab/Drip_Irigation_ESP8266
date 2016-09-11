@@ -3,7 +3,7 @@
 #include <vector>
 #include "./definicje.h"
 #include <ESP8266WiFi.h>
-
+#include <TimeLib.h>
 
 //deklaracje klass sensorow i urz. wyk
 
@@ -32,6 +32,24 @@ class sensorExecutorObiect{
 	unsigned int measCount;
 	unsigned int numOfMeasure;
 	
+	
+	//Czas pomiaru ostatniej probki
+	
+	unsigned short year_d;
+	char month_d;
+	char day_d;
+	char hour_d;
+	char minute_d;
+	char second_d;
+	
+	void getCurrentTime(void){
+		year_d = (unsigned int)year();
+		month_d = (char)month();
+		day_d = (char)day();
+		hour_d = (char)hour();
+		minute_d = (char)minute();
+		second_d = (char)second();
+	}
 	
 	void init(unsigned int conf, unsigned int address){
 		classSize = sizeof(sensorExecutorObiect);
@@ -71,6 +89,7 @@ class sensorExecutorObiect{
 				}
 			}
 		}
+		getCurrentTime();
 		putMeasureToTables();
 	}
 	void putMeasureToTables(void){
@@ -159,6 +178,13 @@ class sensorExecutorObiect{
 			DB2("SoilH"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
 			} 
 	}
+	String getMeasuredConfigAjax(void){
+		String output = ""; 
+		if(config & 1) output += "Temp"+String(addr)+";";
+		if(config & 2) output += "Hum"+String(addr)+";";
+		if(config & 4) output += "SoilH"+String(addr)+";";
+		return output;
+	}
 	//Funkcja tworzaca odpowiedz na zapytanie ajaxa o zawartosc probek w archiwum
 	String getAjaxMeasuredValues(char next, String name, unsigned int start, unsigned int stop){
 		String json = "";
@@ -171,7 +197,7 @@ class sensorExecutorObiect{
 			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)(tab_temp[i]/10));
 			}
-			json += "}";
+			
 		}
 		if((config & 2)&&(strstr(name.c_str(), "Hum") != NULL)){
 			//if(((config & 1)  || next)) json += ",";
@@ -181,7 +207,7 @@ class sensorExecutorObiect{
 			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)(tab_hum[i]/10));
 			}
-			json += "}";
+			
 		}
 		if((config & 4)&&(strstr(name.c_str(), "Soil") != NULL)){
 			//if(((config & 1)||(config & 2) || next)) json += ",";
@@ -191,10 +217,18 @@ class sensorExecutorObiect{
 			for(int i = start;i<=stop;i++){
 				json += ",\"V"+String(i)+"\":" + String((float)((unsigned int)tab_hum_g[i]/10));
 			}
-			json += "}";
+			
 		}
+		json += ",\"year\": "+String((int)year_d);
+		json += ",\"month\": "+String((int)month_d);
+		json += ",\"day\": "+String((int)day_d);
+		json += ",\"hour\": "+String((int)hour_d);
+		json += ",\"minute\": "+String((int)minute_d);
+		json += ",\"second\": "+String((int)second_d);
+		json += "}";
 		return json;
 	}
+
 };
 
 extern sensorExecutorObiect * obPointArr[MAX_NUM_SEN];

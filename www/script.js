@@ -571,18 +571,31 @@ function getSystemVirablesAjax(){
 }
 
 
-	var step = 10;
+	var step = 50;//
 	var readedData = [];
 	var ValName = "";
 	var iteration = 1;
 	var redy = 0;
 	var errorGet = 0;
-	function initMeasures(name){
+	var EndFuncAddr;
+	
+	var lastYear = 0;
+	var lastMonth = 0;
+	var lastDay = 0;
+	var lastHour = 0;
+	var lastMinute = 0;
+	var lastSecond = 0;
+	var numberOfMeasProbes = 0;
+	
+	var measureIntervall = 0;
+	
+	function initMeasures(name,callEndFunc){
 		ValName = name;
 		getMeasureValues(name,0,step,pushMeasure);
 		errorGet = 0;
 		readedData = [];
 		iteration = 1;
+		EndFuncAddr = callEndFunc;
 	}
 	function pushMeasure(name,numberOfProbes,values){
 
@@ -597,6 +610,7 @@ function getSystemVirablesAjax(){
 			for(var i = ((iteration-1)*step);i<(numberOfProbes);i++){
 				readedData.push(eval("values.V"+i.toString()));
 			}
+			EndFuncAddr(readedData);
 			redy = 1;
 		}
 		
@@ -615,6 +629,14 @@ function getSystemVirablesAjax(){
 				}catch(e){
 					errorGet = 1;
 				}
+				lastYear = response[0].year;
+				lastMonth = response[0].month;
+				lastDay = response[0].day;
+				lastHour = response[0].hour;
+				lastMinute = response[0].minute;
+				lastSecond = response[0].second;
+				numberOfMeasProbes = response[0].Count;
+				measureIntervall = response[0].intervall
 			},
 			error: function(){
 				errorGet = 1;
