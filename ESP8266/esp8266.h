@@ -37,11 +37,6 @@ extern "C" {
 
 #define wielokosc_bufora_pomiarow 100   //IloĹ›Ä‡ pomiarĂłw do wykresu
 #define POMIARY_USREDNIANE	2
-#define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
-
-
-
-
 
 void measure_task();
 void scriptTask(void);

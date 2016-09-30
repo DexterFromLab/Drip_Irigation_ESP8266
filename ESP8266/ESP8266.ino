@@ -455,6 +455,9 @@ void setup(void) {
 	
 	pinMode(ApClientPin, INPUT);     
 	digitalWrite(ApClientPin, HIGH);  
+	
+	pinMode(RELAY0, OUTPUT);     
+	digitalWrite(RELAY0, LOW);  
 
 	OUT.begin(BAUDRATE);
 	OUT.print("\n");

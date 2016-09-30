@@ -341,12 +341,16 @@ class externalVirables{
 		inputVirablesValues.push_back((float)year());			//init value
 		inputVirablesNames.push_back("DaySec");		//nazwa
 		inputVirablesValues.push_back(((float)hour()*3600)+((float)minute()*60)+(float)second());			//init value
+		inputVirablesNames.push_back("Relay0");		//Relay on board
+		inputVirablesValues.push_back(0);			//init value
 		inputVirablesNames.push_back("Tmp1");		//nazwa
 		inputVirablesValues.push_back(0);			//init value
 		inputVirablesNames.push_back("Tmp2");
 		inputVirablesValues.push_back(0);
 	}
 	void initOutputVirablesNames(void){
+		outputVirablesNames.push_back("Relay0");	//Relay on board
+		outputVirablesValues.push_back(0);			//init value
 		outputVirablesNames.push_back("Tmp1");		//nazwa
 		outputVirablesValues.push_back(0);			//init value
 		outputVirablesNames.push_back("Tmp2");		
@@ -367,8 +371,10 @@ class externalVirables{
 		inputVirablesValues[beginSize+7] = ((float)hour()*3600)+((float)minute()*60)+(float)second(); //sekunda dnia
 		inputVirablesValues[beginSize+8] = outputVirablesValues[0];//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
 		inputVirablesValues[beginSize+9] = outputVirablesValues[1];
+		inputVirablesValues[beginSize+10] = outputVirablesValues[2];
 		//Zmienne wyjsciowe
 		
+		digitalWrite(RELAY0, outputVirablesValues[0]);
 		
 	#ifdef DEBUG2
 		DB2("Lista nazw zmiennych");

@@ -24,3 +24,6 @@
 #define SERIAL_TIMEOUT			300
 #define SERIAL_TIMEOUT1			30        //Delay timeouts between sensors asking
 #define	FREE_RAM				10000		//wolny ram po przydzieleniu danych do tablic pomiarowych
+
+#define RELAY0	0//relay on board
+#define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
