@@ -569,6 +569,75 @@ function getSystemVirablesAjax(){
 			}
 		});
 }
+var allRelayNames = []
+var allRelayValues = []
+var allVirablesNames = []
+var allVirablesValues = []
+function getSystemVirablesForInfo(){
+		allRelayNames = []
+		allRelayValues = []
+		$.ajax({
+			type: "GET",
+			datatype: "html",
+			url: "/systemOutVirablesValues",
+			success: function(response) {
+				for(var i = 0;i<response.length;i++){
+					if((response[i].n.indexOf("Relay") != -1)){
+						allRelayNames.push(response[i].n);
+						allRelayValues.push(response[i].v);
+					}
+				}
+			},
+			error: function(response){
+				
+			}
+		});		
+		allVirablesNames = []
+		allVirablesValues = []
+		$.ajax({
+			type: "GET",
+			datatype: "html",
+			url: "/systemVirablesValues",
+			success: function(response) {
+				for(var i = 0;i<response.length;i++){
+					if((response[i].n.indexOf("Temp") != -1)||(response[i].n.indexOf("Hum") != -1)||(response[i].n.indexOf("Soil") != -1)){
+						allVirablesNames.push(response[i].n);
+						allVirablesValues.push(response[i].v);
+					}
+				}
+				fillTailsInfo();
+			},
+			error: function(response){
+				
+			}
+		});	
+}
+function fillTailsInfo(){
+
+	var htmlString = ""
+	for(var i = 0;i < allRelayNames.length; i++){
+		eval('var '+allRelayNames[i]+' = new kafelek("'+allRelayNames[i]+'");');
+		htmlString += eval(allRelayNames[i] +'.draw(0)')
+	}
+	for(var i = 0;i < allVirablesNames.length; i++){
+		eval('var '+allVirablesNames[i]+' = new kafelek("'+allVirablesNames[i]+'");');
+		var type = 0; 
+		if(allVirablesNames[i].indexOf("Temp") != -1) type = 1;
+		if(allVirablesNames[i].indexOf("Hum") != -1) type = 2;
+		if(allVirablesNames[i].indexOf("Soil") != -1) type = 3;
+		htmlString += eval(allVirablesNames[i] +'.draw('+type+')');
+	}
+	$("#plane").html(htmlString);
+
+
+
+	for(var i = 0;i < allRelayNames.length; i++){
+		eval(allRelayNames[i] + '.toggleColorState('+Number(allRelayValues[i])+',0);');
+	}
+	for(var i = 0;i < allVirablesNames.length; i++){
+		eval(allVirablesNames[i]+'.setVal('+Number(allVirablesValues[i])+');');
+	}	
+}
 
 
 	var step = 50;//
@@ -644,3 +713,8 @@ function getSystemVirablesAjax(){
 		});	
 	}
 
+	var loadValues = setInterval(function(){
+		if(!document.getElementById("plane")==false){
+			getSystemVirablesForInfo();
+		}
+	},5000)
