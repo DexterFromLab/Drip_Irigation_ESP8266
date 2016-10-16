@@ -36,6 +36,7 @@ void readMagistralConfig(void){
 			obPointArr[i]->init(sensorConfig,i);
 				
 			DB1("Obiect nr." +String(i)+" created with config: "+String(obPointArr[i]->config));
+			drawFoundSensor(String(String("Dev. ") + String(i) + String(" det.")).c_str());
 		}else{
 			obPointArr[i] = new sensorExecutorObiect;
 			obPointArr[i]->init(0,i);

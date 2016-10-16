@@ -162,6 +162,7 @@ private:
 				}
 			}
 		}
+		return 0;
 	}
 
 	// Parse addition and subtraction
@@ -181,6 +182,7 @@ private:
 			else
 				num1 += num2;
 		}
+		return 0;
 	}
 	char * replace(
 		char const * const original, 
@@ -226,6 +228,7 @@ private:
 		}
 		return returned;
 	  }
+	  return 0;
 	}
 	
 	//Check variables in equation string
@@ -322,6 +325,7 @@ class externalVirables{
 	public:
 	void initSizeOfProbesValues(void){
 		beginSize = inputVirablesNames.size();
+		return;
 	}
 	void initInputVirablesNames(){
 		//Dodawanie nazw zmiennych do tablicy
@@ -347,6 +351,7 @@ class externalVirables{
 		inputVirablesValues.push_back(0);			//init value
 		inputVirablesNames.push_back("Tmp2");
 		inputVirablesValues.push_back(0);
+		return;
 	}
 	void initOutputVirablesNames(void){
 		outputVirablesNames.push_back("Relay0");	//Relay on board
@@ -354,7 +359,8 @@ class externalVirables{
 		outputVirablesNames.push_back("Tmp1");		//nazwa
 		outputVirablesValues.push_back(0);			//init value
 		outputVirablesNames.push_back("Tmp2");		
-		outputVirablesValues.push_back(0);			
+		outputVirablesValues.push_back(0);	
+		return;
 	}
 	void reloadVirValues(void){
 		for(int i = 0; i<MAX_NUM_SEN;i++){
@@ -386,6 +392,7 @@ class externalVirables{
 			DB2(inputVirablesValues[i]);
 		}
 	#endif
+	return;
 	}
 	String generateValNamePairString(){
 		reloadVirValues();

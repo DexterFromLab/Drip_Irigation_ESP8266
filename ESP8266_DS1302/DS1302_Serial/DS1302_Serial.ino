@@ -42,7 +42,7 @@ void setup()
   
   Serial.println("RTC module activated");
   Serial.println();
-  delay(500);
+  delay(50);
   
   if (RTC.haltRTC()) {
     Serial.println("The DS1302 is stopped.  Please run the SetTime");
@@ -54,7 +54,7 @@ void setup()
     Serial.println();
   }
   
-  delay(5000);
+  delay(100);
 }
 
 void loop()
@@ -76,18 +76,18 @@ void loop()
     Serial.write('/');
     Serial.print(tm.Month);
     Serial.write('/');
-    Serial.print(tmYearToCalendar(tm.Year));
+    Serial.print(tm.Year);
     Serial.print(", DoW = ");
     Serial.print(tm.Wday);
     Serial.println();
   } else {
     Serial.println("DS1302 read error!  Please check the circuitry.");
     Serial.println();
-    delay(9000);
+    delay(100);
   }
   
   // Wait one second before repeating :)
-  delay (1000);
+  delay (50);
 }
 
 void print2digits(int number) {

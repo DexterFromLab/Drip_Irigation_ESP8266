@@ -51,7 +51,7 @@ unsigned char tmp_cnt;
 unsigned char buff_full_cnt;
 unsigned int temps_cnt;
 
-unsigned int measure_intervall = 5;//173
+unsigned int measure_intervall = 60;//173
 
 // NTP Servers:
 //static const char ntpServerName[] = "us.pool.ntp.org";
@@ -67,6 +67,8 @@ int last_meas_time[6];
 char NTP_found;
 
 ExprEval eval;	//Klasa parsujÄ…ca rĂłwnania matematyczne
+
+DS1302RTC RTC(RTC_RESET, RTC_CLK, RTC_DATA);
 
 void measure_task() {
 
@@ -140,6 +142,7 @@ void scriptTask(void){
 		}
 	}
 	f.close();
+	return;
 }
 //format bytes
 String formatBytes(size_t bytes) {
@@ -451,14 +454,20 @@ void getMeasureValues(){
 void Repeats(){
   DB1("15 second timer");         
 }
+
+DHT dht(DHTPIN, DHTTYPE);
+
 void setup(void) {
-	
+	//Checking type of init AP or Client dependly of pinstate
 	pinMode(ApClientPin, INPUT);     
 	digitalWrite(ApClientPin, HIGH);  
-	
+	//Relay 0 onboard init
 	pinMode(RELAY0, OUTPUT);     
 	digitalWrite(RELAY0, LOW);  
-
+	//Dht 22 init
+	dht.begin();
+	displayInit();
+	
 	OUT.begin(BAUDRATE);
 	OUT.print("\n");
 	OUT.setDebugOutput(true);
@@ -480,7 +489,9 @@ void setup(void) {
     DB1("\n");
   }
   //mesures
-  setTime(8,29,0,1,1,11); // set time to Saturday 8:29:00am Jan 1 2011
+  tmElements_t tm;
+  RTC.read(tm);
+  setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,tm.Year); // set time to Saturday 8:29:00am Jan 1 2011
 
 
   //WIFI INIT
@@ -488,7 +499,6 @@ void setup(void) {
   listNetworks();
 
   tryToConnect();
-
 
   //SERVER INIT
   //delete
@@ -637,17 +647,9 @@ void setup(void) {
 	server.on("/systemOutVirablesValues", HTTP_GET, []() {
 		server.send(200, "text/json", externVir.generateOutValNamePairString());
 	});
-	if(digitalRead(ApClientPin)&&(System_s.timeMod==0)){
-		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
-		  DB1("Starting UDP");
-		  Udp.begin(localPort);
-		  DB1("Local port: ");
-		  DB1(Udp.localPort());
-		  DB1("waiting for sync");
-		  setSyncProvider(getNtpTime);
-		  setSyncInterval(300);
-		} 
-	}
+
+	initRC();
+
   server.begin();
   DB1("HTTP server started");
   
@@ -665,24 +667,20 @@ void setup(void) {
 	measure_task();							//odczyt pomiarow
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
+
 	Alarm.timerRepeat(measure_intervall, measure_task);
 	Alarm.timerRepeat(60, tryToConnect);
+	Alarm.timerRepeat(1, displayOled);
+	
 	if(System_s.relayScriptTime < 5){
 	System_s.relayScriptTime = 5;
 	}
 	Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
 	digitalClockDisplay();
-
-  
+	displayOled();
 }
 time_t prevDisplay = 0; // when the digital clock was displayed
 void loop(void) {
-  if (timeStatus() != timeNotSet) {
-    if (now() != prevDisplay) { //update the display only if time has changed
-      prevDisplay = now();
-      //digitalClockDisplay();
-    }
-  }
   
   server.handleClient();
   Alarm.delay(1); // wait one second between clock display
@@ -1183,36 +1181,22 @@ void tryToConnect(void){
 	  }
 	}
 }
-/*
-int GetNumber(String input) {
-  char buff[100];
-  sprintf(buff,input.c_str());
-  char * str;
-  str = &buff[0];
-  while (!(*str >= '0' && *str <= '9') && (*str != '-') && (*str != '+')) str++;
-  int number;
-  if (sscanf(str, "%d", &number) == 1) {
-    return number;
-  }
-  // No int found
-  return -1; 
-}
-*/
-/*
-String getScriptList(){
-	String path = "\\";
-	Dir dir = SPIFFS.openDir(path);
-	String output = "[";
-	while (dir.next()) {
-		if(strstr(String(entry.name()).c_str(),".scr")){
-			File entry = dir.openFile("r");
-			if (output != "[") output += ',';
-				output += "{\",\"name\":\"";
-				output += String(entry.name()).substring(1);
-				output += "\"}";
-		}	
+
+void initRC(void){
+	if(digitalRead(ApClientPin)&&(System_s.timeMod==0)){
+		for(i = 0;((i>5)||(NTP_found > 1)) == 0;i++){
+		  DB1("Starting UDP");
+		  Udp.begin(localPort);
+		  DB1("Local port: ");
+		  DB1(Udp.localPort());
+		  DB1("waiting for sync");
+		  setSyncProvider(getNtpTime);
+		  setSyncInterval(300);
+		}
+		if(NTP_found){
+			RTC.writeEN(1);
+			RTC.set(now());
+			RTC.writeEN(0);
+		}
 	}
-	output += "]";
-	server.send(200, "text/json", output);
 }
-*/

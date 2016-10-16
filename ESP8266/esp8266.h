@@ -11,6 +11,7 @@
 #include <FS.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <Time.h>
 #include <TimeLib.h>
 #include <TimeAlarms.h>
 #include <WiFiUdp.h>
@@ -23,6 +24,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "DHT.h"
+#include "DS1302RTC.h"
+//#include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
+#include <Wire.h>  // Only needed for Arduino 1.6.5 and earlier
+//#include "OLEDDisplayUi.h" // Include the UI lib
+//#include "images.h"// Include custom images
+#include "display.h"
+
 
 extern "C" {
 #include "c_types.h"
@@ -82,5 +91,7 @@ int GetNumber(String input);
 String listNetworks();
 String printEncryptionType(int thisType);
 String saveScriptFile(String scriptContent);
-
+void drawCenter(const char * text);
+void displayOled(void);
+void initRC(void);
 #endif

@@ -4,7 +4,7 @@
 #include "./definicje.h"
 #include <ESP8266WiFi.h>
 #include <TimeLib.h>
-
+#include "display.h"
 //deklaracje klass sensorow i urz. wyk
 
 extern std::vector <String>		inputVirablesNames;

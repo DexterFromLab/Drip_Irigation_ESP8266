@@ -25,5 +25,22 @@
 #define SERIAL_TIMEOUT1			30        //Delay timeouts between sensors asking
 #define	FREE_RAM				10000		//wolny ram po przydzieleniu danych do tablic pomiarowych
 
-#define RELAY0	0//relay on board
+//Pinmap
+
+#define RELAY0	17//relay on board
 #define ApClientPin 16 //jesli 1 to lacze sie z siecia jesli 0 tworze wlasna
+
+#define DHTPIN 13     // what digital pin we're connected to
+// Uncomment whatever type you're using!
+//#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+// Set pins:  CE, IO,CLK
+#define RTC_RESET	12
+#define RTC_CLK 5
+#define RTC_DATA 4
+
+// D3 -> SDA
+// D5 -> SCL
+#define OLED_SDA	D3
+#define OLED_SCL	D5
