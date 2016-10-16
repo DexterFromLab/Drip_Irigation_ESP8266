@@ -491,7 +491,7 @@ void setup(void) {
   //mesures
   tmElements_t tm;
   RTC.read(tm);
-  setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,tm.Year); // set time to Saturday 8:29:00am Jan 1 2011
+  setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,(tm.Year - 40));
 
 
   //WIFI INIT
