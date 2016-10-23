@@ -94,4 +94,5 @@ String saveScriptFile(String scriptContent);
 void drawCenter(const char * text);
 void displayOled(void);
 void initRC(void);
+void saveIpSettings(void);
 #endif

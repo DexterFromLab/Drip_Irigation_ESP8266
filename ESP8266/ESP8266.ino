@@ -70,58 +70,7 @@ ExprEval eval;	//Klasa parsujÄ…ca rĂłwnania matematyczne
 
 DS1302RTC RTC(RTC_RESET, RTC_CLK, RTC_DATA);
 
-void measure_task() {
-
-  float suma;
-  char tmpStr[150];
-  DS18B20.requestTemperatures();
-  temp = DS18B20.getTempCByIndex(0);
-  temps_avg[tmp_cnt] = temp;
-  //DB1("Temperature: ");
- // DB1(temps_avg[tmp_cnt]);
-	snprintf(tmpStr,sizeof(tmpStr),"Temps%d: ",tmp_cnt);
-	DB1(tmpStr);
-	DB1(temps_avg[tmp_cnt]);
-	if (tmp_cnt >= (POMIARY_USREDNIANE -1)) {
-    //temps[temps_cnt];
-
-    for (i = 0; i < POMIARY_USREDNIANE ; i++) {
-      suma += temps_avg[i];
-    }
-	if(buff_full_cnt < wielokosc_bufora_pomiarow){
-		temps[buff_full_cnt] = suma / (float)POMIARY_USREDNIANE;
-		buff_full_cnt++;
-	}else{
-		for(i = 0;i<=(wielokosc_bufora_pomiarow - 1);i++){
-			temps[i] = temps[i+1];
-		}
-		temps[wielokosc_bufora_pomiarow - 1] = suma / (float)POMIARY_USREDNIANE;
-	}
-	#ifdef DEBUG2
-		for(i = 0;i<wielokosc_bufora_pomiarow;i++){
-			snprintf(tmpStr,sizeof(tmpStr),"Bufor pomiaru%d: ",i);
-			DB1(tmpStr);
-			DB1(temps[i]);
-			ESP.wdtFeed();
-		}
-	#endif
-    DB1("Srednia: ");
-    DB1(temps[0]);
-    if(temps_cnt < wielokosc_bufora_pomiarow) temps_cnt++;
-	
-	last_meas_time[0] = year();
-	last_meas_time[1] = month();
-	last_meas_time[2] = day();
-	last_meas_time[3] = hour();
-	last_meas_time[4] = minute();
-	last_meas_time[5] = second();
-	
-    tmp_cnt = 0;
-    return;
-  }
-
-  tmp_cnt++;
-  
+void measure_task() {  
   for(int i = 0 ; i < MAX_NUM_SEN ; i++){
 	obPointArr[i]->readMeasurments();
   }
@@ -466,7 +415,6 @@ void setup(void) {
 	digitalWrite(RELAY0, LOW);  
 	//Dht 22 init
 	dht.begin();
-	displayInit();
 	
 	OUT.begin(BAUDRATE);
 	OUT.print("\n");
@@ -476,8 +424,6 @@ void setup(void) {
 	//wczytanie ustawieĹ„ z plikow
 	readEthernetConfig();
 	readSystemConfig();
-
-
   
   {
     Dir dir = SPIFFS.openDir("/");
@@ -491,7 +437,7 @@ void setup(void) {
   //mesures
   tmElements_t tm;
   RTC.read(tm);
-  setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,(tm.Year - 40));
+  setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,(tm.Year - 30));
 
 
   //WIFI INIT
@@ -649,9 +595,9 @@ void setup(void) {
 	});
 
 	initRC();
-
-  server.begin();
-  DB1("HTTP server started");
+    displayInit();
+    server.begin();
+    DB1("HTTP server started");
   
   
 	//Konfiguracja sond
@@ -664,7 +610,6 @@ void setup(void) {
 	externVir.initSizeOfProbesValues();		//przypisywanie pamieci dla pomiarow
 	externVir.initInputVirablesNames();		//inicjacja nazw zmiennych wejsciowych
 	externVir.initOutputVirablesNames();	//init zmiennych wyjsciowych
-	measure_task();							//odczyt pomiarow
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
 
@@ -677,7 +622,6 @@ void setup(void) {
 	}
 	Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
 	digitalClockDisplay();
-	displayOled();
 }
 time_t prevDisplay = 0; // when the digital clock was displayed
 void loop(void) {
@@ -1052,6 +996,7 @@ void tryToConnect(void){
 
 	if((WiFi.status() != WL_CONNECTED)&&(apConnected == 0)){
 	  DB1("ApClientPin: " + String(conn));
+
 	  if(conn){
 		//10 times trying to connect with wi-fi
 		  //for (int conCounter = 0; (conCounter < 10)/*&&(WiFi.status() != WL_CONNECTED)*/; conCounter++) {
@@ -1062,6 +1007,11 @@ void tryToConnect(void){
 				DB1("Connecting to " + String(ethernet.siec));
 				if (String(WiFi.SSID()) != ethernet.siec) {
 					WiFi.begin(ethernet.siec.c_str(), ethernet.haslo.c_str());
+					
+					/*while(((String("0")==String(WiFi.localIP())))){
+						DB1("No IP!");
+						ESP.wdtFeed();
+					}*/
 				}
 
 			}else{
@@ -1104,30 +1054,7 @@ void tryToConnect(void){
 				||(ethernet.ip0 != 0xFF & WiFi.localIP())
 			) ESP.reset();  
 		} 
-		ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
-		ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
-		ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
-		ethernet.ip0 = 0xFF & WiFi.localIP();
-
-		ethernet.m3 = (0xFF000000 & WiFi.subnetMask()) >> 24;
-		ethernet.m2 = (0xFF0000 & WiFi.subnetMask()) >> 16;
-		ethernet.m1 = (0xFF00 & WiFi.subnetMask()) >> 8;
-		ethernet.m0 = 0xFF & WiFi.subnetMask(); 
-
-		ethernet.gat3 = (0xFF000000 & WiFi.gatewayIP()) >> 24;
-		ethernet.gat2 = (0xFF0000 & WiFi.gatewayIP()) >> 16;
-		ethernet.gat1 = (0xFF00 & WiFi.gatewayIP()) >> 8;
-		ethernet.gat0 = 0xFF & WiFi.gatewayIP();
-
-		ethernet.dns1_3 = (0xFF000000 & WiFi.dnsIP(0)) >> 24;
-		ethernet.dns1_2 = (0xFF0000 & WiFi.dnsIP(0)) >> 16;
-		ethernet.dns1_1 = (0xFF00 & WiFi.dnsIP(0)) >> 8;
-		ethernet.dns1_0 = 0xFF & WiFi.dnsIP(0);
-
-		ethernet.dns2_3 = (0xFF000000 & WiFi.dnsIP(1)) >> 24;
-		ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
-		ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
-		ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
+		saveIpSettings();
 		
 		
 
@@ -1180,6 +1107,9 @@ void tryToConnect(void){
 	  
 	  }
 	}
+	if((ethernet.ip0 == 0)&&(ethernet.ip1 == 0)&&(ethernet.ip2 == 0)&&(ethernet.ip3 == 0)){
+		saveIpSettings();
+	}
 }
 
 void initRC(void){
@@ -1198,5 +1128,32 @@ void initRC(void){
 			RTC.set(now());
 			RTC.writeEN(0);
 		}
+		
 	}
+}
+void saveIpSettings(void){
+		ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
+		ethernet.ip2 = (0xFF0000 & WiFi.localIP()) >> 16;
+		ethernet.ip1 = (0xFF00 & WiFi.localIP()) >> 8;
+		ethernet.ip0 = 0xFF & WiFi.localIP();
+
+		ethernet.m3 = (0xFF000000 & WiFi.subnetMask()) >> 24;
+		ethernet.m2 = (0xFF0000 & WiFi.subnetMask()) >> 16;
+		ethernet.m1 = (0xFF00 & WiFi.subnetMask()) >> 8;
+		ethernet.m0 = 0xFF & WiFi.subnetMask(); 
+
+		ethernet.gat3 = (0xFF000000 & WiFi.gatewayIP()) >> 24;
+		ethernet.gat2 = (0xFF0000 & WiFi.gatewayIP()) >> 16;
+		ethernet.gat1 = (0xFF00 & WiFi.gatewayIP()) >> 8;
+		ethernet.gat0 = 0xFF & WiFi.gatewayIP();
+
+		ethernet.dns1_3 = (0xFF000000 & WiFi.dnsIP(0)) >> 24;
+		ethernet.dns1_2 = (0xFF0000 & WiFi.dnsIP(0)) >> 16;
+		ethernet.dns1_1 = (0xFF00 & WiFi.dnsIP(0)) >> 8;
+		ethernet.dns1_0 = 0xFF & WiFi.dnsIP(0);
+
+		ethernet.dns2_3 = (0xFF000000 & WiFi.dnsIP(1)) >> 24;
+		ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
+		ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
+		ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
 }
