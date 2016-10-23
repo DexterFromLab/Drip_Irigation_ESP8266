@@ -51,7 +51,6 @@ unsigned char tmp_cnt;
 unsigned char buff_full_cnt;
 unsigned int temps_cnt;
 
-unsigned int measure_intervall = 60;//173
 
 // NTP Servers:
 //static const char ntpServerName[] = "us.pool.ntp.org";
@@ -71,8 +70,12 @@ ExprEval eval;	//Klasa parsujÄ…ca rĂłwnania matematyczne
 DS1302RTC RTC(RTC_RESET, RTC_CLK, RTC_DATA);
 
 void measure_task() {  
-  for(int i = 0 ; i < MAX_NUM_SEN ; i++){
-	obPointArr[i]->readMeasurments();
+  for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR ; i++){
+	if(i < MAX_NUM_SEN){
+		obPointArr[i]->readMeasurments(0);
+	}else{
+		obPointArr[i]->readMeasurments(1);
+	}
   }
 }
 
@@ -233,7 +236,7 @@ void getMeasuredConfigAjax(){
 	
 	String allTypes = "";
 	
-	for(int i = 0; i<MAX_NUM_SEN; i++){
+	for(int i = 0; i<MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		allTypes += obPointArr[i]->getMeasuredConfigAjax();
 	}
 	
@@ -404,7 +407,7 @@ void Repeats(){
   DB1("15 second timer");         
 }
 
-DHT dht(DHTPIN, DHTTYPE);
+
 
 void setup(void) {
 	//Checking type of init AP or Client dependly of pinstate
@@ -413,8 +416,6 @@ void setup(void) {
 	//Relay 0 onboard init
 	pinMode(RELAY0, OUTPUT);     
 	digitalWrite(RELAY0, LOW);  
-	//Dht 22 init
-	dht.begin();
 	
 	OUT.begin(BAUDRATE);
 	OUT.print("\n");
@@ -614,6 +615,7 @@ void setup(void) {
 	//Zadania okresowe
 
 	Alarm.timerRepeat(measure_intervall, measure_task);
+	measure_task();
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
 	

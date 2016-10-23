@@ -10,8 +10,10 @@ void countAllocMeasuresSize(void);
 
 char response[20];
 
+sensorExecutorObiect * obPointArr[MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR];
 
-sensorExecutorObiect * obPointArr[MAX_NUM_SEN];
+
+unsigned int measure_intervall = 10;//173
 
 void readMagistralConfig(void){
 	//Configuration of virtual obiect in memory
@@ -20,33 +22,40 @@ void readMagistralConfig(void){
 	
 	char * wsk;
 	DB1("ESP free heap: "+String(ESP.getFreeHeap()));
-	for(int i = 0 ; i < MAX_NUM_SEN ; i++){	
-		response[0] = 0;
-		//Checking adresses on magistral and reading devices config;
-		OUT.print("#"+String(i));
-		OUT.readBytes(response,20);
-		DB1((wsk = strchr(response,'&')));
-		if((wsk = strchr(response,'&')) != NULL){
-			OUT.readBytes(response, 20);
-			wsk++;
-			sensorConfig = atoi(wsk);
-			//Creating virtual sensor obiects
+	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){	
+		if(i < MAX_NUM_SEN){
+			response[0] = 0;
+			//Checking adresses on magistral and reading devices config;
+			OUT.print("#"+String(i));
+			OUT.readBytes(response,20);
+			DB1((wsk = strchr(response,'&')));
+			if((wsk = strchr(response,'&')) != NULL){
+				OUT.readBytes(response, 20);
+				wsk++;
+				sensorConfig = atoi(wsk);
+				//Creating virtual sensor obiects
 
-			obPointArr[i] = new sensorExecutorObiect;
-			obPointArr[i]->init(sensorConfig,i);
+				obPointArr[i] = new sensorExecutorObiect;
+				obPointArr[i]->init(sensorConfig,i);
+					
+				DB1("Obiect nr." +String(i)+" created with config: "+String(obPointArr[i]->config));
+				drawFoundSensor(String(String("Dev. ") + String(i) + String(" det.")).c_str());
+			}else{
+				obPointArr[i] = new sensorExecutorObiect;
+				obPointArr[i]->init(0,i);
 				
-			DB1("Obiect nr." +String(i)+" created with config: "+String(obPointArr[i]->config));
-			drawFoundSensor(String(String("Dev. ") + String(i) + String(" det.")).c_str());
+				DB1("Obiect nr." +String(i)+" created with config: "+String(obPointArr[i]->config));
+			}
 		}else{
-			obPointArr[i] = new sensorExecutorObiect;
-			obPointArr[i]->init(0,i);
-			
-			DB1("Obiect nr." +String(i)+" created with config: "+String(obPointArr[i]->config));
+			//configuration of sensor in internal board
+				obPointArr[i] = new sensorExecutorObiect;
+				obPointArr[i]->init(3,i);		//3 bo 011 -temp, hum
+				
+				DB1("Obiect nr." +String(i)+" (dht22) created with config: "+String(obPointArr[i]->config));
 		}
-		
 	}
 	
-	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		DB1("Size ob."+String(i)+": " + String(obPointArr[i]->sizeOfClass()));
 	}
 	
@@ -54,7 +63,7 @@ void readMagistralConfig(void){
 void countAllocMeasuresSize(void){
 	unsigned int sizeOfallMeasures = 0;
 	unsigned int numberOfMeasures;
-	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		sizeOfallMeasures += obPointArr[i]->sizeOfClass();
 	}
 
@@ -62,7 +71,7 @@ void countAllocMeasuresSize(void){
 	
 	DB1("ESP free heap: "+String(ESP.getFreeHeap()));
 	if(sizeOfallMeasures>0) numberOfMeasures = (unsigned int)((ESP.getFreeHeap()-FREE_RAM)/sizeOfallMeasures);
-	for(int i = 0 ; i < MAX_NUM_SEN ; i++){
+	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		if(sizeOfallMeasures>0) obPointArr[i]->create_tables(numberOfMeasures);
 		DB1("Heap"+String(i)+": "+String(ESP.getFreeHeap()));
 	}

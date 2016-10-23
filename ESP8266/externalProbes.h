@@ -1,10 +1,12 @@
 ﻿#ifndef _EXTERNAL_PROBES_
 
 #include <vector>
-#include "./definicje.h"
+#include "definicje.h"
 #include <ESP8266WiFi.h>
 #include <TimeLib.h>
 #include "display.h"
+#include "DHT.h"
+
 //deklaracje klass sensorow i urz. wyk
 
 extern std::vector <String>		inputVirablesNames;
@@ -19,6 +21,8 @@ extern char response[20];
 
 extern void readMagistralConfig(void);
 extern void countAllocMeasuresSize(void);
+
+extern unsigned int measure_intervall;
 
 class sensorExecutorObiect{
 	public:
@@ -57,36 +61,50 @@ class sensorExecutorObiect{
 		addr = address;
 		measCount = 0;
 	}
-	
-	void readMeasurments(void){
-		char * wsk;
-		if(config>0){
-			response[0]=0;
-			OUT.print("#"+String(addr)+String("$a"));
-			//Ponawiamy probe odebarania odpowiedzi, czasami moze sie zdazyc ze czujnik akurat
-			//zbiera dane z otoczenia i wowczas potrzebna jest mu wieksza przerwa
-			for(int i = 0;(i<20)&&(strchr(response,'&') == NULL);i++){
-				OUT.readBytes(response,20);
-				if((wsk = strchr(response,'&')) != NULL){
-					if(config&1){
-						wsk = strchr(response,'t');
-						wsk++;
-						temp = short(atof(wsk)*10);
-						DB1("T"+String(addr)+":"+String(temp));
-					}
-					if(config&2){
-						wsk = strchr(response,'h');
-						wsk++;
-						hum = short(atof(wsk)*10);
-						DB1("H"+String(addr)+":"+String(hum));
-					}
-					if(config&4){
-						wsk = strchr(response,'g');
-						wsk++;
-						hum_g = short(atof(wsk));
-						DB1("G"+String(addr)+":"+String((short)hum_g));
+	//char typeOfMeasure 0-on rs485 magistrall, 1- on board
+	void readMeasurments(char typeOfMeasure){
+		if(typeOfMeasure == 0){
+			char * wsk;
+			if(config>0){
+				response[0]=0;
+				OUT.print("#"+String(addr)+String("$a"));
+				//Ponawiamy probe odebarania odpowiedzi, czasami moze sie zdazyc ze czujnik akurat
+				//zbiera dane z otoczenia i wowczas potrzebna jest mu wieksza przerwa
+				for(int i = 0;(i<20)&&(strchr(response,'&') == NULL);i++){
+					OUT.readBytes(response,20);
+					if((wsk = strchr(response,'&')) != NULL){
+						if(config&1){
+							wsk = strchr(response,'t');
+							wsk++;
+							temp = short(atof(wsk)*10);
+							DB1("T"+String(addr)+":"+String(temp));
+						}
+						if(config&2){
+							wsk = strchr(response,'h');
+							wsk++;
+							hum = short(atof(wsk)*10);
+							DB1("H"+String(addr)+":"+String(hum));
+						}
+						if(config&4){
+							wsk = strchr(response,'g');
+							wsk++;
+							hum_g = short(atof(wsk));
+							DB1("G"+String(addr)+":"+String((short)hum_g));
+						}
 					}
 				}
+			}
+		}else{
+			if(config & 3){
+				//Dht 22 init
+				DHT dht(DHTPIN, DHTTYPE);
+				dht.begin();
+				DB1(String("DHT22 temp: ") + String(dht.readTemperature(0)));
+				temp = short(dht.readTemperature(0)*10);
+				DB1("T"+String(addr)+":"+String(temp));
+				DB1(String("DHT22 hum ") + String(dht.readHumidity()));
+				hum = short(dht.readHumidity()*10);
+				DB1("H"+String(addr)+":"+String(hum));		
 			}
 		}
 		getCurrentTime();
@@ -166,11 +184,11 @@ class sensorExecutorObiect{
 	void loadVirableValue(void){
 		char counter = 0;
 		if(config & 1){
-			inputVirablesValues[tempNum] = temp/10;
+			inputVirablesValues[tempNum] = (float)temp/10;
 			DB2("Temp"+String(addr)+": "+String(inputVirablesValues[tempNum]));
 			}
 		if(config & 2){
-			inputVirablesValues[humNum] = hum/10;
+			inputVirablesValues[humNum] = (float)hum/10;
 			DB2("Hum"+String(addr)+": "+String(inputVirablesValues[humNum]));
 			}
 		if(config & 4){
@@ -195,7 +213,7 @@ class sensorExecutorObiect{
 			json += ",\"Count\": ";
 			json += String(measCount);
 			for(int i = start;i<=stop;i++){
-				json += ",\"V"+String(i)+"\":" + String((float)(tab_temp[i]/10));
+				json += ",\"V"+String(i)+"\":" + String(((float)tab_temp[i]/10));
 			}
 			
 		}
@@ -205,7 +223,7 @@ class sensorExecutorObiect{
 			json += ",\"Count\": ";
 			json += String(measCount);
 			for(int i = start;i<=stop;i++){
-				json += ",\"V"+String(i)+"\":" + String((float)(tab_hum[i]/10));
+				json += ",\"V"+String(i)+"\":" + String(((float)tab_hum[i]/10));
 			}
 			
 		}
@@ -215,7 +233,7 @@ class sensorExecutorObiect{
 			json += ",\"Count\": ";
 			json += String(measCount);
 			for(int i = start;i<=stop;i++){
-				json += ",\"V"+String(i)+"\":" + String((float)((unsigned int)tab_hum_g[i]/10));
+				json += ",\"V"+String(i)+"\":" + String(((unsigned int)tab_hum_g[i]/10));
 			}
 			
 		}
@@ -225,13 +243,14 @@ class sensorExecutorObiect{
 		json += ",\"hour\": "+String((int)hour_d);
 		json += ",\"minute\": "+String((int)minute_d);
 		json += ",\"second\": "+String((int)second_d);
+		json += ",\"intervall\": "+String((int)measure_intervall);
 		json += "}";
 		return json;
 	}
 
 };
 
-extern sensorExecutorObiect * obPointArr[MAX_NUM_SEN];
+extern sensorExecutorObiect * obPointArr[MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR];
 
 #define _EXTERNAL_PROBES_
 #endif

@@ -363,7 +363,7 @@ class externalVirables{
 		return;
 	}
 	void reloadVirValues(void){
-		for(int i = 0; i<MAX_NUM_SEN;i++){
+		for(int i = 0; i<MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR;i++){
 			obPointArr[i]->loadVirableValue();
 		}
 		//Wczytywanie wskazanych danych do tablicy
