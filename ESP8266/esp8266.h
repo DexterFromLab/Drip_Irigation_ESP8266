@@ -95,5 +95,5 @@ void drawCenter(const char * text);
 void displayOled(void);
 void initRC(void);
 void saveIpSettings(void);
-
+void getFreeHeap(void);
 #endif

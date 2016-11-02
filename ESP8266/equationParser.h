@@ -13,7 +13,7 @@
 #include "./externalProbes.h"
 #include <TimeLib.h>
 
-void reloadVirValues(void);
+//void reloadVirValues(void);
 
 
 //#define DBG_OUTPUT_PORT Serial
@@ -230,7 +230,6 @@ private:
 	  }
 	  return 0;
 	}
-	
 	//Check variables in equation string
 	double CheckVirables(EVAL_CHAR* expr){
 		//deklaracje nazw zmiennych w passerze, późńiej należy przypisać odpowiednia tablice z danymi
@@ -242,29 +241,41 @@ private:
 		char str_temp[6];
 		unsigned int i;//counter
 		double wynik;
+		String bufor_rownania;
 		
+		DB2("Przed podstawieniem zmiennych do równania: "+String(ESP.getFreeHeap()));
 		sprintf(wyrazenie,expr);
-		
-		DB1("Rownanie i zmienne: " + String(wyrazenie));
+		DB2("Po sprintfie:                              "+String(ESP.getFreeHeap()));
+		DB1("Rownanie i zmienne:                        " + String(wyrazenie));
 		
 		for(i=0;i<inputVirablesNames.size();i++){
 			if(strstr(wyrazenie,inputVirablesNames[i].c_str()) > 0){
-				dtostrf(inputVirablesValues[i], 4, 2, str_temp);
+				dtostrf(inputVirablesValues[i], 4, 2, str_temp);//tutaj cos mi bruzdzi!
 				sprintf(liczba,"%s",str_temp);
-				sprintf(wyrazenie,replace(wyrazenie,inputVirablesNames[i].c_str(),liczba));
+				
+				bufor_rownania = String(wyrazenie);
+				
+				bufor_rownania.replace(String(inputVirablesNames[i]),String(liczba));
+				
+				//replace1(bufor_rownania,String(inputVirablesNames[i]),String(liczba));
+				
+				sprintf(wyrazenie,bufor_rownania.c_str());
+				//sprintf(wyrazenie,bufor_rownania.c_str());
+				//sprintf(wyrazenie,replace(wyrazenie,inputVirablesNames[i].c_str(),liczba));
 			}
 		}
-
+		//DB2("Po podstawieniu zmiennych do równania "+String(ESP.getFreeHeap()));
 		DB1("Liczby w równaniu: "+ String(wyrazenie));
-		
+		DB2("Po podstawieniu zmiennych do równania:     "+String(ESP.getFreeHeap()));
 		wynik = Eval(wyrazenie);
 		if(wynik > 1000000) wynik = 1000000;
 		if(wynik < -1000000) wynik = -1000000;
+		DB2("Po wykonaniu obliczeń:                     "+String(ESP.getFreeHeap()));
 		return wynik;
 		//return &wyrazenie[0];
 		//*expr = *wyrazenie;
 	}
-
+	
 	double Eval(EVAL_CHAR* expr) {
 		_paren_count = 0;
 		_err = EEE_NO_ERROR;
@@ -287,6 +298,7 @@ private:
 	public:
 	
 	double Count(EVAL_CHAR* expr){
+		DB2("Po wej. w count: "+String(ESP.getFreeHeap()));
 		String virNameS;
 		char* wsk;
 		wsk = strchr(expr,'=');
@@ -296,7 +308,7 @@ private:
 		*wsk = 0;
 		virNameS = String(wsk+1);
 		int i;
-		
+		DB2("Przed forem: "+String(ESP.getFreeHeap()));
 		for(i =0; i<outputVirablesNames.size();i++){
 			DB1(outputVirablesNames[i]);
 			DB1(virNameS);
@@ -308,6 +320,7 @@ private:
 				return outputVirablesValues[i];
 			}
 		}
+		DB2("Po forze: "+String(ESP.getFreeHeap()));
 
 		 return 0;
 	}
@@ -363,9 +376,12 @@ class externalVirables{
 		return;
 	}
 	void reloadVirValues(void){
+		//DB2("Przed przeladowaniem: "+String(ESP.getFreeHeap()));
 		for(int i = 0; i<MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR;i++){
 			obPointArr[i]->loadVirableValue();
 		}
+		//DB2("Po przeladowaniu: "+String(ESP.getFreeHeap()));
+		//DB2("Przed przypisaniem 1234: "+String(ESP.getFreeHeap()));
 		//Wczytywanie wskazanych danych do tablicy
 		inputVirablesValues[beginSize+0] = (float)hour();
 		inputVirablesValues[beginSize+1] = (float)minute();
@@ -374,7 +390,8 @@ class externalVirables{
 		inputVirablesValues[beginSize+4] = (float)weekday();
 		inputVirablesValues[beginSize+5] = (float)month();
 		inputVirablesValues[beginSize+6] = (float)year();
-		inputVirablesValues[beginSize+7] = ((float)hour()*3600)+((float)minute()*60)+(float)second(); //sekunda dnia
+		inputVirablesValues[beginSize+7] = (float)(((float)hour()*3600)+((float)minute()*60)+(float)second()); //sekunda dnia
+
 		inputVirablesValues[beginSize+8] = outputVirablesValues[0];//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
 		inputVirablesValues[beginSize+9] = outputVirablesValues[1];
 		inputVirablesValues[beginSize+10] = outputVirablesValues[2];
@@ -392,6 +409,7 @@ class externalVirables{
 			DB2(inputVirablesValues[i]);
 		}
 	#endif
+	//DB2("Po przypisaniu 1234: "+String(ESP.getFreeHeap()));
 	return;
 	}
 	String generateValNamePairString(){

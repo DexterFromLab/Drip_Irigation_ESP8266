@@ -22,5 +22,6 @@ void displayExternalTemp(char measNum);
 void displayExternalHum(char measNum);
 void displayExternalSoil(char measNum);
 void displayExternalTitle(char measNum);
+void displayExternalValues(char measNum);
 //extern DS1302RTC RTC(RTC_RESET, RTC_CLK, RTC_DATA);
 //extern SSD1306  display(0x3c, OLED_SDA, OLED_SCL);

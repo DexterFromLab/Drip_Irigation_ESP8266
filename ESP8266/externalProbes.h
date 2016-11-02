@@ -53,6 +53,7 @@ class sensorExecutorObiect{
 		hour_d = (char)hour();
 		minute_d = (char)minute();
 		second_d = (char)second();
+		return;
 	}
 	
 	void init(unsigned int conf, unsigned int address){
@@ -60,6 +61,7 @@ class sensorExecutorObiect{
 		config = conf;
 		addr = address;
 		measCount = 0;
+		return;
 	}
 	//char typeOfMeasure 0-on rs485 magistrall, 1- on board
 	void readMeasurments(char typeOfMeasure){
@@ -109,6 +111,7 @@ class sensorExecutorObiect{
 		}
 		getCurrentTime();
 		putMeasureToTables();
+		return;
 	}
 	void putMeasureToTables(void){
 		if(config>0){
@@ -139,6 +142,7 @@ class sensorExecutorObiect{
 				#endif
 			}
 		}
+		return;
 	}
 	unsigned int sizeOfClass(void){
 		classSize = 0;
@@ -178,6 +182,7 @@ class sensorExecutorObiect{
 			inputVirablesNames.push_back("SoilH"+String(addr));
 			inputVirablesValues.push_back(0);
 		}
+		return;
 	}
 	
 	//Funkcja przypisujaca wartosc aktualnych pomiarow do zmiennych lokalnych
@@ -192,9 +197,10 @@ class sensorExecutorObiect{
 			DB2("Hum"+String(addr)+": "+String(inputVirablesValues[humNum]));
 			}
 		if(config & 4){
-			inputVirablesValues[hum_gNum] = hum_g/10;
+			inputVirablesValues[hum_gNum] = hum_g;
 			DB2("SoilH"+String(addr)+": "+String(inputVirablesValues[hum_gNum]));
 			} 
+		return;
 	}
 	String getMeasuredConfigAjax(void){
 		String output = ""; 
@@ -233,7 +239,7 @@ class sensorExecutorObiect{
 			json += ",\"Count\": ";
 			json += String(measCount);
 			for(int i = start;i<=stop;i++){
-				json += ",\"V"+String(i)+"\":" + String(((unsigned int)tab_hum_g[i]/10));
+				json += ",\"V"+String(i)+"\":" + String(((unsigned int)tab_hum_g[i]));
 			}
 			
 		}

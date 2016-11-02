@@ -1,33 +1,112 @@
 ﻿#include "display.h"
 #include "externalProbes.h"
+#include "ajax-requests.h"
 unsigned int disp_counter = 0;
-unsigned int externalProbesCounter = 0;
+int externalProbesCounter = 0;
 SSD1306  display(0x3c, OLED_SDA, OLED_SCL);
 
 void displayOled(void){
 	if(disp_counter < 10){
 		display_time();
+		//disp_counter++;
 	}else if(disp_counter < 20){
-		externalProbesCounter = 30;
 		displayTempAndHum();
-	}else if((obPointArr[0]->config > 0) && ((disp_counter < (externalProbesCounter-8)))){
+		//disp_counter++;
+	}else if(disp_counter < 22){
+		if(obPointArr[0]->config == 0) disp_counter += 10; else
 		displayExternalTitle(0);
-	}else if((obPointArr[0]->config > 0) && ((disp_counter < externalProbesCounter))){
-		display.clear();
-		if(obPointArr[0]->config & 1){
-			displayExternalTemp(0);
+		//disp_counter++;
+	}else if(disp_counter < 30){
+		displayExternalValues(0);
+		//disp_counter++;
+	}else if(disp_counter < 32){
+		if(obPointArr[1]->config == 0) disp_counter += 10; else
+		displayExternalTitle(1);
+		//disp_counter++;
+	}else if(disp_counter < 40){
+		displayExternalValues(1);
+		//disp_counter++;
+	}else if(disp_counter < 42){
+		if(obPointArr[2]->config == 0) disp_counter += 10; else
+		displayExternalTitle(2);
+		//disp_counter++;
+	}else if(disp_counter < 50){
+		displayExternalValues(2);
+		//disp_counter++;
+	}else if(disp_counter < 52){
+		if(obPointArr[3]->config == 0) disp_counter += 10; else
+		displayExternalTitle(3);
+		//disp_counter++;
+	}else if(disp_counter < 60){
+		displayExternalValues(3);
+		//disp_counter++;
+	}else if(disp_counter < 62){
+		if(obPointArr[4]->config == 0) disp_counter += 10; else
+		displayExternalTitle(4);
+		//disp_counter++;
+	}else if(disp_counter < 70){
+		displayExternalValues(4);
+		//disp_counter++;
+	}else if(disp_counter < 72){
+		if(obPointArr[5]->config == 0) disp_counter += 10; else
+		displayExternalTitle(5);
+		//disp_counter++;
+	}else if(disp_counter < 80){
+		displayExternalValues(5);
+		//disp_counter++;
+	}else if(disp_counter < 82){
+		if(obPointArr[6]->config == 0) disp_counter += 10; else
+		displayExternalTitle(6);
+		//disp_counter++;
+	}else if(disp_counter < 90){
+		displayExternalValues(6);
+		//disp_counter++;
+	}else if(disp_counter < 92){
+		if(obPointArr[7]->config == 0) disp_counter += 10; else
+		displayExternalTitle(7);
+		//disp_counter++;
+	}else if(disp_counter < 100){
+		displayExternalValues(7);
+		//disp_counter++;
+	}else if(disp_counter < 102){
+		if(obPointArr[8]->config == 0) disp_counter += 10; else
+		displayExternalTitle(8);
+		//disp_counter++;
+	}else if(disp_counter < 110){
+		displayExternalValues(8);
+		//disp_counter++;
+	}else if(disp_counter < 112){
+		if(obPointArr[9]->config == 0) disp_counter += 10; else
+		displayExternalTitle(9);
+		//disp_counter++;
+	}else if(disp_counter < 120){
+		displayExternalValues(9);
+		//disp_counter++;
+	}
+	if(disp_counter == 19){
+		externalProbesCounter = 0;
+		for(int i = 0;i<=9;i++){
+			if(obPointArr[i]->config > 0) externalProbesCounter += 10;
 		}
-		if(obPointArr[0]->config & 2){
-			displayExternalHum(0);
-		}
-		if((unsigned int)obPointArr[0]->config & 4){
-			displayExternalSoil(0);
-		}
-		display.display();
-	}else{
-		disp_counter = 0;
+	}
+	if(disp_counter > 20){
+		externalProbesCounter--;
+		if(externalProbesCounter < 1) disp_counter = 0;
 	}
 	disp_counter++;
+}
+void displayExternalValues(char measNum){
+	display.clear();
+	if(obPointArr[measNum]->config & 1){
+		displayExternalTemp(measNum);
+	}
+	if(obPointArr[measNum]->config & 2){
+		displayExternalHum(measNum);
+	}
+	if((unsigned int)obPointArr[measNum]->config & 4){
+		displayExternalSoil(measNum);
+	}
+	display.display();
 }
 void displayExternalTitle(char measNum){
 	display.clear();
@@ -98,10 +177,10 @@ void display_time(void){
 }
 void displayAddres(void){
 	drawCenter((String("http://")+
-		String(0xFF & WiFi.localIP())+"."+
-		String((0xFF00 & WiFi.localIP()) >> 8)+"."+
-		String((0xFF0000 & WiFi.localIP()) >> 16)+"."+
-		String((0xFF000000 & WiFi.localIP()) >> 24)
+		String((int)ethernet.ip0)+"."+
+		String((int)ethernet.ip1)+"."+
+		String((int)ethernet.ip2)+"."+
+		String((int)ethernet.ip3)
 	).c_str(),10,0,0);
 }
 void drawCenter(const char * text, char size,char posx, char posy){

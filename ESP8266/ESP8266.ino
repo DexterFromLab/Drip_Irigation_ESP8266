@@ -78,22 +78,28 @@ void measure_task() {
 	}
   }
 }
-
+File filescript;
 void scriptTask(void){
-	File f = SPIFFS.open(System_s.workingScript, "r+");
+	DB2("scriptTask, przed wczytaniem skryptu: "+String(ESP.getFreeHeap()));
+	File filescript = SPIFFS.open(System_s.workingScript, "r+");
+	DB2("Po wczytaniu: "+String(ESP.getFreeHeap()));
 	String script_line;
-	if (!f) {
+	if (!filescript) {
 		DB1("file open failed");
 	}else{
+		//DB2("Przed przel. zmien. 123: "+String(ESP.getFreeHeap()));
 		externVir.reloadVirValues();
-		script_line = f.readStringUntil('\n');
-		String(eval.Count((EVAL_CHAR*)script_line.c_str()));
+		//DB2("Po przeladowaniu zmiennych123: "+String(ESP.getFreeHeap()));
+		script_line = filescript.readStringUntil('\n');
+		eval.Count((EVAL_CHAR*)script_line.c_str());
 		while(script_line != ""){
-			script_line = f.readStringUntil('\n');
+			script_line = filescript.readStringUntil('\n');
 			String(eval.Count((EVAL_CHAR*)script_line.c_str()));	
 		}
+
 	}
-	f.close();
+	filescript.close();
+	DB2("Po zamknieciu pliku: "+String(ESP.getFreeHeap()));
 	return;
 }
 //format bytes
@@ -425,6 +431,9 @@ void setup(void) {
 	//wczytanie ustawieĹ„ z plikow
 	readEthernetConfig();
 	readSystemConfig();
+	
+
+    displayInit();
   
   {
     Dir dir = SPIFFS.openDir("/");
@@ -446,7 +455,7 @@ void setup(void) {
   listNetworks();
 
   tryToConnect();
-
+  initRC();
   //SERVER INIT
   //delete
   server.on("/getScriptContent", HTTP_GET, getScriptContent);
@@ -595,8 +604,7 @@ void setup(void) {
 		server.send(200, "text/json", externVir.generateOutValNamePairString());
 	});
 
-	initRC();
-    displayInit();
+
     server.begin();
     DB1("HTTP server started");
   
@@ -618,12 +626,15 @@ void setup(void) {
 	measure_task();
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
+	Alarm.timerRepeat(5, getFreeHeap);
 	
 	if(System_s.relayScriptTime < 5){
 	System_s.relayScriptTime = 5;
 	}
 	Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
 	digitalClockDisplay();
+
+	
 }
 time_t prevDisplay = 0; // when the digital clock was displayed
 void loop(void) {
@@ -1000,6 +1011,7 @@ void tryToConnect(void){
 	  DB1("ApClientPin: " + String(conn));
 
 	  if(conn){
+		  WiFi.mode(WIFI_STA);
 		//10 times trying to connect with wi-fi
 		  //for (int conCounter = 0; (conCounter < 10)/*&&(WiFi.status() != WL_CONNECTED)*/; conCounter++) {
 			delay(500);
@@ -1158,4 +1170,8 @@ void saveIpSettings(void){
 		ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
 		ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
 		ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
+		Alarm.timerOnce(5, saveIpSettings);
+}
+void getFreeHeap(void){
+	DB2("Free Heap"+String(ESP.getFreeHeap()));
 }

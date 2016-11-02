@@ -40,5 +40,6 @@ typedef struct system{
 	unsigned int relayScriptTime;
 }system_struct;
 
+extern ethernet_struct ethernet;
 #endif
 

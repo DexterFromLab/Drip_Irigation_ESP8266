@@ -13,7 +13,7 @@ char response[20];
 sensorExecutorObiect * obPointArr[MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR];
 
 
-unsigned int measure_intervall = 10;//173
+unsigned int measure_intervall = 6;//173
 
 void readMagistralConfig(void){
 	//Configuration of virtual obiect in memory
