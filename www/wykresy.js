@@ -206,6 +206,9 @@ function getMeasuredConfigAjax(){
 		data: {scriptName: name},
 		success: function(response) {
 			allMeasuredTypes = response.allMeasuredTypes.split(';')
+			if(allMeasuredTypes[allMeasuredTypes.length-1] == ""){
+				allMeasuredTypes.pop()
+			}
 			//getAllMeasuresData(allMeasuredTypes);
 			drawChecboxes(allMeasuredTypes);
 			
