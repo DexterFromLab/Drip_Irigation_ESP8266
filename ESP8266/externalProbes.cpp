@@ -13,7 +13,7 @@ char response[20];
 sensorExecutorObiect * obPointArr[MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR];
 
 
-unsigned int measure_intervall = 6;//173
+unsigned int measure_intervall = 10;//173
 
 void readMagistralConfig(void){
 	//Configuration of virtual obiect in memory
@@ -63,6 +63,7 @@ void readMagistralConfig(void){
 void countAllocMeasuresSize(void){
 	unsigned int sizeOfallMeasures = 0;
 	unsigned int numberOfMeasures;
+	unsigned int memForMeasures;
 	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		sizeOfallMeasures += obPointArr[i]->sizeOfClass();
 	}
@@ -70,7 +71,14 @@ void countAllocMeasuresSize(void){
 	DB1("Size of all class: "+String(sizeOfallMeasures));
 	
 	DB1("ESP free heap: "+String(ESP.getFreeHeap()));
-	if(sizeOfallMeasures>0) numberOfMeasures = (unsigned int)((ESP.getFreeHeap()-FREE_RAM)/sizeOfallMeasures);
+	
+	memForMeasures = (ESP.getFreeHeap()-FREE_RAM);
+	
+	if(sizeOfallMeasures>0) numberOfMeasures = (memForMeasures/sizeOfallMeasures);
+	
+	DB1("Heep for measures: "+String(memForMeasures));
+	DB1("Number of all measures: " + String(numberOfMeasures));
+	
 	for(int i = 0 ; i < MAX_NUM_SEN + NUM_OF_INTERNAL_SENSOR; i++){
 		if(sizeOfallMeasures>0) obPointArr[i]->create_tables(numberOfMeasures);
 		DB1("Heap"+String(i)+": "+String(ESP.getFreeHeap()));

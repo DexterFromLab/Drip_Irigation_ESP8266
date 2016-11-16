@@ -1173,5 +1173,5 @@ void saveIpSettings(void){
 		Alarm.timerOnce(5, saveIpSettings);
 }
 void getFreeHeap(void){
-	DB2("Free Heap"+String(ESP.getFreeHeap()));
+	DB1("Free Heap"+String(ESP.getFreeHeap()));
 }

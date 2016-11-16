@@ -156,8 +156,13 @@ second = Number(second);
 intervall = Number(intervall);
 szerokosc_okna_wykresu = numOfProbesToRead *30;
 if(szerokosc_okna_wykresu<500) szerokosc_okna_wykresu = 500;
-for(var i = 0;i<numberOfMeasProbes;i++){
 
+function pushItoTable(){
+	times.push((parseInt(hour, 10) + 100).toString().substr(1) + ":" + (parseInt(minute, 10) + 100).toString().substr(1) + ":" + (parseInt(second, 10) + 100).toString().substr(1)+ " " + (parseInt(day, 10) + 100).toString().substr(1) + "-" + (parseInt(month, 10) + 100).toString().substr(1) + "-" + year.toString());
+}
+
+for(var i = 0;i<numberOfMeasProbes;i++){
+/*
 		if(numberOfMeasProbes > toProbeNumber){
 			if(i>(numberOfMeasProbes - toProbeNumber)&&(i<=(numberOfMeasProbes - toProbeNumber + numOfProbesToRead))){
 				times.push((parseInt(hour, 10) + 100).toString().substr(1) + ":" + (parseInt(minute, 10) + 100).toString().substr(1) + ":" + (parseInt(second, 10) + 100).toString().substr(1)+ " " + (parseInt(day, 10) + 100).toString().substr(1) + "-" + (parseInt(month, 10) + 100).toString().substr(1) + "-" + year.toString());
@@ -167,7 +172,14 @@ for(var i = 0;i<numberOfMeasProbes;i++){
 				times.push((parseInt(hour, 10) + 100).toString().substr(1) + ":" + (parseInt(minute, 10) + 100).toString().substr(1) + ":" + (parseInt(second, 10) + 100).toString().substr(1)+ " " + (parseInt(day, 10) + 100).toString().substr(1) + "-" + (parseInt(month, 10) + 100).toString().substr(1) + "-" + year.toString());
 			}
 		}
+*/
 
+		var y = numberOfMeasProbes - i;
+
+		if((toProbeNumber <= numberOfMeasProbes)&&(y>=firstMeasureFromNumber)&&(y<=toProbeNumber)) pushItoTable();
+			
+		if((toProbeNumber > numberOfMeasProbes)&&(y>firstMeasureFromNumber)) pushItoTable();
+		
 		second = second - intervall
 		var monthLen = [31,28,31,30,31,30,31,31,30,31,30,31]
 		

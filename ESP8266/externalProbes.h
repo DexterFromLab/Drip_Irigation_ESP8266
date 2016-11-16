@@ -33,7 +33,7 @@ class sensorExecutorObiect{
 	unsigned int config;	
 	unsigned int addr;
 	unsigned int classSize;
-	unsigned int measCount;
+	volatile unsigned int measCount;
 	unsigned int numOfMeasure;
 	
 	
@@ -114,30 +114,35 @@ class sensorExecutorObiect{
 		return;
 	}
 	void putMeasureToTables(void){
+		DB2("Used numOfMeasure: "+String(numOfMeasure));
+
 		if(config>0){
 			if(measCount<numOfMeasure){
 				if(config&1) *(tab_temp+measCount) = temp;
 				if(config&2) *(tab_hum+measCount) = hum;
 				if(config&4) *(tab_hum_g+measCount) = hum_g;
 				measCount++;
+				DB2("Number of probe: "+String(measCount));
 			}else{
 				for(int i = 0;i<(numOfMeasure - 1);i++){
 					if(config&1) *(tab_temp+i) = *(tab_temp+i + 1);
 					if(config&2) *(tab_hum+i) = *(tab_hum+i + 1);
 					if(config&4) *(tab_hum_g+i) = *(tab_hum_g+i + 1);
 				}
-				*(tab_temp+numOfMeasure-1) = temp;
-				*(tab_hum+numOfMeasure-1) = hum;
-				*(tab_hum_g+numOfMeasure-1) = hum_g;
+				DB2("Jade po pamieci!");
+				if(config&1)*(tab_temp+numOfMeasure-1) = temp;
+				if(config&2)*(tab_hum+numOfMeasure-1) = hum;
+				if(config&4)*(tab_hum_g+numOfMeasure-1) = hum_g;
+				DB2("Jade dalej!");
 				#ifdef DEBUG2
 				DB2("Used numOfMeasure="+String(numOfMeasure));
-				for(int i = 0;i<numOfMeasure;i++){
+				/*for(int i = 0;i<numOfMeasure;i++){
 					DB2("T"+String(i)+":"+String(float(*(tab_temp+i))/10) + " " +
 						"H"+String(i)+":"+String(float(*(tab_hum+i))/10)+ " " +
 						"G"+String(i)+":"+String(short(*(tab_hum_g+i)))
 					);
 					ESP.wdtFeed();
-				}
+				}*/
 				delay(1000);
 				#endif
 			}
