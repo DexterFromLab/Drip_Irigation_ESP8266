@@ -36,10 +36,15 @@ typedef struct system{
 	char hour;
 	char minute;
 	char second;
+	
+	char timeZone;
+	unsigned int measInt;
+	
 	String workingScript;
 	unsigned int relayScriptTime;
 }system_struct;
 
 extern ethernet_struct ethernet;
+extern system_struct System_s;
 #endif
 

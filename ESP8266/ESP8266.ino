@@ -55,8 +55,6 @@ unsigned int temps_cnt;
 // NTP Servers:
 //static const char ntpServerName[] = "us.pool.ntp.org";
 
-const int timeZone = 2;     // Central European Time
-
 WiFiUDP Udp;
 unsigned int localPort = 8888;  // local port to listen for UDP packets
 
@@ -214,6 +212,8 @@ void systemControl(){
 	System_s.hour = String(server.arg("hour")).toInt();
 	System_s.minute = String(server.arg("minute")).toInt();
 	System_s.second = String(server.arg("second")).toInt();
+	System_s.timeZone = String(server.arg("timeZone")).toInt();
+	System_s.measInt = String(server.arg("measInt")).toInt();
 	DB1(
 		" timeMod: " + String((int)System_s.timeMod) +
 		" NTP_addr: " + System_s.NTP_addr +
@@ -222,7 +222,9 @@ void systemControl(){
 		" day: " + String((int)System_s.day) +
 		" hour: " + String((int)System_s.hour) +
 		" minute: " + String((int)System_s.minute) +
-		" second: " + String((int)System_s.second)
+		" second: " + String((int)System_s.second)+
+		" timeZone: " + String((int)System_s.timeZone)+
+		" measInt: " + String((int)System_s.measInt)
 		);
 	server.send(200, "text/json", "\"Data send correctly!\"");
 	saveSystemConfig();
@@ -246,7 +248,7 @@ void getMeasuredConfigAjax(){
 		allTypes += obPointArr[i]->getMeasuredConfigAjax();
 	}
 	
-	output += "{\"intervall\":" +String(5);
+	output += "{\"intervall\":" + String(System_s.measInt);
 	output += ",\"allMeasuredTypes\":\"" + String(allTypes)+"\"";
 	output += "}";
 	server.send(200, "text/json", output);
@@ -316,6 +318,9 @@ void fileDelete() {
   SPIFFS.remove(path);
   server.send(200, "text/plain", "");
   path = String();
+}
+void reset(void){
+	ESP.reset();
 }
 void handleFileCreate() {
   if (server.args() == 0)
@@ -448,8 +453,6 @@ void setup(void) {
   tmElements_t tm;
   RTC.read(tm);
   setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,(tm.Year - 30));
-
-
   //WIFI INIT
 
   listNetworks();
@@ -474,6 +477,7 @@ void setup(void) {
   //Pobierz listę plików
   server.on("/getScriptsNames", HTTP_GET, getScriptsNames);
   server.on("/measureValues", HTTP_GET, getMeasureValues);
+  server.on("/reset", HTTP_GET, reset);
   //list directory
   server.on("/list", HTTP_GET, handleFileList);
   server.on("/getMeasuredConfigAjax", HTTP_GET, getMeasuredConfigAjax);
@@ -514,6 +518,7 @@ void setup(void) {
     json += ",\"second\":"  + String(second());
     json += ",\"minute\":"  + String(minute());
     json += ",\"hour\":"  + String(hour());
+	
 	json += ",\"measure_intervall\":" + String(measure_intervall * POMIARY_USREDNIANE);
 	for(i=0;i<=5;i++){
 		json += ",\"last_meas_time" +String(i)+"\":" + String(last_meas_time[i]);
@@ -570,6 +575,7 @@ void setup(void) {
 		json = String();
 	});    
 	server.on("/system", HTTP_GET, []() {
+		readSystemConfig();
 		
 		String json = "{";
 		json += "\"timeMod\":" + String((int)System_s.timeMod);
@@ -581,6 +587,9 @@ void setup(void) {
 		json += ",\"minute\":" + String((int)minute());
 		json += ",\"second\":" + String((int)second());
 
+		json += ",\"timeZone\":" + String((int)System_s.timeZone);
+		json += ",\"measInt\":" + String(System_s.measInt);
+		
 		json += ",\"NTP_addr\":\"" + System_s.NTP_addr + "\"";
 		json += "}";
 		server.send(200, "text/json", json);
@@ -622,7 +631,7 @@ void setup(void) {
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
 
-	Alarm.timerRepeat(measure_intervall, measure_task);
+	Alarm.timerRepeat(System_s.measInt, measure_task);
 	measure_task();
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
@@ -662,26 +671,25 @@ time_t getNtpTime()
   sendNTPpacket(ntpServerIP);
   uint32_t beginWait = millis();
   while (millis() - beginWait < 1500) {
-    int size = Udp.parsePacket();
-    if (size >= NTP_PACKET_SIZE) {
-      DB1("Receive NTP Response");
-      Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
-      unsigned long secsSince1900;
-      // convert four bytes starting at location 40 to a long integer
-      secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
-      secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
-      secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
-      secsSince1900 |= (unsigned long)packetBuffer[43];
-	  
-	  NTP_found++;
-	  
-      return secsSince1900 - 2208988800UL + timeZone * SECS_PER_HOUR;
-    }
-  }
-  DB1("No NTP Response :-(");
-  return 0; // return 0 if unable to get the time
+		int size = Udp.parsePacket();
+		if (size >= NTP_PACKET_SIZE) {
+		  DB1("Receive NTP Response");
+		  Udp.read(packetBuffer, NTP_PACKET_SIZE);  // read packet into the buffer
+		  unsigned long secsSince1900;
+		  // convert four bytes starting at location 40 to a long integer
+		  secsSince1900 =  (unsigned long)packetBuffer[40] << 24;
+		  secsSince1900 |= (unsigned long)packetBuffer[41] << 16;
+		  secsSince1900 |= (unsigned long)packetBuffer[42] << 8;
+		  secsSince1900 |= (unsigned long)packetBuffer[43];
+		  
+		  NTP_found++;
+		  
+		  return (secsSince1900 - 2208988800UL);
+		}
+	  DB1("No NTP Response :-(");
+	  return 0; // return 0 if unable to get the time
+	}
 }
-
 // send an NTP request to the time server at the given address
 void sendNTPpacket(IPAddress &address)
 {
@@ -870,6 +878,10 @@ void saveSystemConfig(void){
 		f.print(String((int)System_s.hour) + ";");
 		f.print(String((int)System_s.minute) + ";");
 		f.print(String((int)System_s.second) + ";");
+		
+		f.print(String((int)System_s.timeZone) + ";");
+		f.print(String(System_s.measInt) + ";");
+		
 		f.print(System_s.workingScript + ";");
 		f.print(String((int)System_s.relayScriptTime) + ";");
 		f.println();
@@ -916,6 +928,12 @@ void readSystemConfig(void){
 		schowek = strtok( NULL , korektor );
 		System_s.second = atoi(schowek);
 		
+		schowek = strtok( NULL , korektor );
+		System_s.timeZone = atoi(schowek);
+		
+		schowek = strtok( NULL , korektor );
+		System_s.measInt = atoi(schowek);
+	
 		schowek = strtok( NULL , korektor );
 		System_s.workingScript = String(schowek);
 		
@@ -1144,6 +1162,7 @@ void initRC(void){
 		}
 		
 	}
+	adjustTime(timeZone()*3600);
 }
 void saveIpSettings(void){
 		ethernet.ip3 = (0xFF000000 & WiFi.localIP()) >> 24;
@@ -1170,8 +1189,90 @@ void saveIpSettings(void){
 		ethernet.dns2_2 = (0xFF0000 & WiFi.dnsIP(1)) >> 16;
 		ethernet.dns2_1 = (0xFF00 & WiFi.dnsIP(1)) >> 8;
 		ethernet.dns2_0 = 0xFF & WiFi.dnsIP(1);
-		Alarm.timerOnce(5, saveIpSettings);
+		Alarm.timerOnce(10, saveIpSettings);
 }
 void getFreeHeap(void){
 	DB1("Free Heap"+String(ESP.getFreeHeap()));
+}
+int timeZone(void){
+	switch((int)System_s.timeZone){
+		case 0:
+			return 12;
+			break;
+		case 1:
+			return 11;
+			break;
+		case 2:
+			return 10;
+			break;
+		case 3:
+			return 9;
+			break;
+		case 4:
+			return 8;
+			break;
+		case 5:
+			return 7;
+			break;
+		case 6:
+			return 6;
+			break;
+		case 7:
+			return 5;
+			break;
+		case 8:
+			return 4;
+			break;
+		case 9:
+			return 3;
+			break;
+		case 10:
+			return 2;
+			break;
+		case 11:
+			return 1;
+			break;
+		case 12:
+			return 0;
+			break;
+		case 13:
+			return -1;
+			break;
+		case 14:
+			return -2;
+			break;
+		case 15:
+			return -3;
+			break;
+		case 16:
+			return -4;
+			break;
+		case 17:
+			return -5;
+			break;
+		case 18:
+			return -6;
+			break;
+		case 19:
+			return -7;
+			break;
+		case 20:
+			return -8;
+			break;
+		case 21:
+			return -9;
+			break;
+		case 22:
+			return -10;
+			break;
+		case 23:
+			return -11;
+			break;
+		case 24:
+			return -12;
+			break;
+		case 25:
+			return -1;
+			break;
+	}
 }

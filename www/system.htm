@@ -38,7 +38,43 @@
 					<label>Data na urządzeniu RRRR-MM-DD</label>
 					<input id="date" type="date" class="form-control">
 				</div>
+				<div>
+					<label>Strefa czasowa</label>
+					<select id="timeZone" class="form-control">
+						<option value="0">GTM +12</option>
+						<option value="1">GTM +11</option>
+						<option value="2">GTM +10</option>
+						<option value="3">GTM +9</option>
+						<option value="4">GTM +8</option>
+						<option value="5">GTM +7</option>
+						<option value="6">GTM +6</option>
+						<option value="7">GTM +5</option>
+						<option value="8">GTM +4</option>
+						<option value="9">GTM +3</option>
+						<option value="10">GTM +2</option>
+						<option value="11">GTM +1</option>
+						<option value="12">GTM 0</option>
+						<option value="13">GTM -1</option>
+						<option value="14">GTM -2</option>
+						<option value="15">GTM -3</option>
+						<option value="16">GTM -4</option>
+						<option value="17">GTM -5</option>
+						<option value="18">GTM -6</option>
+						<option value="19">GTM -7</option>
+						<option value="20">GTM -8</option>
+						<option value="21">GTM -9</option>
+						<option value="22">GTM -10</option>
+						<option value="23">GTM -11</option>
+						<option value="24">GTM -12</option>
+						<option value="25">Warszawa(automatyczna zmiana czasu)</option>
+					</select>
+				</div>
+				<div>
+					<label>Interwał pomiarów</label>
+					<input id="measInt" class="form-control">
+				</div>
 				<div class="buttblock">
+					<input onclick="ESP8266Reset()" class="form-control" type="button" value="Reset">
 					<input onclick="sendSys()" class="form-control" type="button" value="Zapisz">
 				</div>
 			</div>

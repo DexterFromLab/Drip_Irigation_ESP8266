@@ -32,7 +32,6 @@
 //#include "images.h"// Include custom images
 #include "display.h"
 
-
 extern "C" {
 #include "c_types.h"
 #include "ets_sys.h"
@@ -96,4 +95,6 @@ void displayOled(void);
 void initRC(void);
 void saveIpSettings(void);
 void getFreeHeap(void);
+int timeZone(void);
+void reset(void);
 #endif

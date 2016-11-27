@@ -6,6 +6,7 @@
 #include <TimeLib.h>
 #include "display.h"
 #include "DHT.h"
+#include "./ajax-requests.h"
 
 //deklaracje klass sensorow i urz. wyk
 
@@ -254,7 +255,7 @@ class sensorExecutorObiect{
 		json += ",\"hour\": "+String((int)hour_d);
 		json += ",\"minute\": "+String((int)minute_d);
 		json += ",\"second\": "+String((int)second_d);
-		json += ",\"intervall\": "+String((int)measure_intervall);
+		json += ",\"intervall\": "+String((int)System_s.measInt);
 		json += "}";
 		return json;
 	}
