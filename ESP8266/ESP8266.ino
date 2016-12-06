@@ -634,7 +634,7 @@ void setup(void) {
 	Alarm.timerRepeat(System_s.measInt, setMeasureTaskFlag);
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
-	//Alarm.timerRepeat(5, getFreeHeap);
+	Alarm.timerRepeat(5, getFreeHeap);
 	
 	if(System_s.relayScriptTime < 5){
 		System_s.relayScriptTime = 5;
@@ -659,13 +659,24 @@ uint8_t doFlag = 0;
 void setDisplayOledFLag(void){
 	doFlag = 1;
 }
+uint8_t silenceFlag = 1;
+void setSilenceFLag(void){
+	silenceFlag = 1;
+}
 void loop(void) {
 	if(systemIsLoaded){	
 		//priority of task
-	  if(mtFlag){measure_task();mtFlag = 0;}				//1
-	  if(stFlag){scriptTask();stFlag = 0;}					//2
-	  if(doFlag){displayOled();doFlag = 0;}					//3
-	  server.handleClient();								//4
+	  if(mtFlag){
+		  measure_task();
+		  mtFlag = 0;
+		  silenceFlag = 0;
+		  Alarm.alarmOnce(System_s.measInt-1, setSilenceFLag);
+	   }				//1
+	  if(silenceFlag == 0){
+		  if(stFlag){scriptTask();stFlag = 0;}					//2
+		  if(doFlag){displayOled();doFlag = 0;}					//3
+		  server.handleClient();								//4
+	  }
 	  Alarm.serviceAlarms(); 								//5 	Check task times
 	}
 }
