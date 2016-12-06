@@ -418,7 +418,7 @@ void Repeats(){
   DB1("15 second timer");         
 }
 
-
+uint8_t systemIsLoaded = 0;
 
 void setup(void) {
 	//Checking type of init AP or Client dependly of pinstate
@@ -631,26 +631,45 @@ void setup(void) {
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
 
-	Alarm.timerRepeat(System_s.measInt, measure_task);
-	measure_task();
+	Alarm.timerRepeat(System_s.measInt, setMeasureTaskFlag);
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
-	Alarm.timerRepeat(5, getFreeHeap);
+	//Alarm.timerRepeat(5, getFreeHeap);
 	
 	if(System_s.relayScriptTime < 5){
-	System_s.relayScriptTime = 5;
+		System_s.relayScriptTime = 5;
 	}
-	Alarm.timerRepeat(System_s.relayScriptTime,scriptTask);
+	Alarm.timerRepeat(System_s.relayScriptTime,setScriptTaskFlag);
 	digitalClockDisplay();
 
-	
+	systemIsLoaded = 1;
 }
+
 time_t prevDisplay = 0; // when the digital clock was displayed
-void loop(void) {
-  
-  server.handleClient();
-  Alarm.delay(1); // wait one second between clock display
+
+uint8_t mtFlag = 1;
+void setMeasureTaskFlag(void){
+	mtFlag = 1;
 }
+uint8_t stFlag = 0;
+void setScriptTaskFlag(void){
+	stFlag = 1;
+}
+uint8_t doFlag = 0;
+void setDisplayOledFLag(void){
+	doFlag = 1;
+}
+void loop(void) {
+	if(systemIsLoaded){	
+		//priority of task
+	  if(mtFlag){measure_task();mtFlag = 0;}				//1
+	  if(stFlag){scriptTask();stFlag = 0;}					//2
+	  if(doFlag){displayOled();doFlag = 0;}					//3
+	  server.handleClient();								//4
+	  Alarm.serviceAlarms(); 								//5 	Check task times
+	}
+}
+
 
 /*-------- NTP code ----------*/
 

@@ -13,7 +13,7 @@
 #include <DallasTemperature.h>
 #include <Time.h>
 #include <TimeLib.h>
-#include <TimeAlarms.h>
+#include "./TimeAlarms.h"
 #include <WiFiUdp.h>
 #include "./ajax-requests.h"
 #include "./equationParser.h"
@@ -97,4 +97,7 @@ void saveIpSettings(void);
 void getFreeHeap(void);
 int timeZone(void);
 void reset(void);
+void setMeasureTaskFlag(void);
+void setScriptTaskFlag(void);
+void setDisplayOledFLag(void);
 #endif
