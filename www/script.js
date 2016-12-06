@@ -622,21 +622,22 @@ function GenerateDataStringArrayBack(year,month,day,hour,minute,second,intervall
 		times.push((parseInt(hour, 10) + 100).toString().substr(1) + ":" + (parseInt(minute, 10) + 100).toString().substr(1) + ":" + (parseInt(second, 10) + 100).toString().substr(1)+ " " + (parseInt(day, 10) + 100).toString().substr(1) + "-" + (parseInt(month, 10) + 100).toString().substr(1) + "-" + year.toString());
 	}
 
-	for(var i = 0;i<=numberOfMeasProbes;i++){
+	for(var i = 0;i<numberOfMeasProbes;i++){
 
 
 		var y = numberOfMeasProbes - i;
 		if(type == 1){
-			//if((i%numOfProbesToRead == 0)||(i%(numOfProbesToRead - 1) == 0)) pushItoTable();
-			
-		if((y%numOfProbesToRead == 1)||
-			(y%numOfProbesToRead == numOfProbesToRead)||
-			(y == numberOfMeasProbes)){ pushItoTable();
-		}
+			if(y==1||(y%100 == 99)||(y%100 == 0)||(y == numberOfMeasProbes))
+			{ 
+				pushItoTable();
+			}
 		}else{
+			//if((toProbeNumber <= numberOfMeasProbes)&&(y>=firstMeasureFromNumber)&&(y<toProbeNumber))  pushItoTable();
+			//if((toProbeNumber > numberOfMeasProbes)&&(y>(firstMeasureFromNumber))) pushItoTable();
+			
 			if((toProbeNumber <= numberOfMeasProbes)&&(y>=firstMeasureFromNumber)&&(y<toProbeNumber)) pushItoTable();
-				
 			if((toProbeNumber > numberOfMeasProbes)&&(y>firstMeasureFromNumber)) pushItoTable();
+		
 		}
 			second = second - intervall
 			var monthLen = [31,28,31,30,31,30,31,31,30,31,30,31]
