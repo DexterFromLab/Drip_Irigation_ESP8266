@@ -147,90 +147,223 @@
 	.boxText{
 		text-shadow: 3px 3px 2px rgba(189,189,189,0.6);
 	}
+		.ts{
+		width: 5px;
+		height: 20px;
+		background-color: #d41243;
+		float: left;
+	}
+	.tsa{
+		background-color: #8ec127;
+	}
+	.empty{
+		background-color: rgba(0,0,0,0);
+	}
+	[data-tooltip], [data1-tooltip]{
+		position: relative;
+	}
+	/* Tooltip styling */
+	[data-tooltip]:before {
+		content: attr(data-tooltip);
+		display: none;
+		position: absolute;
+		background: #000;
+		color: #fff;
+		padding: 2px 4px;
+		font-size: 14px;
+		line-height: 1.4;
+		min-width: 40px;
+		text-align: center;
+		border-radius: 4px;
+	}
+	/* Dynamic horizontal centering */
+	[data-tooltip-position="top"]:before,
+	[data-tooltip-position="bottom"]:before {
+		left: 50%;
+		-ms-transform: translateX(-50%);
+		-moz-transform: translateX(-50%);
+		-webkit-transform: translateX(-50%);
+		transform: translateX(-50%);
+	}
+	/* Dynamic vertical centering */
+	[data-tooltip-position="right"]:before,
+	[data-tooltip-position="left"]:before {
+		top: 50%;
+		-ms-transform: translateY(-50%);
+		-moz-transform: translateY(-50%);
+		-webkit-transform: translateY(-50%);
+		transform: translateY(-50%);
+	}
+	[data-tooltip-position="top"]:before {
+		bottom: 100%;
+		margin-bottom: 6px;
+	}
+	[data-tooltip-position="right"]:before {
+		left: 100%;
+		margin-left: 6px;
+	}
+	[data-tooltip-position="bottom"]:before {
+		top: 100%;
+		margin-top: 6px;
+	}
+	[data-tooltip-position="left"]:before {
+		right: 100%;
+		margin-right: 6px;
+	}
+
+	/* Tooltip arrow styling/placement */
+	[data-tooltip]:after {
+		content: '';
+		display: none;
+		position: absolute;
+		width: 0;
+		height: 0;
+		border-color: transparent;
+		border-style: solid;
+	}
+	/* Dynamic horizontal centering for the tooltip */
+	[data-tooltip-position="top"]:after,
+	[data-tooltip-position="bottom"]:after {
+		left: 50%;
+		margin-left: -6px;
+	}
+	/* Dynamic vertical centering for the tooltip */
+	[data-tooltip-position="right"]:after,
+	[data-tooltip-position="left"]:after {
+		top: 50%;
+		margin-top: -6px;
+	}
+	[data-tooltip-position="top"]:after {
+		bottom: 100%;
+		border-width: 6px 6px 0;
+		border-top-color: #000;
+	}
+	[data-tooltip-position="right"]:after {
+		left: 100%;
+		border-width: 6px 6px 6px 0;
+		border-right-color: #000;
+	}
+	[data-tooltip-position="bottom"]:after {
+		top: 100%;
+		border-width: 0 6px 6px;
+		border-bottom-color: #000;
+	}
+	[data-tooltip-position="left"]:after {
+		right: 100%;
+		border-width: 6px 0 6px 6px;
+		border-left-color: #000;
+	}
+	/* Show the tooltip when hovering */
+	[data-tooltip]:hover:before,
+	[data-tooltip]:active:before,
+	.activeTB:before,
+	[data1-tooltip]:hover:after,
+	[data1-tooltip]:active:after,
+	.activeTB:after{
+		display: block;
+		z-index: 50;
+	}
+	.timeSel{
+		margin-left: auto;
+		margin-right: auto;
+		display: table;
+	}
+	.confWindow{
+		width: 700px;
+		background-color: #fff;
+		position: absolute;
+		margin-left: auto;
+		margin-right: auto;
+		margin-top: auto;
+		margin-bottom: auto;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		border: solid;
+		border-radius: 15px;
+		display: none;
+		z-index: 1050;
+		overflow-y: auto;
+	}
+	.closeIco{
+		position: absolute;
+		top:15px;
+		right: 15px;
+		cursor: pointer;
+		z-index: 10;
+	}
 </style>
 
 <script>
 
 </script>
 <div id="plane"></div>
+<span class="container-fluid confWindow">
+	<svg onclick="$('.confWindow').css('display','none')" class="closeIco" width="50" height="50" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1490 1322q0 40-28 68l-136 136q-28 28-68 28t-68-28l-294-294-294 294q-28 28-68 28t-68-28l-136-136q-28-28-28-68t28-68l294-294-294-294q-28-28-28-68t28-68l136-136q28-28 68-28t68 28l294 294 294-294q28-28 68-28t68 28l136 136q28 28 28 68t-28 68l-294 294 294 294q28 28 28 68z"/></svg>
+	<!-- Page Heading -->
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Wizzard<br>
+				<small>Konfigurator automatycznego sterowania</small>
+			</h1>
+		</div>
+	</div>
+	<div class="jumbotron">
+		<label>Sterowanie automatyczne</label>			
+		<select id="autoCont" onchange="setVisAutoSec()" class="form-control">
+			<option value="0">Ręczne</option>
+			<option value="1">Automatyczne</option>
+		</select>
+		<div class="autoSec">
+			<label>Sterowanie od czasu</label>			
+			<select id="timeMark" onchange="setTimeMarker()" class="form-control">
+				<option value="0">Dobowe</option>
+				<option value="1">Dobowe w dniu tygodnia</option>
+				<option value="1">Brak</option>
+			</select>
+			<div id="plane1"></div>
+		</div>
+		
+	</div>
+</span>
 <script>
-function click1(){
-	console.log("click1")
+getSystemVirablesForInfo()
+setVisAutoSec();
+setTimeMarker();
+function setVisAutoSec(){
+	if($('#autoCont').val() == 0) $('.autoSec').css('display','none');
+	else $('.autoSec').css('display','block');
 }
-function click2(){
-	console.log("click2")
+function setTimeMarker(){
+	if($('#timeMark').val() == 0) dispTimeMarker(0);
+	else dispTimeMarker(1);
 }
-var cloud = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1856 1152q0 159-112.5 271.5t-271.5 112.5h-1088q-185 0-316.5-131.5t-131.5-316.5q0-132 71-241.5t187-163.5q-2-28-2-43 0-212 150-362t362-150q158 0 286.5 88t187.5 230q70-62 166-62 106 0 181 75t75 181q0 75-41 138 129 30 213 134.5t84 239.5z"/></svg>'
-var sun = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1472 896q0-117-45.5-223.5t-123-184-184-123-223.5-45.5-223.5 45.5-184 123-123 184-45.5 223.5 45.5 223.5 123 184 184 123 223.5 45.5 223.5-45.5 184-123 123-184 45.5-223.5zm276 277q-4 15-20 20l-292 96v306q0 16-13 26-15 10-29 4l-292-94-180 248q-10 13-26 13t-26-13l-180-248-292 94q-14 6-29-4-13-10-13-26v-306l-292-96q-16-5-20-20-5-17 4-29l180-248-180-248q-9-13-4-29 4-15 20-20l292-96v-306q0-16 13-26 15-10 29-4l292 94 180-248q9-12 26-12t26 12l180 248 292-94q14-6 29 4 13 10 13 26v306l292 96q16 5 20 20 5 16-4 29l-180 248 180 248q9 12 4 29z"/></svg>'
-var tint = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M896 1152q0-36-20-69-1-1-15.5-22.5t-25.5-38-25-44-21-50.5q-4-16-21-16t-21 16q-7 23-21 50.5t-25 44-25.5 38-15.5 22.5q-20 33-20 69 0 53 37.5 90.5t90.5 37.5 90.5-37.5 37.5-90.5zm512-128q0 212-150 362t-362 150-362-150-150-362q0-145 81-275 6-9 62.5-90.5t101-151 99.5-178 83-201.5q9-30 34-47t51-17 51.5 17 33.5 47q28 93 83 201.5t99.5 178 101 151 62.5 90.5q81 127 81 275z"/></svg>'
-
-function kafelek(name){
-	this.state = 0;     //Relay 0 - off, 1 - on
-	this.name = name;   //name of element
-	this.auto = 0;		//Automatic control, 0-off 1 -on
-	this.value = 0;     //Value of variable
-	this.icon = cloud;
-	this.unit = "";
-	
-	this.color = ""
-	//state - kolor kafelka 1 - red,0- green
-	//auto - tryb automatyczny 1 - on, 0 - off
-	this.toggleColorState = function(state,auto){
-		this.state = state;
-		this.auto = auto;
-		if(this.state == 0){
-			eval('$("#'+name+' div:first-child").removeClass("red");')
-			eval('$("#'+name+' div:first-child").addClass("green")')
-		}else{
-			eval('$("#'+name+' div:first-child").removeClass("green");')
-			eval('$("#'+name+' div:first-child").addClass("red")')
-		}
-		if(this.auto == 0){
-			eval('$("#'+name+' div:first-child").next().attr("class","icon")');
-		}else{
-			eval('$("#'+name+' div:first-child").next().attr("class","icon rotate")');
-		}
+function dispTimeMarker(type){
+	var tmp = "";
+	if(type != 0) tmp += "<label>Poniedziałek</label>";
+	else tmp += "<label></label>";
+	tmp += generateTimeSelector("day1");
+	if(type>0){
+		tmp += "<label>Wtorek</label>";
+		tmp += generateTimeSelector("day2");
+		tmp += "<label>Środa</label>";
+		tmp += generateTimeSelector("day3");
+		tmp += "<label>Czwartek</label>";
+		tmp += generateTimeSelector("day4");
+		tmp += "<label>Piątek</label>";
+		tmp += generateTimeSelector("day5");
+		tmp += "<label>Sobota</label>";
+		tmp += generateTimeSelector("day6");
+		tmp += "<label>Niedziela</label>";
+		tmp += generateTimeSelector("day7");
 	}
-	//type - 0 relay config
-	this.setVal = function(value1){
-		this.value = value1;
-		$("#" + this.name + " text:nth-of-type(2n)").text(this.value.toString())
-	}
-	this.draw = function(type){
-		if(type == 0){
-			var htmlString = '<div id='+name+' class="container2">';
-			if(this.state == 0){
-				this.color = "green";
-			}else{
-				this.color = "red";
-			}
-			htmlString += '<div class="square elegantBlock '+ this.color +'" onclick="' + this.name +'.checkState()"><text class="boxText">'+name+'</text></div>';
-			htmlString += '<svg class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
-			htmlString += '</div>';
-			return htmlString;
-		}
-		if(type > 0){
-			if(type == 1){
-				this.color = "orange";
-				this.icon = sun
-				this.unit = "°C"
-			}else if(type == 2){
-				this.color = "grey";
-				this.icon = cloud
-				this.unit = "%"
-			}else if(type == 3){
-				this.color = "blue";
-				this.icon = tint
-				this.unit = "%"
-			}
-			var htmlString = '<div id='+name+' class="container1">';
-			htmlString += '<div class="value elegantBlock '+this.color+'">';
-			htmlString += this.icon;
-			htmlString += '<text class="boxText">&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</text><text class="boxText">'+ this.value +'</text><text class="boxText">'+ this.unit +'</text>'
-			htmlString += '</div></div>'
-			return htmlString;
-		}
-	}
+	$('#plane1').html(tmp);
+	addJqueryAttr();
+}
+function showWizzardWindow(){
+	$(".confWindow").css("display","block")
 }
 
 </script>

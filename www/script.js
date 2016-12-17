@@ -861,3 +861,147 @@ function changePage(){
 		drawPagesNumbers();
 		$("#pagNumberSelector").val(page_number);
 }
+//Wizzard
+
+	var mouseDown = 0;
+	
+	document.body.onmousedown = function() { 
+	  mouseDown = 1;
+	}
+	document.body.onmouseup = function() {
+	  mouseDown = 0;
+	}
+	
+
+
+
+	function generateTimeSelector(fieldId){
+		var date = new Date(0);
+		date.setHours(0);
+		var strDat = '';
+		
+		var date1 = new Date(0);
+		date1.setHours(0);
+		var strDat1 = '';
+	
+		var htmlContent = '<div id="'+fieldId+'" class="timeSel">';
+		for(var i = 0;i<96;i++){ 
+			strDat =  date.getHours() + ":" + date.getMinutes();
+			date1.setMinutes(date.getMinutes() + 15);
+			strDat1 =  date1.getHours() + ":" + date1.getMinutes();
+			date.setMinutes(date.getMinutes() + 15);
+
+			htmlContent += '<span data-tooltip="'+strDat+'" data1-tooltip="'+strDat1+'" data-tooltip-position="bottom" class="ts tp"></span>';
+		};
+		htmlContent +='<span data-tooltip="24:00" data1-tooltip="24:00" data-tooltip-position="bottom" class="ts empty tp"></span>'
+		htmlContent += '</div>'
+		return htmlContent;
+	}
+	function addJqueryAttr(){
+		$('.ts').mouseover(function(){if(mouseDown){$(this).toggleClass('tsa')}})
+		$('.ts').hover(function(){if(mouseDown){$(this).toggleClass('tsa')}})
+		$('.ts').click(function(){$(this).toggleClass('tsa')})
+		$('.ts').mouseenter(function(){$(this).addClass('activeTB')})
+		$('.ts').mouseleave(function(){$(this).removeClass('activeTB')})
+	}
+	function SelectedTimes(fieldId){
+		var startTimes = [];
+		var endTimes = [];
+		var allTimes = [];
+		var date = new Date();
+		
+		allTimes = $(fieldId).children()
+		for(var i = 0; i < allTimes.size()-1;i++){
+			if(i == 0){
+				if($(allTimes[0]).hasClass('tsa')) startTimes.push(allTimes[0].getAttribute('data-tooltip'));
+			}else{
+				if($(allTimes[i]).hasClass('tsa') && ($(allTimes[i-1]).hasClass('tsa') == false))  startTimes.push(allTimes[i].getAttribute('data-tooltip'));
+			}
+			if(i == (allTimes.size() -  1)){
+				if($(allTimes[allTimes.size() -  1]).hasClass('tsa')) endTimes.push('00:00');
+			}else{
+				if($(allTimes[i]).hasClass('tsa') && ($(allTimes[i+1]).hasClass('tsa') == false)){
+					date.setHours(allTimes[i].getAttribute('data-tooltip').split(':')[0]);
+					date.setMinutes(allTimes[i].getAttribute('data-tooltip').split(':')[1]);
+					date.setTime(date.getTime()+15*60000);
+					endTimes.push(date.getHours()+':'+date.getMinutes());
+				}
+			}
+		}		
+		var times = {startTimes,endTimes};
+		return times;
+	}
+	
+	
+var cloud = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1856 1152q0 159-112.5 271.5t-271.5 112.5h-1088q-185 0-316.5-131.5t-131.5-316.5q0-132 71-241.5t187-163.5q-2-28-2-43 0-212 150-362t362-150q158 0 286.5 88t187.5 230q70-62 166-62 106 0 181 75t75 181q0 75-41 138 129 30 213 134.5t84 239.5z"/></svg>'
+var sun = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1472 896q0-117-45.5-223.5t-123-184-184-123-223.5-45.5-223.5 45.5-184 123-123 184-45.5 223.5 45.5 223.5 123 184 184 123 223.5 45.5 223.5-45.5 184-123 123-184 45.5-223.5zm276 277q-4 15-20 20l-292 96v306q0 16-13 26-15 10-29 4l-292-94-180 248q-10 13-26 13t-26-13l-180-248-292 94q-14 6-29-4-13-10-13-26v-306l-292-96q-16-5-20-20-5-17 4-29l180-248-180-248q-9-13-4-29 4-15 20-20l292-96v-306q0-16 13-26 15-10 29-4l292 94 180-248q9-12 26-12t26 12l180 248 292-94q14-6 29 4 13 10 13 26v306l292 96q16 5 20 20 5 16-4 29l-180 248 180 248q9 12 4 29z"/></svg>'
+var tint = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M896 1152q0-36-20-69-1-1-15.5-22.5t-25.5-38-25-44-21-50.5q-4-16-21-16t-21 16q-7 23-21 50.5t-25 44-25.5 38-15.5 22.5q-20 33-20 69 0 53 37.5 90.5t90.5 37.5 90.5-37.5 37.5-90.5zm512-128q0 212-150 362t-362 150-362-150-150-362q0-145 81-275 6-9 62.5-90.5t101-151 99.5-178 83-201.5q9-30 34-47t51-17 51.5 17 33.5 47q28 93 83 201.5t99.5 178 101 151 62.5 90.5q81 127 81 275z"/></svg>'
+
+function kafelek(name){
+	this.state = 0;     //Relay 0 - off, 1 - on
+	this.name = name;   //name of element
+	this.auto = 0;		//Automatic control, 0-off 1 -on
+	this.value = 0;     //Value of variable
+	this.icon = cloud;
+	this.unit = "";
+	
+	this.color = ""
+	//state - kolor kafelka 1 - red,0- green
+	//auto - tryb automatyczny 1 - on, 0 - off
+	this.toggleColorState = function(state,auto){
+		this.state = state;
+		this.auto = auto;
+		if(this.state == 0){
+			eval('$("#'+name+' div:first-child").removeClass("red");')
+			eval('$("#'+name+' div:first-child").addClass("green")')
+		}else{
+			eval('$("#'+name+' div:first-child").removeClass("green");')
+			eval('$("#'+name+' div:first-child").addClass("red")')
+		}
+		if(this.auto == 0){
+			eval('$("#'+name+' div:first-child").next().attr("class","icon")');
+		}else{
+			eval('$("#'+name+' div:first-child").next().attr("class","icon rotate")');
+		}
+	}
+	//type - 0 relay config
+	this.setVal = function(value1){
+		this.value = value1;
+		$("#" + this.name + " text:nth-of-type(2n)").text(this.value.toString())
+	}
+	this.draw = function(type){
+		if(type == 0){
+			var htmlString = '<div id='+name+' class="container2">';
+			if(this.state == 0){
+				this.color = "green";
+			}else{
+				this.color = "red";
+			}
+			htmlString += '<div class="square elegantBlock '+ this.color +'" onclick="' + this.name +'.checkState()"><text class="boxText">'+name+'</text></div>';
+			htmlString += '<svg onclick="showWizzardWindow()" class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
+			htmlString += '</div>';
+			return htmlString;
+		}
+		if(type > 0){
+			if(type == 1){
+				this.color = "orange";
+				this.icon = sun
+				this.unit = "°C"
+			}else if(type == 2){
+				this.color = "grey";
+				this.icon = cloud
+				this.unit = "%"
+			}else if(type == 3){
+				this.color = "blue";
+				this.icon = tint
+				this.unit = "%"
+			}
+			var htmlString = '<div id='+name+' class="container1">';
+			htmlString += '<div class="value elegantBlock '+this.color+'">';
+			htmlString += this.icon;
+			htmlString += '<text class="boxText">&nbsp;&nbsp;'+name+'&nbsp;&nbsp;</text><text class="boxText">'+ this.value +'</text><text class="boxText">'+ this.unit +'</text>'
+			htmlString += '</div></div>'
+			return htmlString;
+		}
+	}
+}
