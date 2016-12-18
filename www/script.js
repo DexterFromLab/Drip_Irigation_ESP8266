@@ -862,6 +862,113 @@ function changePage(){
 		$("#pagNumberSelector").val(page_number);
 }
 //Wizzard
+function setVisAutoSec(){
+	if($('#autoCont').val() == 0) $('.autoSec').css('display','none');
+	else $('.autoSec').css('display','block');
+}
+function setTimeMarker(){
+	dispTimeMarker($('#timeMark').val());
+}
+function setVisMarker(){
+	dispControlMarker($('#controlMark').val());
+}
+function dispControlMarker(type){
+	var tmp = '<br>';
+	if(type == 0){
+		tmp += "<label>Temperatura</label><br>";
+		tmp += generateControlSelector(-50,50,100);
+	}else if(type == 1){
+		tmp += "<label>Wilgotność</label><br>";
+		tmp += generateControlSelector(0,100,100);		
+	}else{}
+	$('#plain2').html(tmp);
+	addJqueryAttr1();	
+
+}
+function dispTimeMarker(type){
+	var tmp = "";
+	if(type == 0){
+		tmp += "<label></label>";
+		tmp += generateTimeSelector("day1");
+	}else if(type==1){
+		tmp += "<label>Poniedziałek</label>";
+		tmp += generateTimeSelector("day1");
+		tmp += "<label>Wtorek</label>";
+		tmp += generateTimeSelector("day2");
+		tmp += "<label>Środa</label>";
+		tmp += generateTimeSelector("day3");
+		tmp += "<label>Czwartek</label>";
+		tmp += generateTimeSelector("day4");
+		tmp += "<label>Piątek</label>";
+		tmp += generateTimeSelector("day5");
+		tmp += "<label>Sobota</label>";
+		tmp += generateTimeSelector("day6");
+		tmp += "<label>Niedziela</label>";
+		tmp += generateTimeSelector("day7");
+	}
+	$('#plane1').html(tmp);
+	addJqueryAttr();
+}
+function showWizzardWindow(){
+	$(".confWindow").css("display","block")
+}
+	function generateControlSelector(minVal,maxVal,steps){
+		var strDat = minVal;
+		var strDat1 = maxVal;
+	
+		var delta = maxVal - minVal;
+		var step = delta/steps;
+		var htmlContent = '';
+		for(var i = 0;i<=steps;i++){ 
+			strDat1 += step;
+			htmlContent += '<div value="'+i+'" data-tooltip="'+strDat.toFixed(1)+'" data-tooltip-position="bottom" class="ts1 tp"></div>';
+			strDat += step;
+		};
+
+		return htmlContent;
+	}
+	function addJqueryAttr1(){
+		$('.ts1').click(function(){
+			//$(this).toggleClass('tsa');
+			$(this).toggleClass('activeTB')
+			var elementsHabdlers = [];
+			elementsHabdlers = $("#plain2").find('.tsa')
+			for(var i = 0;i<elementsHabdlers.size();i++){
+				$(elementsHabdlers[i]).removeClass('tsa');
+			}
+			
+			if($("#plain2").find(".firstSel").size() == 0){
+				$(this).addClass("firstSel");
+			}else{
+			$("#plain2").find(".secondSel").removeClass("activeTB")
+			$("#plain2").find(".secondSel").removeClass("secondSel")
+			var firstSel = $("#plain2").find(".firstSel");
+				$(firstSel).addClass("secondSel");
+				$(firstSel).removeClass("firstSel");
+				$(this).addClass("firstSel");
+			}
+			
+			var min;
+			var max;
+			
+			var first = Number($($("#plain2").find(".secondSel")[0]).attr("value"));
+			var second = Number($($("#plain2").find(".firstSel")[0]).attr("value"));
+			
+			if(first > second ){
+				max = first;
+				min = second;
+			}else{
+				max = second;
+				min = first;
+			}
+			
+			var delta = max - min;
+			
+			for(var i = 0; i<delta+1; i++){
+				$($('#plain2 div')[min + i]).addClass("tsa");
+			}
+		});
+	}
 
 	var mouseDown = 0;
 	

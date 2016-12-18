@@ -153,6 +153,12 @@
 		background-color: #d41243;
 		float: left;
 	}
+	.ts1{
+		width: 5px;
+		height: 20px;
+		background-color: #d41243;
+		float: left;
+	}
 	.tsa{
 		background-color: #8ec127;
 	}
@@ -293,6 +299,8 @@
 		cursor: pointer;
 		z-index: 10;
 	}
+	.firstSel {}
+	.secondSel{}
 </style>
 
 <script>
@@ -321,9 +329,16 @@
 			<select id="timeMark" onchange="setTimeMarker()" class="form-control">
 				<option value="0">Dobowe</option>
 				<option value="1">Dobowe w dniu tygodnia</option>
-				<option value="1">Brak</option>
+				<option value="2">Brak</option>
 			</select>
 			<div id="plane1"></div>
+			<label>Sterowanie parametryczne</label>			
+			<select id="controlMark" onchange="setVisMarker()" class="form-control">
+				<option value="0">Temperatura</option>
+				<option value="1">Wilgotność</option>
+				<option value="2">Brak</option>
+			</select>
+			<div id='plain2' class="timeSel"></div>
 		</div>
 		
 	</div>
@@ -332,38 +347,6 @@
 getSystemVirablesForInfo()
 setVisAutoSec();
 setTimeMarker();
-function setVisAutoSec(){
-	if($('#autoCont').val() == 0) $('.autoSec').css('display','none');
-	else $('.autoSec').css('display','block');
-}
-function setTimeMarker(){
-	if($('#timeMark').val() == 0) dispTimeMarker(0);
-	else dispTimeMarker(1);
-}
-function dispTimeMarker(type){
-	var tmp = "";
-	if(type != 0) tmp += "<label>Poniedziałek</label>";
-	else tmp += "<label></label>";
-	tmp += generateTimeSelector("day1");
-	if(type>0){
-		tmp += "<label>Wtorek</label>";
-		tmp += generateTimeSelector("day2");
-		tmp += "<label>Środa</label>";
-		tmp += generateTimeSelector("day3");
-		tmp += "<label>Czwartek</label>";
-		tmp += generateTimeSelector("day4");
-		tmp += "<label>Piątek</label>";
-		tmp += generateTimeSelector("day5");
-		tmp += "<label>Sobota</label>";
-		tmp += generateTimeSelector("day6");
-		tmp += "<label>Niedziela</label>";
-		tmp += generateTimeSelector("day7");
-	}
-	$('#plane1').html(tmp);
-	addJqueryAttr();
-}
-function showWizzardWindow(){
-	$(".confWindow").css("display","block")
-}
+
 
 </script>
