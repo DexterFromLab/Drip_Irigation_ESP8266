@@ -878,9 +878,19 @@ function dispControlMarker(type){
 		tmp += "<label>Temperatura</label><br>";
 		tmp += generateControlSelector(-50,50,100);
 	}else if(type == 1){
+		tmp += "<label>Temperatura pokojowa</label><br>";
+		tmp += generateControlSelector(15,35,100);			
+	}else if(type == 2){
 		tmp += "<label>Wilgotność</label><br>";
 		tmp += generateControlSelector(0,100,100);		
 	}else{}
+	
+	if(type != 3){
+		tmp += '<label>Ekstrema</label><br>'
+		tmp += '<input id="controlMinVal" class="form-control" style="float: left; width: 150px;" type="text"></input>'
+		tmp += '<input id="controlMaxVal" class="form-control" style="float: right; width: 150px;" type="text"></input>'
+	}
+	
 	$('#plain2').html(tmp);
 	addJqueryAttr1();	
 
@@ -918,7 +928,7 @@ function showWizzardWindow(){
 	
 		var delta = maxVal - minVal;
 		var step = delta/steps;
-		var htmlContent = '';
+		var htmlContent = '<br>';
 		for(var i = 0;i<=steps;i++){ 
 			strDat1 += step;
 			htmlContent += '<div value="'+i+'" data-tooltip="'+strDat.toFixed(1)+'" data-tooltip-position="bottom" class="ts1 tp"></div>';
@@ -929,47 +939,83 @@ function showWizzardWindow(){
 	}
 	function addJqueryAttr1(){
 		$('.ts1').click(function(){
-			//$(this).toggleClass('tsa');
-			$(this).toggleClass('activeTB')
-			var elementsHabdlers = [];
-			elementsHabdlers = $("#plain2").find('.tsa')
-			for(var i = 0;i<elementsHabdlers.size();i++){
-				$(elementsHabdlers[i]).removeClass('tsa');
-			}
-			
-			if($("#plain2").find(".firstSel").size() == 0){
-				$(this).addClass("firstSel");
-			}else{
-			$("#plain2").find(".secondSel").removeClass("activeTB")
-			$("#plain2").find(".secondSel").removeClass("secondSel")
-			var firstSel = $("#plain2").find(".firstSel");
-				$(firstSel).addClass("secondSel");
-				$(firstSel).removeClass("firstSel");
-				$(this).addClass("firstSel");
-			}
-			
-			var min;
-			var max;
-			
-			var first = Number($($("#plain2").find(".secondSel")[0]).attr("value"));
-			var second = Number($($("#plain2").find(".firstSel")[0]).attr("value"));
-			
-			if(first > second ){
-				max = first;
-				min = second;
-			}else{
-				max = second;
-				min = first;
-			}
-			
-			var delta = max - min;
-			
-			for(var i = 0; i<delta+1; i++){
-				$($('#plain2 div')[min + i]).addClass("tsa");
-			}
+			selectExtremum(this);
+		});
+		$('#controlMinVal').change('input propertychange paste', function() {
+			selectFromInput();
+		});
+		$('#controlMaxVal').change('input propertychange paste', function() {
+			selectFromInput();
 		});
 	}
 
+function selectFromInput(){
+	var divHandlers = $('#plain2').find('div')
+	for(var i = 0;i<divHandlers.size();i++){
+		if(Number($(divHandlers[i]).attr('data-tooltip'))>=Number($('#controlMinVal').val())){
+			selectExtremum(divHandlers[i],1);
+			break;
+		}
+	}
+	for(var i = 0;i<divHandlers.size();i++){
+		if(Number($(divHandlers[i]).attr('data-tooltip'))>=Number($('#controlMaxVal').val())){
+			selectExtremum(divHandlers[i],2);
+			break;
+		}
+	}
+}
+function selectExtremum(select,MinMax){
+	
+	//$(select).toggleClass('activeTB')
+
+	$("#plain2").find("div").attr("data-tooltip-position","bottom")
+	$("#plain2").find(".activeTB").removeClass("activeTB")
+	var elementsHabdlers = [];
+	elementsHabdlers = $("#plain2").find('.tsa')
+	for(var i = 0;i<elementsHabdlers.size();i++){
+		$(elementsHabdlers[i]).removeClass('tsa');
+	}
+	
+	if($("#plain2").find(".firstSel").size() == 0){
+		$(select).addClass("firstSel");
+	}else{
+		//$("#plain2").find(".secondSel").removeClass("activeTB")
+		$("#plain2").find(".secondSel").removeClass("secondSel")
+		var firstSel = $("#plain2").find(".firstSel");
+		$(firstSel).addClass("secondSel");
+		$(firstSel).removeClass("firstSel");
+		$(select).addClass("firstSel");
+	}
+	
+	var min;
+	var max;
+	
+	var first = Number($($("#plain2").find(".secondSel")[0]).attr("value"));
+	var second = Number($($("#plain2").find(".firstSel")[0]).attr("value"));
+	
+	if(first > second ){
+		max = first;
+		min = second;
+	}else{
+		max = second;
+		min = first;
+	}
+	
+	var delta = max - min;
+	
+	for(var i = 0; i<delta+1; i++){
+		$($('#plain2 div')[min + i]).addClass("tsa");
+	}
+	
+	if(MinMax != 2) $('#controlMinVal').val($($('#plain2 div')[min]).attr('data-tooltip'));
+	if(MinMax != 1) $('#controlMaxVal').val($($('#plain2 div')[max]).attr('data-tooltip'));
+	
+	elementsHabdlers = $("#plain2").find('div')
+	
+	$(elementsHabdlers[min]).addClass('activeTB');
+	$(elementsHabdlers[max]).addClass('activeTB');
+	$("#plain2").find(".activeTB").attr("data-tooltip-position","top");
+}
 	var mouseDown = 0;
 	
 	document.body.onmousedown = function() { 
