@@ -100,4 +100,5 @@ void reset(void);
 void setMeasureTaskFlag(void);
 void setScriptTaskFlag(void);
 void setDisplayOledFLag(void);
+unsigned char RTC_TestTime(tmElements_t DateTime);
 #endif

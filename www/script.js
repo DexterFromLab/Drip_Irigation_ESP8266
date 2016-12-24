@@ -874,18 +874,18 @@ function setVisMarker(){
 }
 function dispControlMarker(type){
 	var tmp = '<br>';
-	if(type == 0){
+	if(type == 1){
 		tmp += "<label>Temperatura</label><br>";
 		tmp += generateControlSelector(-50,50,100);
-	}else if(type == 1){
+	}else if(type == 2){
 		tmp += "<label>Temperatura pokojowa</label><br>";
 		tmp += generateControlSelector(15,35,100);			
-	}else if(type == 2){
+	}else if(type == 3){
 		tmp += "<label>Wilgotność</label><br>";
 		tmp += generateControlSelector(0,100,100);		
 	}else{}
 	
-	if(type != 3){
+	if(type != 0){
 		tmp += '<label>Ekstrema</label><br>'
 		tmp += '<input id="controlMinVal" class="form-control" style="float: left; width: 150px;" type="text"></input>'
 		tmp += '<input id="controlMaxVal" class="form-control" style="float: right; width: 150px;" type="text"></input>'
@@ -897,10 +897,10 @@ function dispControlMarker(type){
 }
 function dispTimeMarker(type){
 	var tmp = "";
-	if(type == 0){
+	if(type == 1){
 		tmp += "<label></label>";
 		tmp += generateTimeSelector("day1");
-	}else if(type==1){
+	}else if(type==2){
 		tmp += "<label>Poniedziałek</label>";
 		tmp += generateTimeSelector("day1");
 		tmp += "<label>Wtorek</label>";
@@ -922,7 +922,7 @@ function dispTimeMarker(type){
 function showWizzardWindow(){
 	$(".confWindow").css("display","block")
 }
-	function generateControlSelector(minVal,maxVal,steps){
+function generateControlSelector(minVal,maxVal,steps){
 		var strDat = minVal;
 		var strDat1 = maxVal;
 	
@@ -936,8 +936,8 @@ function showWizzardWindow(){
 		};
 
 		return htmlContent;
-	}
-	function addJqueryAttr1(){
+}
+function addJqueryAttr1(){
 		$('.ts1').click(function(){
 			selectExtremum(this);
 		});
@@ -947,8 +947,19 @@ function showWizzardWindow(){
 		$('#controlMaxVal').change('input propertychange paste', function() {
 			selectFromInput();
 		});
-	}
-
+}
+function writeExtremumValues(val1,val2){
+	$('#controlMinVal').val(val1);
+	$('#controlMaxVal').val(val2);
+	selectFromInput();
+	selectFromInput();
+}
+function readExtremumValues(){
+	var values = [];
+	values.push($('#controlMinVal').val())
+	values.push($('#controlMaxVal').val())
+	return values;
+}
 function selectFromInput(){
 	var divHandlers = $('#plain2').find('div')
 	for(var i = 0;i<divHandlers.size();i++){
@@ -1084,8 +1095,40 @@ function selectExtremum(select,MinMax){
 		var times = {startTimes,endTimes};
 		return times;
 	}
-	
-	
+	function selectTimes(fieldId,startTimes, endTimes){
+		var spanTime = new Date(0, 0, 0, 0, 0, 0, 0);
+		for(var y = 0; y< startTimes.length;y++){
+			
+			startHours = Number(startTimes[y].split(':')[0]);
+			startMinutes = Number(startTimes[y].split(':')[1]);
+			
+			endHours = Number(endTimes[y].split(':')[0]);
+			endMinutes = Number(endTimes[y].split(':')[1]);
+			
+			var compareStartTime = new Date(0, 0, 0, startHours, startMinutes, 0, 0);
+			var compareEndTime = new Date(0, 0, 0, endHours, endMinutes, 0, 0);
+			snaps = $(fieldId).find('span');
+			
+			for(var i = 0;i<snaps.length;i++){
+				if((spanTime.getTime()>=compareStartTime.getTime())&&(spanTime.getTime()<compareEndTime.getTime())){
+					$(snaps[i]).addClass('tsa');
+				}
+				spanTime.setTime(spanTime.getTime()+15*60000);
+			}
+		}
+	}
+function saveWizzardConfig(){
+	var config = [];
+	config.push($('#autoCont').val());
+	if($('#autoCont').val()){
+		
+	}
+	$.ajax({
+		method: "POST",
+		url: "wizzard",
+		data: config
+	})
+}
 var cloud = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1856 1152q0 159-112.5 271.5t-271.5 112.5h-1088q-185 0-316.5-131.5t-131.5-316.5q0-132 71-241.5t187-163.5q-2-28-2-43 0-212 150-362t362-150q158 0 286.5 88t187.5 230q70-62 166-62 106 0 181 75t75 181q0 75-41 138 129 30 213 134.5t84 239.5z"/></svg>'
 var sun = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1472 896q0-117-45.5-223.5t-123-184-184-123-223.5-45.5-223.5 45.5-184 123-123 184-45.5 223.5 45.5 223.5 123 184 184 123 223.5 45.5 223.5-45.5 184-123 123-184 45.5-223.5zm276 277q-4 15-20 20l-292 96v306q0 16-13 26-15 10-29 4l-292-94-180 248q-10 13-26 13t-26-13l-180-248-292 94q-14 6-29-4-13-10-13-26v-306l-292-96q-16-5-20-20-5-17 4-29l180-248-180-248q-9-13-4-29 4-15 20-20l292-96v-306q0-16 13-26 15-10 29-4l292 94 180-248q9-12 26-12t26 12l180 248 292-94q14-6 29 4 13 10 13 26v306l292 96q16 5 20 20 5 16-4 29l-180 248 180 248q9 12 4 29z"/></svg>'
 var tint = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M896 1152q0-36-20-69-1-1-15.5-22.5t-25.5-38-25-44-21-50.5q-4-16-21-16t-21 16q-7 23-21 50.5t-25 44-25.5 38-15.5 22.5q-20 33-20 69 0 53 37.5 90.5t90.5 37.5 90.5-37.5 37.5-90.5zm512-128q0 212-150 362t-362 150-362-150-150-362q0-145 81-275 6-9 62.5-90.5t101-151 99.5-178 83-201.5q9-30 34-47t51-17 51.5 17 33.5 47q28 93 83 201.5t99.5 178 101 151 62.5 90.5q81 127 81 275z"/></svg>'

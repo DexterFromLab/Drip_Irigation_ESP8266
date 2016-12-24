@@ -327,21 +327,24 @@
 		<div class="autoSec">
 			<label>Sterowanie od czasu</label>			
 			<select id="timeMark" onchange="setTimeMarker()" class="form-control">
-				<option value="0">Dobowe</option>
-				<option value="1">Dobowe w dniu tygodnia</option>
-				<option value="2">Brak</option>
+				<option value="0">Brak</option>
+				<option value="1">Dobowe</option>
+				<option value="2">Dobowe w dniu tygodnia</option>
+				
 			</select>
 			<div id="plane1"></div>
 			<label>Sterowanie parametryczne</label>			
 			<select id="controlMark" onchange="setVisMarker()" class="form-control">
-				<option value="0">Temperatura</option>
-				<option value="1">Temperatura pokojowa</option>
-				<option value="2">Wilgotność</option>
-				<option value="3">Brak</option>
+				<option value="0">Brak</option>
+				<option value="1">Temperatura</option>
+				<option value="2">Temperatura pokojowa</option>
+				<option value="3">Wilgotność</option>
 			</select>
 			<div id='plain2' class="timeSel"></div>
 		</div>
-		
+		<div class="buttblock">
+			<input onclick="saveWizzardConfig()" class="form-control" type="button" value="Zapisz">
+		</div>
 	</div>
 </span>
 <script>

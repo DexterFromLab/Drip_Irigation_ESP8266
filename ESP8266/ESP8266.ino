@@ -320,7 +320,8 @@ void fileDelete() {
   path = String();
 }
 void reset(void){
-	ESP.reset();
+	//ESP.reset();
+	ESP.restart();
 }
 void handleFileCreate() {
   if (server.args() == 0)
@@ -419,7 +420,7 @@ void Repeats(){
 }
 
 uint8_t systemIsLoaded = 0;
-
+tmElements_t tm;
 void setup(void) {
 	//Checking type of init AP or Client dependly of pinstate
 	pinMode(ApClientPin, INPUT);     
@@ -450,7 +451,7 @@ void setup(void) {
     DB1("\n");
   }
   //mesures
-  tmElements_t tm;
+
   RTC.read(tm);
   setTime(tm.Hour,tm.Minute,tm.Second,tm.Day,tm.Month,(tm.Year - 30));
   //WIFI INIT
@@ -917,6 +918,11 @@ void saveSystemConfig(void){
 		f.println();
 	}
 	f.close();
+	setTime((int)System_s.hour,(int)System_s.minute,(int)System_s.second,(int)System_s.day, (int)System_s.month, (int)System_s.year);
+	RTC.writeEN(1);
+	RTC.set(now() - (3600*timeZone()));
+	RTC.writeEN(0);
+	RTC.read(tm);
 }
 
 void readSystemConfig(void){
@@ -1225,6 +1231,7 @@ void getFreeHeap(void){
 	DB1("Free Heap"+String(ESP.getFreeHeap()));
 }
 int timeZone(void){
+	DB1("Wybrana opcja strefy: " + String((int)System_s.timeZone));	
 	switch((int)System_s.timeZone){
 		case 0:
 			return 12;
@@ -1302,7 +1309,114 @@ int timeZone(void){
 			return -12;
 			break;
 		case 25:
-			return -1;
+			if(RTC_TestTime(tm)) return 2; else return 1;
 			break;
 	}
+}
+//--------------------------------------------------------------------------------------------------------------------- 
+// Testuj czas 
+// Funkcja wykonywana jest tylko podczas startu sterownika 
+// Funkcja sprawdzajaca poprawnosc czasu na podstawie flagi czasu oraz aktualnego czasu i daty 
+// Funkcja zwraca 0- zimowy 1- letni
+// TestujCzas 
+unsigned char RTC_TestTime(tmElements_t DateTime) 
+{ 
+    unsigned char sts = 0; 
+	DB1(String(DateTime.Hour)+String(":")+String(DateTime.Minute)+String(" ")+String(DateTime.Day)+String("-")+String(DateTime.Month)+String("-")+String(DateTime.Year));
+    /* sprawdzamy miesiac i dzien tygodnia */ 
+    /* czas letni - zpis znacznika tylko jezeli sie zmienil */ 
+    if((DateTime.Month < 10) && (DateTime.Month > 3)) 
+    { 
+		DB1("Miesiac wskazuje czas letni");
+        sts = 1; 
+    } 
+    /* czas zimowy */ 
+    if(((DateTime.Month < 3) || (DateTime.Month > 10))) 
+    { 
+		DB1("Miesiac wskazuje czas zimowy");
+        sts = 0; 
+    } 
+
+    /* sprawdzenie dla marca i pazdziernika musimy ustalic czy jestesmy przed niedziela zmiany czasu czy tez za ostatnia niedz. */ 
+    if(DateTime.Month == 3) 
+    { 
+        if(DateTime.Day < 25) 
+        { 
+                sts = 0; 
+				DB1("<25 marca");
+																/* dla dnia < 25 na pewno czas zimowy                         */ 
+        } 
+        else 
+        { 
+            if((DateTime.Day + (7-((DateTime.Wday + 1) % 7))) > 31) 
+            { 
+					/* dla dnia>25 jezeli nie bedzie juz niedzieli jest czas letni */ 
+                    sts = 1; 
+					DB1(">25 marca");
+            } 
+            else 
+            { 		
+					DB1("wystapi niedziela");
+                    sts = 0; /* zmiana czasu dopiero nastapi - wystapi jeszcze niedz.        */ 
+            } 
+        } 
+        /* sprawdzamy dodatkowo czy nie wystepuje dzien zmiany czasu */ 
+        if((DateTime.Wday==6) && ((DateTime.Day + 7) > 31)) 
+        { 
+            if(DateTime.Hour < 2) 
+            { 
+					DB1("dzien zmiany czasu");
+                    sts = 0; 
+            } 
+            else 
+            { 
+					DB1("po godzinie zmiany czasu");
+                     /* jest juz okres po zmienie czasu                              */
+                    sts = 1; 
+            } 
+        } 
+    } 
+    if(DateTime.Month==10) 
+    { 
+        if(DateTime.Day < 25) 
+        { 
+			DB1("przed 25 padz");
+            /* dla dnia < 25 na pewno czas letni                            */ 
+            sts = 1; 
+        } 
+        else 
+        { 
+            if((DateTime.Day + (7 - ((DateTime.Wday + 1) % 7))) > 31) 
+            { 
+                    /* dla dnia>25 jezeli nie bedzie juz niedzieli jest czas zimowy */ 
+                    sts = 0; 
+                DB1("przed niedz 25 padz");
+            } 
+            else 
+            {
+                sts = 1; 
+				DB1("po niedz 25 padz");
+            } 
+        } 
+        /* sprawdzamy dodatkowo czy nie wystepuje dzien zmiany czasu  */ 
+        /* oraz czy zmiana nie byla juz wykonana                      */ 
+        if((DateTime.Wday == 6) && ((DateTime.Day + 7) > 31)) 
+        { 
+            if(DateTime.Hour < 3) 
+            { 
+                    sts = 1; 
+					DB1("dzien zm cz. przed 3");
+            } 
+            else 
+            { 
+                /* jest juz okres po zmienie czasu                              */ 
+                    sts = 0; 
+					DB1("dzien zm cz. po 3");
+
+            } 
+        } 
+    } 
+    /* Flaga czasu ustawiona */
+	DB1("Automatyczna zmiana czasu: gtm +" + String(sts));	
+    return sts; 
 }
