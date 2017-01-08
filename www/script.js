@@ -919,8 +919,12 @@ function dispTimeMarker(type){
 	$('#plane1').html(tmp);
 	addJqueryAttr();
 }
-function showWizzardWindow(){
+var nameOfCurrentConfigRelay = "";
+function showWizzardWindow(name){
+	nameOfCurrentConfigRelay =  name;
 	$(".confWindow").css("display","block")
+	nameOfrelay
+	$("#nameOfrelay").text(name);
 }
 function generateControlSelector(minVal,maxVal,steps){
 		var strDat = minVal;
@@ -1037,8 +1041,14 @@ function selectExtremum(select,MinMax){
 	}
 	
 
+var trash = '<svg width="25" height="25" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M704 736v576q0 14-9 23t-23 9h-64q-14 0-23-9t-9-23v-576q0-14 9-23t23-9h64q14 0 23 9t9 23zm256 0v576q0 14-9 23t-23 9h-64q-14 0-23-9t-9-23v-576q0-14 9-23t23-9h64q14 0 23 9t9 23zm256 0v576q0 14-9 23t-23 9h-64q-14 0-23-9t-9-23v-576q0-14 9-23t23-9h64q14 0 23 9t9 23zm128 724v-948h-896v948q0 22 7 40.5t14.5 27 10.5 8.5h832q3 0 10.5-8.5t14.5-27 7-40.5zm-672-1076h448l-48-117q-7-9-17-11h-317q-10 2-17 11zm928 32v64q0 14-9 23t-23 9h-96v948q0 83-47 143.5t-113 60.5h-832q-66 0-113-58.5t-47-141.5v-952h-96q-14 0-23-9t-9-23v-64q0-14 9-23t23-9h309l70-167q15-37 54-63t79-26h320q40 0 79 26t54 63l70 167h309q14 0 23 9t9 23z"/></svg>'
 
+var list = '<svg width="25" height="25" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M381 1620q0 80-54.5 126t-135.5 46q-106 0-172-66l57-88q49 45 106 45 29 0 50.5-14.5t21.5-42.5q0-64-105-56l-26-56q8-10 32.5-43.5t42.5-54 37-38.5v-1q-16 0-48.5 1t-48.5 1v53h-106v-152h333v88l-95 115q51 12 81 49t30 88zm2-627v159h-362q-6-36-6-54 0-51 23.5-93t56.5-68 66-47.5 56.5-43.5 23.5-45q0-25-14.5-38.5t-39.5-13.5q-46 0-81 58l-85-59q24-51 71.5-79.5t105.5-28.5q73 0 123 41.5t50 112.5q0 50-34 91.5t-75 64.5-75.5 50.5-35.5 52.5h127v-60h105zm1409 319v192q0 13-9.5 22.5t-22.5 9.5h-1216q-13 0-22.5-9.5t-9.5-22.5v-192q0-14 9-23t23-9h1216q13 0 22.5 9.5t9.5 22.5zm-1408-899v99h-335v-99h107q0-41 .5-122t.5-121v-12h-2q-8 17-50 54l-71-76 136-127h106v404h108zm1408 387v192q0 13-9.5 22.5t-22.5 9.5h-1216q-13 0-22.5-9.5t-9.5-22.5v-192q0-14 9-23t23-9h1216q13 0 22.5 9.5t9.5 22.5zm0-512v192q0 13-9.5 22.5t-22.5 9.5h-1216q-13 0-22.5-9.5t-9.5-22.5v-192q0-13 9.5-22.5t22.5-9.5h1216q13 0 22.5 9.5t9.5 22.5z"/></svg>'
 
+function clearAllTimes(fieldId,timeSelField){
+	selectTimes('#'+$(timeSelField).attr('id'),0, 0)
+	$('#' + $(fieldId).attr('id')).empty();
+}
 	function generateTimeSelector(fieldId){
 		var date = new Date(0);
 		date.setHours(0);
@@ -1058,15 +1068,64 @@ function selectExtremum(select,MinMax){
 			htmlContent += '<span data-tooltip="'+strDat+'" data1-tooltip="'+strDat1+'" data-tooltip-position="bottom" class="ts tp"></span>';
 		};
 		htmlContent +='<span data-tooltip="24:00" data1-tooltip="24:00" data-tooltip-position="bottom" class="ts empty tp"></span>'
-		htmlContent += '</div>'
+		
+		htmlContent +='<span style="cursor: pointer;" onclick="clearAllTimes(listOf'+nameOfCurrentConfigRelay+fieldId+','+fieldId+')">'
+		htmlContent += trash
+		htmlContent += '</span>'
+		htmlContent += '<span style="cursor: pointer;" onclick="toggleListVis(timeListField'+nameOfCurrentConfigRelay+fieldId+')">'
+		htmlContent += list
+		htmlContent += '</span>'
+		htmlContent += '</div><div id="timeListField'+nameOfCurrentConfigRelay+fieldId+'">'
+		htmlContent += '<select id="listOf'+nameOfCurrentConfigRelay+fieldId+'" class="timelist" multiple></select><br>'
+		htmlContent += '<input id="startTime'+fieldId+'" type="text" style="float: left"></input>'
+		htmlContent += '<input id="endTime'+fieldId+'" type="text" style="float: right"></input><br>'
+		htmlContent += '<div class="buttblock"><input onclick=deleteSelectedTimesFromMultipleSelector("#listOf'+nameOfCurrentConfigRelay+fieldId+'","#'+fieldId+'") class="form-control" type="button" value="Usuń">'
+		htmlContent += '<input onclick=addTimeToSelector("#listOf'+nameOfCurrentConfigRelay+fieldId+'",'+fieldId+') class="form-control" type="button" value="Dodaj">'
+		htmlContent += '</div></div>'
+		
+		setTimeout(function(){eval('$("#timeListField'+nameOfCurrentConfigRelay+fieldId+'").hide()')},100);
+		
 		return htmlContent;
+	}
+	function addTimeToSelector(nameOfSelector,fieldId){
+		
+		startTime = $('#startTime'+$(fieldId).attr('id')).val()
+		endTime = $('#endTime'+$(fieldId).attr('id')).val()
+		writeTimeToMultipleSelector(nameOfSelector,startTime,endTime)
+		
+		var startTimes = [];
+		var endTimes = [];
+		for(var i = 0;i<$(nameOfSelector).find('option').length;i++){
+			var times = $($(nameOfSelector).find('option')[i]).val().split(" ");
+			startTimes.push(times[0]);
+			endTimes.push(times[2]);
+		}
+		selectTimes(fieldId,startTimes, endTimes);
+		
+	}
+	
+	function toggleListVis(listId){
+		$(listId).slideToggle('slow');
 	}
 	function addJqueryAttr(){
 		$('.ts').mouseover(function(){if(mouseDown){$(this).toggleClass('tsa')}})
 		$('.ts').hover(function(){if(mouseDown){$(this).toggleClass('tsa')}})
-		$('.ts').click(function(){$(this).toggleClass('tsa')})
+		$('.ts').click(function(){
+			$(this).toggleClass('tsa');
+			writeTimesToMultiple($($(this).parent()).attr('id'));
+		})
 		$('.ts').mouseenter(function(){$(this).addClass('activeTB')})
-		$('.ts').mouseleave(function(){$(this).removeClass('activeTB')})
+		$('.ts').mouseleave(function(){
+			$(this).removeClass('activeTB');
+			if(mouseDown) writeTimesToMultiple($($(this).parent()).attr('id'));
+		})
+	}
+	function writeTimesToMultiple(fieldId){
+		var statEndTimes = SelectedTimes('#'+fieldId);
+		$('#listOf'+nameOfCurrentConfigRelay+fieldId).empty();
+		for(var i = 0 ; i<statEndTimes.startTimes.length ; i++){
+			writeTimeToMultipleSelector( '#listOf'+nameOfCurrentConfigRelay+fieldId , statEndTimes.startTimes[i] , statEndTimes.endTimes[i]);
+		}
 	}
 	function SelectedTimes(fieldId){
 		var startTimes = [];
@@ -1096,8 +1155,15 @@ function selectExtremum(select,MinMax){
 		return times;
 	}
 	function selectTimes(fieldId,startTimes, endTimes){
-		var spanTime = new Date(0, 0, 0, 0, 0, 0, 0);
+		snaps = $(fieldId).find('span');
+	
+		for(var i = 0;i<snaps.length;i++){
+			$(snaps[i]).removeClass('tsa');
+		}
+
+		
 		for(var y = 0; y< startTimes.length;y++){
+			var spanTime = new Date(0, 0, 0, 0, 0, 0, 0);
 			
 			startHours = Number(startTimes[y].split(':')[0]);
 			startMinutes = Number(startTimes[y].split(':')[1]);
@@ -1107,7 +1173,7 @@ function selectExtremum(select,MinMax){
 			
 			var compareStartTime = new Date(0, 0, 0, startHours, startMinutes, 0, 0);
 			var compareEndTime = new Date(0, 0, 0, endHours, endMinutes, 0, 0);
-			snaps = $(fieldId).find('span');
+			
 			
 			for(var i = 0;i<snaps.length;i++){
 				if((spanTime.getTime()>=compareStartTime.getTime())&&(spanTime.getTime()<compareEndTime.getTime())){
@@ -1116,6 +1182,7 @@ function selectExtremum(select,MinMax){
 				spanTime.setTime(spanTime.getTime()+15*60000);
 			}
 		}
+		writeTimesToMultiple(fieldId.substring(1));
 	}
 function saveWizzardConfig(){
 	var config = [];
@@ -1167,14 +1234,14 @@ function kafelek(name){
 	}
 	this.draw = function(type){
 		if(type == 0){
-			var htmlString = '<div id='+name+' class="container2">';
+			var htmlString = '<div id="'+name+'" class="container2">';
 			if(this.state == 0){
 				this.color = "green";
 			}else{
 				this.color = "red";
 			}
 			htmlString += '<div class="square elegantBlock '+ this.color +'" onclick="' + this.name +'.checkState()"><text class="boxText">'+name+'</text></div>';
-			htmlString += '<svg onclick="showWizzardWindow()" class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
+			htmlString += '<svg onclick=showWizzardWindow("'+name+'") class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
 			htmlString += '</div>';
 			return htmlString;
 		}
@@ -1200,4 +1267,81 @@ function kafelek(name){
 			return htmlString;
 		}
 	}
+}
+function writeTimeToMultipleSelector(nameOfSelector,startValue,endValue){
+	$(nameOfSelector).append('<option>'+startValue+' - '+endValue+'</option>');
+}
+function deleteSelectedTimesFromMultipleSelector(selectorId,fieldId){
+	var optionValues = $(selectorId).val()
+	
+	for(var i = 0; i< $(selectorId).find('option').length;i++){
+		for(var y = 0; y < optionValues.length;y++){
+			if($($(selectorId).find('option')[i]).val() == optionValues[y]){
+				$($(selectorId).find('option')[i]).remove()
+			}
+		}
+	}
+	var startTimes = [];
+	var endTimes = [];
+	for(var i = 0;i<$(selectorId).find('option').length;i++){
+		var times = $($(selectorId).find('option')[i]).val().split(" ");
+		startTimes.push(times[0]);
+		endTimes.push(times[2]);
+	}
+	selectTimes(fieldId,startTimes, endTimes);
+}
+
+function arrayToString(array){
+	var string = "";
+	for(var y = 0; y<array.length;y++){
+		string += array[y] + ";";
+	}	
+	return string
+}
+function saveAjaxStructToFile(struct){
+	$.ajax({
+	  method: "POST",
+	  url: "saveAjaxStructToFile",
+	  data: struct
+	})
+	.done(function( msg ) {
+		console.log( msg );
+	});
+}
+function readAjaxStructFromFile(fileName){
+	var data = "";
+	
+	var struct = {};
+	$.ajax({
+		type: "GET",
+		datatype: "html",
+		url: "/readAjaxStructFromFile",
+		data: {fileName: fileName},
+		success: function(response) {
+			data = response.contentStr;
+			var elements = data.split("#$");
+			for(var i = 0; i<elements.length-1; i++){
+				if(elements[i].search("%5B") == -1){
+					var tmpData = elements[i].split("#:");
+					struct[tmpData[0].toString()] = tmpData[1].toString()
+				}else if(elements[i].search("%5B%5D") != -1){
+					var tmpData = elements[i].split("%5B%5D#:");
+					struct[tmpData[0].toString()] = tmpData[1].toString()
+				}else{
+					var tmpData = [];
+					var firstSeparator = elements[i].search("%5B");
+					var secondSeparator = elements[i].search("%5D#:");
+					tmpData.push(elements[i].substring(0,firstSeparator));
+					tmpData.push(elements[i].substring(firstSeparator+3,secondSeparator));
+					tmpData.push(elements[i].substring(secondSeparator+5));
+					struct[tmpData[0].toString()]={[tmpData[1].toString()] : tmpData[2].toString()};
+				}
+			}
+		},
+		error: function(response){
+		
+		}
+	});
+	
+	return data;
 }
