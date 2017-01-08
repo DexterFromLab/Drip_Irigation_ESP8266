@@ -433,10 +433,7 @@ function getSystemVirablesForInfo(){
 function fillTailsInfo(){
 
 	var htmlString = ""
-	for(var i = 0;i < allRelayNames.length; i++){
-		eval('var '+allRelayNames[i]+' = new kafelek("'+allRelayNames[i]+'");');
-		htmlString += eval(allRelayNames[i] +'.draw(0)')
-	}
+
 	for(var i = 0;i < allVirablesNames.length; i++){
 		eval('var '+allVirablesNames[i]+' = new kafelek("'+allVirablesNames[i]+'");');
 		var type = 0; 
@@ -444,6 +441,10 @@ function fillTailsInfo(){
 		if(allVirablesNames[i].indexOf("Hum") != -1) type = 2;
 		if(allVirablesNames[i].indexOf("Soil") != -1) type = 3;
 		htmlString += eval(allVirablesNames[i] +'.draw('+type+')');
+	}
+	for(var i = 0;i < allRelayNames.length; i++){
+		eval('var '+allRelayNames[i]+' = new kafelek("'+allRelayNames[i]+'");');
+		htmlString += eval(allRelayNames[i] +'.draw(0)')
 	}
 	$("#plane").html(htmlString);
 
@@ -922,8 +923,7 @@ function dispTimeMarker(type){
 var nameOfCurrentConfigRelay = "";
 function showWizzardWindow(name){
 	nameOfCurrentConfigRelay =  name;
-	$(".confWindow").css("display","block")
-	nameOfrelay
+	$(".confWindow").css("display","block");
 	$("#nameOfrelay").text(name);
 }
 function generateControlSelector(minVal,maxVal,steps){
@@ -1184,18 +1184,7 @@ function clearAllTimes(fieldId,timeSelField){
 		}
 		writeTimesToMultiple(fieldId.substring(1));
 	}
-function saveWizzardConfig(){
-	var config = [];
-	config.push($('#autoCont').val());
-	if($('#autoCont').val()){
-		
-	}
-	$.ajax({
-		method: "POST",
-		url: "wizzard",
-		data: config
-	})
-}
+
 var cloud = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1856 1152q0 159-112.5 271.5t-271.5 112.5h-1088q-185 0-316.5-131.5t-131.5-316.5q0-132 71-241.5t187-163.5q-2-28-2-43 0-212 150-362t362-150q158 0 286.5 88t187.5 230q70-62 166-62 106 0 181 75t75 181q0 75-41 138 129 30 213 134.5t84 239.5z"/></svg>'
 var sun = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1472 896q0-117-45.5-223.5t-123-184-184-123-223.5-45.5-223.5 45.5-184 123-123 184-45.5 223.5 45.5 223.5 123 184 184 123 223.5 45.5 223.5-45.5 184-123 123-184 45.5-223.5zm276 277q-4 15-20 20l-292 96v306q0 16-13 26-15 10-29 4l-292-94-180 248q-10 13-26 13t-26-13l-180-248-292 94q-14 6-29-4-13-10-13-26v-306l-292-96q-16-5-20-20-5-17 4-29l180-248-180-248q-9-13-4-29 4-15 20-20l292-96v-306q0-16 13-26 15-10 29-4l292 94 180-248q9-12 26-12t26 12l180 248 292-94q14-6 29 4 13 10 13 26v306l292 96q16 5 20 20 5 16-4 29l-180 248 180 248q9 12 4 29z"/></svg>'
 var tint = '<svg class="valueIcon" width="120" height="90" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M896 1152q0-36-20-69-1-1-15.5-22.5t-25.5-38-25-44-21-50.5q-4-16-21-16t-21 16q-7 23-21 50.5t-25 44-25.5 38-15.5 22.5q-20 33-20 69 0 53 37.5 90.5t90.5 37.5 90.5-37.5 37.5-90.5zm512-128q0 212-150 362t-362 150-362-150-150-362q0-145 81-275 6-9 62.5-90.5t101-151 99.5-178 83-201.5q9-30 34-47t51-17 51.5 17 33.5 47q28 93 83 201.5t99.5 178 101 151 62.5 90.5q81 127 81 275z"/></svg>'
@@ -1241,7 +1230,7 @@ function kafelek(name){
 				this.color = "red";
 			}
 			htmlString += '<div class="square elegantBlock '+ this.color +'" onclick="' + this.name +'.checkState()"><text class="boxText">'+name+'</text></div>';
-			htmlString += '<svg onclick=showWizzardWindow("'+name+'") class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
+			htmlString += '<svg onclick=relaywizzardWasClicked("'+name+'") class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg>';
 			htmlString += '</div>';
 			return htmlString;
 		}
@@ -1298,6 +1287,31 @@ function arrayToString(array){
 	}	
 	return string
 }
+function sendControlRelaySetting(){
+	var data = {};
+	data['fileName'] = nameOfCurrentConfigRelay;
+	data['nameOfRelay'] = nameOfCurrentConfigRelay;
+	data['timeMark'] = $('#timeMark').val();
+	data['controlMark'] = $('#controlMark').val();
+	if(($('#autoCont').val() == 1)&&($('#timeMark').val() == 1)){
+		data['day1'] = SelectedTimes("#day1");
+		data['day1'].startTimes = arrayToString(data['day1'].startTimes);
+		data['day1'].endTimes = arrayToString(data['day1'].endTimes);
+	}
+	if(($('#autoCont').val() == 1)&&($('#timeMark').val() == 2)){
+		for(var i = 1; i<=7;i++){
+			eval("data['day"+i+"'] = SelectedTimes('#day"+i+"');");
+			eval("data['day"+i+"'].startTimes = arrayToString(data['day"+i+"'].startTimes);");
+			eval("data['day"+i+"'].endTimes = arrayToString(data['day"+i+"'].endTimes);");
+		}
+	}
+	if($('#controlMark').val() != 0){
+		var tmpVal = readExtremumValues();
+		data['typeOfControl'] = {"minVal" : tmpVal[0],"maxVal" : tmpVal[1]};
+	}
+	
+	saveAjaxStructToFile(data);
+}
 function saveAjaxStructToFile(struct){
 	$.ajax({
 	  method: "POST",
@@ -1305,7 +1319,7 @@ function saveAjaxStructToFile(struct){
 	  data: struct
 	})
 	.done(function( msg ) {
-		console.log( msg );
+		alert( msg );
 	});
 }
 function readAjaxStructFromFile(fileName){
@@ -1320,6 +1334,7 @@ function readAjaxStructFromFile(fileName){
 		success: function(response) {
 			data = response.contentStr;
 			var elements = data.split("#$");
+			var loopChecker = "";
 			for(var i = 0; i<elements.length-1; i++){
 				if(elements[i].search("%5B") == -1){
 					var tmpData = elements[i].split("#:");
@@ -1331,12 +1346,20 @@ function readAjaxStructFromFile(fileName){
 					var tmpData = [];
 					var firstSeparator = elements[i].search("%5B");
 					var secondSeparator = elements[i].search("%5D#:");
+					
 					tmpData.push(elements[i].substring(0,firstSeparator));
 					tmpData.push(elements[i].substring(firstSeparator+3,secondSeparator));
 					tmpData.push(elements[i].substring(secondSeparator+5));
-					struct[tmpData[0].toString()]={[tmpData[1].toString()] : tmpData[2].toString()};
+					
+					if(loopChecker != tmpData[0].toString()){
+						struct[tmpData[0].toString()] = {};
+						loopChecker = tmpData[0].toString();
+					}
+					
+					struct[tmpData[0].toString()][tmpData[1].toString()]= tmpData[2].toString();
 				}
 			}
+			setReadedSettings(struct);
 		},
 		error: function(response){
 		
@@ -1344,4 +1367,42 @@ function readAjaxStructFromFile(fileName){
 	});
 	
 	return data;
+}
+//Uniwersalna funkcja odczytu dla całego projektu
+function setReadedSettings(struct){
+	if(struct.fileName.search("Relay") != -1){
+		$('#timeMark').val(struct.timeMark);
+		$('#controlMark').val(struct.controlMark);
+		setVisAutoSec();
+		setTimeMarker();
+		setVisMarker();
+		if(struct.timeMark == "1"){
+			var startTimes = struct.day1.startTimes.split(";");
+			startTimes.pop();
+			
+			var endTimes = struct.day1.endTimes.split(";");
+			endTimes.pop();
+			
+			selectTimes('#day1',startTimes,endTimes);
+			
+		}else if(struct.timeMark == "2"){
+			for(var z = 1; z<=7;z++){
+				eval('var startTimes = struct.day'+z+'.startTimes.split(";");');
+				eval('startTimes.pop();');
+				
+				eval('var endTimes = struct.day'+z+'.endTimes.split(";");');
+				eval('endTimes.pop();');
+				
+				eval('selectTimes("#day'+z+'",startTimes,endTimes);');
+			}
+		}
+		if(struct.controlMark != 0){
+			writeExtremumValues(Number(struct.typeOfControl.minVal),Number(struct.typeOfControl.maxVal));
+			writeExtremumValues(Number(struct.typeOfControl.minVal),Number(struct.typeOfControl.maxVal));
+		}
+	}
+}
+function relaywizzardWasClicked(name){
+	showWizzardWindow(name);
+	readAjaxStructFromFile(nameOfCurrentConfigRelay);
 }

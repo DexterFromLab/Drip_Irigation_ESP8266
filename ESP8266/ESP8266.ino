@@ -153,7 +153,7 @@ void readAjaxStructFromFile(void){
 		server.send(200, "File open failed!", tmpStr);
 		DB1("file open failed");
 	}else{
-		tmpStr += "{\"contentStr\":\"/";
+		tmpStr += "{\"contentStr\":\"";
 		tmpStr += f.readStringUntil('\n');
 		DB1(f.readStringUntil('\n'));
 		tmpStr += "\"}";
