@@ -146,6 +146,43 @@ PrzykĹ‚adowe zapytanie ajaxa z danymi
 		  });
 */
 
+void readAjaxStructFromFile(void){
+	String tmpStr;
+	File f = SPIFFS.open("/"+server.arg("fileName")+".sav", "r+");
+	if (!f) {
+		server.send(200, "File open failed!", tmpStr);
+		DB1("file open failed");
+	}else{
+		tmpStr += "{\"contentStr\":\"/";
+		tmpStr += f.readStringUntil('\n');
+		DB1(f.readStringUntil('\n'));
+		tmpStr += "\"}";
+	
+		server.send(200, "text/json", tmpStr);
+	}
+	f.close();
+}
+void saveAjaxStructToFile(void){
+	String tmpStr;
+	int allArgs;
+	allArgs = server.args();
+	DB1("Liczba argumentow: " + String(allArgs));
+	for(int i = 0; i<allArgs;i++){
+		DB1("Arg name: " + server.argName(i) + " = " + server.arg(i));
+	}
+	File f = SPIFFS.open("/"+server.arg("fileName")+".sav", "w+");
+	if (!f) {
+		server.send(200, "text/json", "\"Error while saving data!\"");
+		DB1("file open failed");
+	}else{
+		for(int i = 0; i<allArgs;i++){
+			tmpStr += String(server.argName(i))+"#:";
+			tmpStr += String(server.arg(i))+"#$";
+			server.send(200, "text/json", "\"Data send correctly!\"");
+		}
+		f.print(tmpStr);
+	}
+}
 void ethernetControl(){
 	ethernet.ip0 = String(server.arg("ip0")).toInt();
 	ethernet.ip1 = String(server.arg("ip1")).toInt();
@@ -461,7 +498,10 @@ void setup(void) {
   tryToConnect();
   initRC();
   //SERVER INIT
-  //delete
+  //Zapis odczytanej struktury ajax do pliku
+  server.on("/saveAjaxStructToFile", HTTP_POST, saveAjaxStructToFile);
+  server.on("/readAjaxStructFromFile", HTTP_GET, readAjaxStructFromFile);
+  
   server.on("/getScriptContent", HTTP_GET, getScriptContent);
   //delete
   server.on("/deleteFile", HTTP_POST, fileDelete);
