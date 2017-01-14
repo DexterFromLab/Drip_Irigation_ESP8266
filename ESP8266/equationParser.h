@@ -364,6 +364,8 @@ class externalVirables{
 		inputVirablesValues.push_back(0);			//init value
 		inputVirablesNames.push_back("Tmp2");
 		inputVirablesValues.push_back(0);
+		inputVirablesNames.push_back("Rel0AutoControl");
+		inputVirablesValues.push_back(0);
 		return;
 	}
 	void initOutputVirablesNames(void){
@@ -372,6 +374,8 @@ class externalVirables{
 		outputVirablesNames.push_back("Tmp1");		//nazwa
 		outputVirablesValues.push_back(0);			//init value
 		outputVirablesNames.push_back("Tmp2");		
+		outputVirablesValues.push_back(0);	
+		outputVirablesNames.push_back("Rel0AutoControl");	//Zmienna mówiąca czy automatyczne sterowanie jest włączone dla Relay0 na płytce sterownika.	
 		outputVirablesValues.push_back(0);	
 		return;
 	}
@@ -395,6 +399,7 @@ class externalVirables{
 		inputVirablesValues[beginSize+8] = outputVirablesValues[0];//ręczne przypisanie wartosci do nazwy zaraz po wartościach odczytanych z sond
 		inputVirablesValues[beginSize+9] = outputVirablesValues[1];
 		inputVirablesValues[beginSize+10] = outputVirablesValues[2];
+		inputVirablesValues[beginSize+11] = outputVirablesValues[3];
 		//Zmienne wyjsciowe
 		
 		digitalWrite(RELAY0, outputVirablesValues[0]);
