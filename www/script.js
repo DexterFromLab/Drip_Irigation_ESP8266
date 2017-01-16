@@ -386,54 +386,65 @@ function getSystemVirablesAjax(){
 }
 var allRelayNames = []
 var allRelayValues = []
+var allRelayControlNames = []
 var allRelayControlState = []
 var allVirablesNames = []
 var allVirablesValues = []
+waitForEnd = 0;
 function getSystemVirablesForInfo(){
-		allRelayNames = []
-		allRelayValues = []
-		$.ajax({
-			type: "GET",
-			datatype: "html",
-			url: "/systemOutVirablesValues",
-			success: function(response) {
-				for(var i = 0;i<response.length;i++){
-					if((response[i].n.indexOf("Relay") != -1)){
-						allRelayNames.push(response[i].n);
-						allRelayValues.push(response[i].v);
-					}
-					if((response[i].n.indexOf("AutoControl") != -1)){
-							allRelayControlState.push(response[i].v);
-						}					
-				}
-				getValuesAfter();
-			},
-			error: function(response){
-				
-			}
-		});		
-		allVirablesNames = []
-		allVirablesValues = []
-		function getValuesAfter(){
+		if(waitForEnd == 0){
+			waitForEnd++
+			allRelayNames = []
+			allRelayValues = []
+
+			allRelayControlNames = []
+			allRelayControlState = []
 			$.ajax({
 				type: "GET",
 				datatype: "html",
-				url: "/systemVirablesValues",
+				url: "/systemOutVirablesValues",
 				success: function(response) {
 					for(var i = 0;i<response.length;i++){
-						if((response[i].n.indexOf("Temp") != -1)||(response[i].n.indexOf("Hum") != -1)||(response[i].n.indexOf("Soil") != -1)){
-							allVirablesNames.push(response[i].n);
-							allVirablesValues.push(response[i].v);
+						if((response[i].n.indexOf("Relay") != -1)){
+							allRelayNames.push(response[i].n);
+							allRelayValues.push(response[i].v);
 						}
+						if((response[i].n.indexOf("AutoControl") != -1)){
+								allRelayControlNames.push(response[i].n);
+								allRelayControlState.push(response[i].v);
+							}					
 					}
-					fillTailsInfo();
+					setTimeout(function(){getValuesAfter()},500);
 				},
 				error: function(response){
-					
+					waitForEnd = 0;
 				}
-			});
+			});		
+			allVirablesNames = []
+			allVirablesValues = []
+			function getValuesAfter(){
+				$.ajax({
+					type: "GET",
+					datatype: "html",
+					url: "/systemVirablesValues",
+					success: function(response) {
+						for(var i = 0;i<response.length;i++){
+							if((response[i].n.indexOf("Temp") != -1)||(response[i].n.indexOf("Hum") != -1)||(response[i].n.indexOf("Soil") != -1)){
+								allVirablesNames.push(response[i].n);
+								allVirablesValues.push(response[i].v);
+							}
+						}
+						fillTailsInfo();
+						waitForEnd = 0;
+					},
+					error: function(response){
+						waitForEnd = 0;
+					}
+				});
+			}
 		}
 }
+var firstLoadTails = 0;
 function fillTailsInfo(){
 
 	var htmlString = ""
@@ -446,13 +457,23 @@ function fillTailsInfo(){
 		if(allVirablesNames[i].indexOf("Soil") != -1) type = 3;
 		htmlString += eval(allVirablesNames[i] +'.draw('+type+')');
 	}
-	for(var i = 0;i < allRelayNames.length; i++){
-		eval('var '+allRelayNames[i]+' = new kafelek("'+allRelayNames[i]+'");');
-		htmlString += eval(allRelayNames[i] +'.draw(0)')
+	if(firstLoadTails == 0){
+		for(var i = 0;i < allRelayNames.length; i++){
+			eval('window.'+allRelayNames[i]+' = new kafelek("'+allRelayNames[i]+'");');
+			htmlString += eval(allRelayNames[i] +'.draw(0)')
+		}
+		firstLoadTails++;
+	}else{
+		for(var i = 0;i < allRelayNames.length; i++){
+			htmlString += eval(allRelayNames[i]+'.draw(0)');
+		}
 	}
 	$("#plane").html(htmlString);
-
-
+	for(var i = 0;i < allRelayControlState.length; i++){
+		var relayNum = allRelayControlNames[i];
+		relayNum = relayNum.match(/\d+/)[0]
+		eval(allRelayNames[relayNum]+'.auto = '+allRelayControlState[i].toString());
+	}
 
 	for(var i = 0;i < allRelayNames.length; i++){
 		eval(allRelayNames[i] + '.toggleColorState('+Number(allRelayValues[i])+',0);');
@@ -1204,20 +1225,20 @@ function kafelek(name){
 	this.color = ""
 	//state - kolor kafelka 1 - red,0- green
 	//auto - tryb automatyczny 1 - on, 0 - off
-	this.toggleColorState = function(state,auto){
+	this.toggleColorState = function(state){
 		this.state = state;
-		this.auto = auto;
+
 		if(this.state == 0){
-			eval('$("#'+name+' div:first-child").removeClass("red");')
-			eval('$("#'+name+' div:first-child").addClass("green")')
+			eval('$("#'+name+' div:first-child").first().removeClass("red");')
+			eval('$("#'+name+' div:first-child").first().addClass("green")')
 		}else{
-			eval('$("#'+name+' div:first-child").removeClass("green");')
-			eval('$("#'+name+' div:first-child").addClass("red")')
+			eval('$("#'+name+' div:first-child").first().removeClass("green");')
+			eval('$("#'+name+' div:first-child").first().addClass("red")')
 		}
 		if(this.auto == 0){
-			eval('$("#'+name+' div:first-child").next().attr("class","icon")');
+			eval('$("#'+name+' div:first-child").next().first().children().first().attr("class","icon")');
 		}else{
-			eval('$("#'+name+' div:first-child").next().attr("class","icon rotate")');
+			eval('$("#'+name+' div:first-child").next().first().children().first().attr("class","icon rotate")');
 		}
 	}
 	//type - 0 relay config
@@ -1234,8 +1255,16 @@ function kafelek(name){
 				this.color = "red";
 			}
 			htmlString += '<div class="square elegantBlock '+ this.color +'" onclick="' + this.name +'.checkState()"><text class="boxText">'+name+'</text></div>';
-			htmlString += '<span class="ico"><svg onclick=relaywizzardWasClicked("'+name+'") class="icon rotate" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg></span>';
+			htmlString += '<div style="width: 30px;float: right;">'
+			htmlString += '<div class="icon"><svg onclick=relaywizzardWasClicked("'+name+'") class="icon" width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1152 896q0-106-75-181t-181-75-181 75-75 181 75 181 181 75 181-75 75-181zm512-109v222q0 12-8 23t-20 13l-185 28q-19 54-39 91 35 50 107 138 10 12 10 25t-9 23q-27 37-99 108t-94 71q-12 0-26-9l-138-108q-44 23-91 38-16 136-29 186-7 28-36 28h-222q-14 0-24.5-8.5t-11.5-21.5l-28-184q-49-16-90-37l-141 107q-10 9-25 9-14 0-25-11-126-114-165-168-7-10-7-23 0-12 8-23 15-21 51-66.5t54-70.5q-27-50-41-99l-183-27q-13-2-21-12.5t-8-23.5v-222q0-12 8-23t19-13l186-28q14-46 39-92-40-57-107-138-10-12-10-24 0-10 9-23 26-36 98.5-107.5t94.5-71.5q13 0 26 10l138 107q44-23 91-38 16-136 29-186 7-28 36-28h222q14 0 24.5 8.5t11.5 21.5l28 184q49 16 90 37l142-107q9-9 24-9 13 0 25 10 129 119 165 170 7 8 7 22 0 12-8 23-15 21-51 66.5t-54 70.5q26 50 41 98l183 28q13 2 21 12.5t8 23.5z"/></svg></div>';
+	
+			htmlString += '<div class="icon1" onclick="changeRelayState('+name+')">';
+			htmlString += '<svg width="30" height="30" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1664 896q0 156-61 298t-164 245-245 164-298 61-298-61-245-164-164-245-61-298q0-182 80.5-343t226.5-270q43-32 95.5-25t83.5 50q32 42 24.5 94.5t-49.5 84.5q-98 74-151.5 181t-53.5 228q0 104 40.5 198.5t109.5 163.5 163.5 109.5 198.5 40.5 198.5-40.5 163.5-109.5 109.5-163.5 40.5-198.5q0-121-53.5-228t-151.5-181q-42-32-49.5-84.5t24.5-94.5q31-43 84-50t95 25q146 109 226.5 270t80.5 343zm-640-768v640q0 52-38 90t-90 38-90-38-38-90v-640q0-52 38-90t90-38 90 38 38 90z"/></svg>';
 			htmlString += '</div>';
+			htmlString += '</div>';
+			htmlString += '</div>';		
+			
+			
 			return htmlString;
 		}
 		if(type > 0){
@@ -1260,6 +1289,10 @@ function kafelek(name){
 			return htmlString;
 		}
 	}
+}
+function changeRelayState(name){
+	sendEquation('1!'+name.name+'='+name.name);
+	setTimeout(function(){getSystemVirablesForInfo();},300)
 }
 function writeTimeToMultipleSelector(nameOfSelector,startValue,endValue){
 	$(nameOfSelector).append('<option>'+startValue+' - '+endValue+'</option>');
