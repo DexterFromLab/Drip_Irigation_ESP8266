@@ -1,0 +1,1 @@
+﻿1;0.pl.pool.ntp.org;2016;10;30;22;55;15;25;60;/sterowanie.scr;15;

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 #include "DHT.h"
 #include "DS1302RTC.h"
 //#include "SSD1306.h" // alias for `#include "SSD1306Wire.h"`
@@ -101,4 +102,5 @@ void setMeasureTaskFlag(void);
 void setScriptTaskFlag(void);
 void setDisplayOledFLag(void);
 unsigned char RTC_TestTime(tmElements_t DateTime);
+
 #endif

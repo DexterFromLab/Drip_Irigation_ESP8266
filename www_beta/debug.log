@@ -1,0 +1,4 @@
+[1217/203338:ERROR:process_reader_win.cc(142)] SuspendThread: Odmowa dostêpu. (0x5)
+[1217/203338:ERROR:exception_snapshot_win.cc(87)] thread ID 6188 not found in process
+[1217/203338:WARNING:crash_report_exception_handler.cc(61)] ProcessSnapshotWin::Initialize failed
+[1217/203338:ERROR:scoped_process_suspend.cc(38)] NtResumeProcess: Podjêto próbê uzyskania dostêpu do procesu koñcz¹cego dzia³anie.  (0xc000010a)

@@ -12,9 +12,15 @@
 #include "./definicje.h"
 #include "./externalProbes.h"
 #include <TimeLib.h>
-
+#include <FS.h>
 //void reloadVirValues(void);
 
+String structNames(void);
+void dispAllNames(void);
+int numOfAllSavedStruct(void);
+String dispNextName(void);
+int readAutoControlState(String fileName);
+void generateAutoScript();
 
 //#define DBG_OUTPUT_PORT Serial
 enum EXPR_EVAL_ERR {
@@ -376,7 +382,7 @@ class externalVirables{
 		outputVirablesNames.push_back("Tmp2");		
 		outputVirablesValues.push_back(0);	
 		outputVirablesNames.push_back("Rel0AutoControl");	//Zmienna mówiąca czy automatyczne sterowanie jest włączone dla Relay0 na płytce sterownika.	
-		outputVirablesValues.push_back(0);	
+		outputVirablesValues.push_back(readAutoControlState("Relay0.sav"));	
 		return;
 	}
 	void reloadVirValues(void){

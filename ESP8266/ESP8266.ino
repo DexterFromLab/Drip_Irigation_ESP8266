@@ -441,6 +441,8 @@ void getScriptsNames(){
 	output += "]";
 	server.send(200, "text/json", output);
 }
+
+
 void getMeasureValues(){
 	String output = "[";
 	//if(output == "["){
@@ -459,6 +461,9 @@ void Repeats(){
 uint8_t systemIsLoaded = 0;
 tmElements_t tm;
 void setup(void) {
+	
+	
+	
 	//Checking type of init AP or Client dependly of pinstate
 	pinMode(ApClientPin, INPUT);     
 	digitalWrite(ApClientPin, HIGH);  
@@ -487,6 +492,8 @@ void setup(void) {
     }
     DB1("\n");
   }
+  generateAutoScript();
+
   //mesures
 
   RTC.read(tm);
