@@ -1,8 +1,8 @@
 ﻿#include <Time.h>
 #include <TimeLib.h>
 #include "definicje.h"
-#include "display/SSD1306.h" // alias for `#include "SSD1306Wire.h"`
-#include "display/OLEDDisplayUi.h" // Include the UI lib
+#include <SSD1306.h> // alias for `#include "SSD1306Wire.h"`
+#include <OLEDDisplayUi.h> // Include the UI lib
 #include "images.h"// Include custom images
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
