@@ -21,6 +21,8 @@ int numOfAllSavedStruct(void);
 String dispNextName(void);
 int readAutoControlState(String fileName);
 void generateAutoScript();
+String getValueByName(String settings_str,String name);
+
 
 //#define DBG_OUTPUT_PORT Serial
 enum EXPR_EVAL_ERR {
@@ -244,7 +246,7 @@ private:
 		//double value[] = {1,2,3,wyniki[0],wyniki[1],wyniki[2],wyniki[3],wyniki[4],wyniki[5],wyniki[6],wyniki[7],wyniki[8],wyniki[9]};
 		
 		char liczba[20];
-		char str_temp[6];
+		char str_temp[10];
 		unsigned int i;//counter
 		double wynik;
 		String bufor_rownania;
@@ -255,6 +257,9 @@ private:
 		DB1("Rownanie i zmienne:                        " + String(wyrazenie));
 		
 		for(i=0;i<inputVirablesNames.size();i++){
+			#ifdef DEBUG2
+			ESP.wdtFeed();
+			#endif
 			if(strstr(wyrazenie,inputVirablesNames[i].c_str()) > 0){
 				dtostrf(inputVirablesValues[i], 4, 2, str_temp);//tutaj cos mi bruzdzi!
 				sprintf(liczba,"%s",str_temp);
@@ -356,7 +361,7 @@ class externalVirables{
 		inputVirablesValues.push_back((float)second());			//init value
 		inputVirablesNames.push_back("day");		//nazwa
 		inputVirablesValues.push_back((float)day());			//init value
-		inputVirablesNames.push_back("weekday");		//nazwa
+		inputVirablesNames.push_back("weekd");		//nazwa
 		inputVirablesValues.push_back((float)weekday());			//init value
 		inputVirablesNames.push_back("month");		//nazwa
 		inputVirablesValues.push_back((float)month());			//init value
@@ -370,6 +375,22 @@ class externalVirables{
 		inputVirablesValues.push_back(0);			//init value
 		inputVirablesNames.push_back("Tmp2");
 		inputVirablesValues.push_back(0);
+		inputVirablesNames.push_back("Tmp3");		//nazwa
+		inputVirablesValues.push_back(0);			//init value
+		inputVirablesNames.push_back("Tmp4");
+		inputVirablesValues.push_back(0);
+		inputVirablesNames.push_back("Tmp5");		//nazwa
+		inputVirablesValues.push_back(0);			//init value
+		inputVirablesNames.push_back("Tmp6");
+		inputVirablesValues.push_back(0);
+		inputVirablesNames.push_back("Tmp7");		//nazwa
+		inputVirablesValues.push_back(0);			//init value
+		inputVirablesNames.push_back("Tmp8");
+		inputVirablesValues.push_back(0);
+		inputVirablesNames.push_back("Tmp9");		//nazwa
+		inputVirablesValues.push_back(0);			//init value
+		inputVirablesNames.push_back("Tmp10");
+		inputVirablesValues.push_back(0);
 		inputVirablesNames.push_back("Rel0AutoControl");
 		inputVirablesValues.push_back(0);
 		return;
@@ -381,6 +402,24 @@ class externalVirables{
 		outputVirablesValues.push_back(0);			//init value
 		outputVirablesNames.push_back("Tmp2");		
 		outputVirablesValues.push_back(0);	
+		
+		outputVirablesNames.push_back("Tmp3");		
+		outputVirablesValues.push_back(0);	
+		outputVirablesNames.push_back("Tmp4");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp5");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp6");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp7");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp8");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp9");		
+		outputVirablesValues.push_back(0);
+		outputVirablesNames.push_back("Tmp10");		
+		outputVirablesValues.push_back(0);
+		
 		outputVirablesNames.push_back("Rel0AutoControl");	//Zmienna mówiąca czy automatyczne sterowanie jest włączone dla Relay0 na płytce sterownika.	
 		outputVirablesValues.push_back(readAutoControlState("Relay0.sav"));	
 		return;
@@ -406,6 +445,14 @@ class externalVirables{
 		inputVirablesValues[beginSize+9] = outputVirablesValues[1];
 		inputVirablesValues[beginSize+10] = outputVirablesValues[2];
 		inputVirablesValues[beginSize+11] = outputVirablesValues[3];
+		inputVirablesValues[beginSize+12] = outputVirablesValues[4];
+		inputVirablesValues[beginSize+13] = outputVirablesValues[5];
+		inputVirablesValues[beginSize+14] = outputVirablesValues[6];
+		inputVirablesValues[beginSize+15] = outputVirablesValues[7];
+		inputVirablesValues[beginSize+16] = outputVirablesValues[8];
+		inputVirablesValues[beginSize+17] = outputVirablesValues[9];
+		inputVirablesValues[beginSize+18] = outputVirablesValues[10];
+		inputVirablesValues[beginSize+19] = outputVirablesValues[11];
 		//Zmienne wyjsciowe
 		
 		digitalWrite(RELAY0, outputVirablesValues[0]);

@@ -182,6 +182,7 @@ void saveAjaxStructToFile(void){
 		}
 		f.print(tmpStr);
 	}
+	generateAutoScript();
 }
 void ethernetControl(){
 	ethernet.ip0 = String(server.arg("ip0")).toInt();
