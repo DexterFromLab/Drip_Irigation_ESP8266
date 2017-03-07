@@ -483,7 +483,7 @@ void setup(void) {
 	
 
     displayInit();
-  
+  #ifdef DEBUG
   {
     Dir dir = SPIFFS.openDir("/");
     while (dir.next()) {
@@ -493,8 +493,7 @@ void setup(void) {
     }
     DB1("\n");
   }
-  generateAutoScript();
-
+  #endif
   //mesures
 
   RTC.read(tm);
@@ -680,10 +679,12 @@ void setup(void) {
 	externVir.reloadVirValues();			//przeladowanie wartosci zmiennych wejsciowych
 	//Zadania okresowe
 
+	if(System_s.measInt<60) System_s.measInt = 60;
+	
 	Alarm.timerRepeat(System_s.measInt, setMeasureTaskFlag);
 	Alarm.timerRepeat(60, tryToConnect);
 	Alarm.timerRepeat(1, displayOled);
-	Alarm.timerRepeat(5, getFreeHeap);
+	//Alarm.timerRepeat(5, getFreeHeap);
 	
 	if(System_s.relayScriptTime < 5){
 		System_s.relayScriptTime = 5;
@@ -719,7 +720,7 @@ void loop(void) {
 		  measure_task();
 		  mtFlag = 0;
 		  silenceFlag = 0;
-		  Alarm.alarmOnce(System_s.measInt-1, setSilenceFLag);
+		  Alarm.alarmOnce(System_s.measInt-3, setSilenceFLag);
 	   }				//1
 	  if(silenceFlag == 0){
 		  if(stFlag){scriptTask();stFlag = 0;}					//2
@@ -1171,9 +1172,6 @@ void tryToConnect(void){
 			) ESP.reset();  
 		} 
 		saveIpSettings();
-		
-		
-
 		
 		DB1("");
 		DB1("Connected! IP address: ");

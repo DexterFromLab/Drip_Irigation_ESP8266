@@ -436,7 +436,7 @@ function getSystemVirablesForInfo(){
 							}
 						}
 						fillTailsInfo();
-						if(wizzardDispCounter == 0){
+						if(wizzardDispCounter < 2){
 							filPossibleControlTypeField();
 							wizzardDispCounter++;
 						}

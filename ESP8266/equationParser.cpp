@@ -188,6 +188,7 @@ void generateAutoScript(){
 					startTimeDaySec = splitTimeStringToVector(day1startTimes);
 					endTimeDaySec = splitTimeStringToVector(day1endTimes);
 					controlScript.println("0=Tmp9");
+					controlScript.println("1=Rel0AutoControl");
 					for(int i = 0; i < startTimeDaySec.size();i++){
 						controlScript.println("DaySec>" + String(startTimeDaySec.at(i)) + "=Tmp1");
 						controlScript.println("DaySec<" + String(endTimeDaySec.at(i)) + "=Tmp2");

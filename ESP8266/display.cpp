@@ -1,6 +1,7 @@
 ﻿#include "display.h"
 #include "externalProbes.h"
 #include "ajax-requests.h"
+#include <time.h>
 unsigned int disp_counter = 0;
 int externalProbesCounter = 0;
 SSD1306  display(0x3c, OLED_SDA, OLED_SCL);
@@ -157,15 +158,15 @@ void displayTempAndHum(void){
 void display_time(void){
 	display.clear();
 	displayAddres();
+	char time[9];
+	char date[11];
+	sprintf(time,"%02d:%02d:%02d",hour(),minute(),second());
+	sprintf(date,"%02d-%02d-%04d",day(),month(),year());
 	drawCenter((
-		String(hour())+":"+
-		String(minute())+":"+
-		String(second())
+		String(time)
 	).c_str(),24,25,13);
 	drawCenter((
-		String(day())+"-"+
-		String(month())+"-"+
-		String(year())
+		String(date)
 	).c_str(),16,28,35);
 	#ifdef DEBUG
 	drawCenter((
