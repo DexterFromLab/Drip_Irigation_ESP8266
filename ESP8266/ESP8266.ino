@@ -461,6 +461,7 @@ void Repeats(){
 
 uint8_t systemIsLoaded = 0;
 tmElements_t tm;
+unsigned long start, finished, elapsed;
 void setup(void) {
 	
 	
@@ -713,6 +714,7 @@ uint8_t silenceFlag = 1;
 void setSilenceFLag(void){
 	silenceFlag = 1;
 }
+
 void loop(void) {
 	if(systemIsLoaded){	
 		//priority of task
@@ -720,10 +722,20 @@ void loop(void) {
 		  measure_task();
 		  mtFlag = 0;
 		  silenceFlag = 0;
-		  Alarm.alarmOnce(System_s.measInt-3, setSilenceFLag);
+		  Alarm.alarmOnce(System_s.measInt-((elapsed/1000) + 1), setSilenceFLag);
 	   }				//1
 	  if(silenceFlag == 0){
-		  if(stFlag){scriptTask();stFlag = 0;}					//2
+		  if(stFlag){
+			  start=millis();
+			  scriptTask();
+			  finished=millis();
+			  elapsed=finished-start;
+			  DB3("Czas sykonywania skryptu:" + String(elapsed));
+			  stFlag = 0;
+			  if(System_s.relayScriptTime<(elapsed/1000)){
+				  System_s.relayScriptTime = (elapsed/1000)+1;
+			  }
+			  }					//2
 		  if(doFlag){displayOled();doFlag = 0;}					//3
 		  server.handleClient();								//4
 	  }

@@ -1,6 +1,6 @@
 ﻿#define OUT	Serial
 
-//#define DEBUG2				//Czy debug jest włączony?
+#define DEBUG2				//Czy debug jest włączony?
 
 #ifdef DEBUG
 	#define DB1(x)	Serial.println(x)
@@ -18,7 +18,14 @@
 #ifndef DEBUG2
 	#define DB2(x)
 #endif;
-
+#ifdef DEBUG3
+	#define DB3(x)	Serial.println(x)
+	#define DB1(x)
+	#define DB2(x)
+#endif
+#ifndef DEBUG3
+	#define DB3(x)
+#endif
 #define MAX_NUM_SEN				10			//Maximum number of sensor
 #define NUM_OF_INTERNAL_SENSOR	1
 #define BAUDRATE				9600

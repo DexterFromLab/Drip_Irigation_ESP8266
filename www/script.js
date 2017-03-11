@@ -1337,6 +1337,9 @@ function arrayToString(array){
 }
 function sendControlRelaySetting(){
 	var data = {};
+	
+	var numberOfSelected = 0;
+	
 	data['fileName'] = nameOfCurrentConfigRelay;
 	data['nameOfRelay'] = nameOfCurrentConfigRelay;
 	data['timeMark'] = $('#timeMark').val();
@@ -1344,14 +1347,23 @@ function sendControlRelaySetting(){
 	data['autoCont'] = $('#autoCont').val();
 	if(($('#autoCont').val() == 1)&&($('#timeMark').val() == 1)){
 		data['day1'] = SelectedTimes("#day1");
+		numberOfSelected = data['day1'].endTimes.length;
 		data['day1'].startTimes = arrayToString(data['day1'].startTimes);
 		data['day1'].endTimes = arrayToString(data['day1'].endTimes);
 	}
 	
 	for(var i = 1; i<=7;i++){
 		eval("data['day"+i+"'] = SelectedTimes('#day"+i+"');");
+		eval("numberOfSelected += data['day"+i+"'].endTimes.length")
 		eval("data['day"+i+"'].startTimes = arrayToString(data['day"+i+"'].startTimes);");
 		eval("data['day"+i+"'].endTimes = arrayToString(data['day"+i+"'].endTimes);");
+	}
+	
+	console.log("numberOfSelected: " + numberOfSelected.toString())
+	
+	if(numberOfSelected>70){
+		alert("Zaznacz maksyalnie 70 zakresów czasowych");
+		return;
 	}
 	
 	if($('#controlMark').val() != 0){
